@@ -4,7 +4,7 @@ The official learning platform for the Arcium ecosystem. Learners browse courses
 
 Built with **Next.js (App Router)**, **Prisma + Neon Postgres**, **Solana wallet auth**, **Cloudinary**, and **Tailwind CSS**.
 
-> Product spec: [`../docs/PRD.md`](../docs/PRD.md) · Domain context: [`../CONTEXT.md`](../CONTEXT.md)
+> Product spec: [`docs/PRD.md`](docs/PRD.md) · Domain context: [`CONTEXT.md`](CONTEXT.md)
 
 ## Features
 

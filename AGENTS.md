@@ -1,5 +1,11 @@
 # Arcademy — Agent Guide
 
+<!-- BEGIN:nextjs-agent-rules -->
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+<!-- END:nextjs-agent-rules -->
+
 ## What we're building
 
 Arcademy V1: a curated learning platform for Arcium ecosystem products. Prove the core loop — browse → connect wallet → complete lessons → pass quiz → earn off-chain badge.
@@ -44,6 +50,6 @@ Partner dashboards, soulbound NFTs, on-chain verification, paid courses, leaderb
 
 Official, calm, trustworthy. Plain language. Visible progress. No unnecessary crypto jargon.
 
-## App location
+## Project layout
 
-Application code lives in `arcademy/` (Next.js app). Project docs in `docs/`.
+Next.js app at the repo root. Product docs in `docs/`. Setup: [`README.md`](README.md).
