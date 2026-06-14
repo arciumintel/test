@@ -1,0 +1,19 @@
+{
+  "plugins": {
+    "neon-postgres": {
+      "enabled": true
+    },
+    "prisma": {
+      "enabled": true
+    },
+    "linear": {
+      "enabled": true
+    },
+    "context7-plugin": {
+      "enabled": true
+    },
+    "cloudinary": {
+      "enabled": true
+    }
+  }
+}
