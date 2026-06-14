@@ -2,13 +2,12 @@
 // Source of truth: Neon Postgres. See docs/PRD.md and CONTEXT.md.
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 enum Role {

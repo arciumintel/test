@@ -1,6 +1,11 @@
+import "dotenv/config";
+import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient, type CourseLevel } from "@prisma/client";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaNeon({
+  connectionString: process.env.DATABASE_URL!,
+});
+const prisma = new PrismaClient({ adapter });
 
 type SeedQuestion = {
   prompt: string;
