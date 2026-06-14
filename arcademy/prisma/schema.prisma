@@ -1,0 +1,208 @@
+// Arcademy V1 — Prisma schema
+// Source of truth: Neon Postgres. See docs/PRD.md and CONTEXT.md.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  learner
+  staff_admin
+}
+
+enum CourseLevel {
+  beginner
+  intermediate
+  advanced
+}
+
+enum CourseStatus {
+  draft
+  published
+  archived
+}
+
+enum LessonStatus {
+  draft
+  published
+}
+
+/// Learner / admin identity, anchored to a Solana wallet address.
+model User {
+  id            String   @id @default(cuid())
+  walletAddress String   @unique
+  displayName   String?
+  role          Role     @default(learner)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  progress     Progress[]
+  quizAttempts QuizAttempt[]
+  badgeAwards  BadgeAward[]
+}
+
+/// One-time challenge used to verify wallet ownership during sign-in.
+model AuthNonce {
+  id            String   @id @default(cuid())
+  walletAddress String
+  nonce         String   @unique
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+
+  @@index([walletAddress])
+}
+
+/// A published or draft course. `partnerName` attributes the source;
+/// a real partner organization relation can be added later without
+/// rewriting ownership.
+model Course {
+  id                String       @id @default(cuid())
+  title             String
+  slug              String       @unique
+  partnerName       String?
+  summary           String
+  description       String?
+  level             CourseLevel  @default(beginner)
+  status            CourseStatus @default(draft)
+  thumbnailUrl      String?
+  estimatedDuration Int? // minutes
+  learningOutcomes  String[] // bullet list of "what you'll learn"
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  lessons     Lesson[]
+  quizzes     Quiz[]
+  progress    Progress[]
+  badge       Badge?
+  badgeAwards BadgeAward[]
+
+  @@index([status])
+}
+
+/// One ordered learning unit inside a course.
+model Lesson {
+  id        String       @id @default(cuid())
+  courseId  String
+  title     String
+  order     Int
+  content   String // rich text / markdown
+  mediaUrl  String?
+  status    LessonStatus @default(draft)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  course   Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  quizzes  Quiz[]
+  progress Progress[]
+
+  @@unique([courseId, order])
+  @@index([courseId])
+}
+
+/// An assessment for a course (final quiz) or a specific lesson.
+model Quiz {
+  id            String   @id @default(cuid())
+  courseId      String
+  lessonId      String?
+  title         String   @default("Course Quiz")
+  passThreshold Int      @default(70) // percent required to pass
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  course    Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson    Lesson?       @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  questions Question[]
+  attempts  QuizAttempt[]
+
+  @@index([courseId])
+  @@index([lessonId])
+}
+
+/// One multiple-choice quiz question.
+model Question {
+  id            String   @id @default(cuid())
+  quizId        String
+  prompt        String
+  answerOptions String[] // ordered options
+  correctAnswer Int // index into answerOptions
+  explanation   String?
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+}
+
+/// Tracks per-lesson completion for a learner within a course.
+model Progress {
+  id          String    @id @default(cuid())
+  userId      String
+  courseId    String
+  lessonId    String
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([userId, courseId])
+}
+
+/// A submitted quiz with score and pass/fail outcome.
+model QuizAttempt {
+  id          String   @id @default(cuid())
+  userId      String
+  quizId      String
+  score       Int // percent 0-100
+  passed      Boolean
+  answers     Json? // recorded selections for feedback
+  submittedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([quizId])
+}
+
+/// Course completion badge definition.
+model Badge {
+  id          String   @id @default(cuid())
+  courseId    String   @unique
+  name        String
+  description String
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  awards BadgeAward[]
+}
+
+/// A badge granted to a learner (off-chain in V1).
+model BadgeAward {
+  id        String   @id @default(cuid())
+  userId    String
+  badgeId   String
+  courseId  String
+  awardedAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge  Badge  @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+}
