@@ -41,17 +41,37 @@ export default async function ProductPage({
 
       <section className="grid gap-8 rounded-2xl border bg-card p-6 shadow-sm md:grid-cols-[1fr_280px] md:p-8">
         <div>
-          <Badge variant="default" className="mb-4">
-            Ecosystem Project
-          </Badge>
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <Badge variant="default">Ecosystem Project</Badge>
+            {product.category && (
+              <Badge variant="muted">{product.category}</Badge>
+            )}
+          </div>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {product.name}
           </h1>
+          {product.partnerName && product.partnerName !== product.name && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Maintained by {product.partnerName}
+            </p>
+          )}
           <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
             {product.description}
           </p>
-          {product.links.length > 0 && (
+          {(product.referralUrl || product.links.length > 0) && (
             <div className="mt-6 flex flex-wrap gap-3">
+              {product.referralUrl && (
+                <Button size="sm" asChild>
+                  <Link
+                    href={product.referralUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Visit {product.name}
+                    <ExternalLink />
+                  </Link>
+                </Button>
+              )}
               {product.links.map((link) => (
                 <Button key={link.url} variant="outline" size="sm" asChild>
                   <Link href={link.url} target="_blank" rel="noreferrer">

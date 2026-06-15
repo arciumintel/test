@@ -116,21 +116,45 @@ export function QuizRunner({
                 </AlertDescription>
               </Alert>
             )}
+            {result.passed && !result.courseCompleted && (
+              <Alert variant="info" className="mt-2 text-left">
+                <CheckCircle2 />
+                <AlertTitle>Quiz requirement complete</AlertTitle>
+                <AlertDescription>
+                  Nice work — you&apos;ve passed the quiz. Finish the remaining
+                  required lessons to complete the course and earn your badge.
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="mt-3 flex flex-wrap justify-center gap-3">
               {result.passed ? (
-                <>
-                  <Button asChild>
-                    <Link href="/profile">
-                      View my profile
-                      <ArrowRight />
-                    </Link>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <Link href={coursePath(productSlug, courseSlug)}>
-                      Back to course
-                    </Link>
-                  </Button>
-                </>
+                result.courseCompleted ? (
+                  <>
+                    <Button asChild>
+                      <Link href="/profile">
+                        View my profile
+                        <ArrowRight />
+                      </Link>
+                    </Button>
+                    <Button variant="outline" asChild>
+                      <Link href={coursePath(productSlug, courseSlug)}>
+                        Back to course
+                      </Link>
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button asChild>
+                      <Link href={coursePath(productSlug, courseSlug)}>
+                        Finish remaining lessons
+                        <ArrowRight />
+                      </Link>
+                    </Button>
+                    <Button variant="outline" asChild>
+                      <Link href="/profile">View my profile</Link>
+                    </Button>
+                  </>
+                )
               ) : (
                 <Button onClick={retry}>
                   <RotateCcw />

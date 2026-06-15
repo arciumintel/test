@@ -129,6 +129,7 @@ export default async function HomePage() {
                   name: product.name,
                   description: product.description,
                   logoUrl: product.logoUrl,
+                  category: product.category,
                   courseCount: product._count.courses,
                 }}
               />

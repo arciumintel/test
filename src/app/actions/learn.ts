@@ -110,6 +110,17 @@ export async function submitQuiz(
     return { error: "This quiz has no questions yet." };
   }
 
+  if (!Array.isArray(answers) || answers.length !== quiz.questions.length) {
+    return { error: "Please answer every question before submitting." };
+  }
+  const answersValid = quiz.questions.every((q, i) => {
+    const a = answers[i];
+    return Number.isInteger(a) && a >= 0 && a < q.answerOptions.length;
+  });
+  if (!answersValid) {
+    return { error: "Please answer every question before submitting." };
+  }
+
   const results = quiz.questions.map((q, i) => ({
     questionId: q.id,
     correct: answers[i] === q.correctAnswer,

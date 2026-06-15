@@ -10,6 +10,7 @@ type ProductCardData = {
   name: string;
   description: string;
   logoUrl: string | null;
+  category?: string | null;
   courseCount: number;
 };
 
@@ -34,6 +35,11 @@ export function ProductCard({ product }: { product: ProductCardData }) {
                 )}
               </span>
               <div>
+                {product.category && (
+                  <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {product.category}
+                  </span>
+                )}
                 <h3 className="font-semibold tracking-tight group-hover:text-primary">
                   {product.name}
                 </h3>
