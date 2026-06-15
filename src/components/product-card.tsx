@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink, PackageOpen } from "lucide-react";
+import { PackageOpen } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { productPath } from "@/lib/paths";
@@ -10,7 +10,6 @@ type ProductCardData = {
   name: string;
   description: string;
   logoUrl: string | null;
-  links?: { label: string; url: string }[];
   courseCount: number;
 };
 
@@ -49,17 +48,6 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           <p className="line-clamp-3 text-sm text-muted-foreground">
             {product.description}
           </p>
-
-          {product.links && product.links.length > 0 && (
-            <div className="mt-auto flex flex-wrap gap-2 text-xs text-muted-foreground">
-              {product.links.slice(0, 3).map((link) => (
-                <span key={link.url} className="inline-flex items-center gap-1">
-                  {link.label}
-                  <ExternalLink className="size-3" />
-                </span>
-              ))}
-            </div>
-          )}
         </CardContent>
       </Card>
     </Link>

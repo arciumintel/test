@@ -41,7 +41,7 @@ export default async function QuizPage({
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <Breadcrumbs
         items={[
-          { label: "Products", href: "/products" },
+          { label: "Ecosystem Projects", href: "/products" },
           { label: course.product.name, href: productPath(course.product.slug) },
           { label: course.title, href: courseHref },
           { label: "Final quiz" },

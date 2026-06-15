@@ -23,7 +23,7 @@ export async function SiteHeader() {
               <Link href="/courses">Courses</Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/products">Products</Link>
+              <Link href="/products">Ecosystem Projects</Link>
             </Button>
             {user && (
               <Button variant="ghost" size="sm" asChild>

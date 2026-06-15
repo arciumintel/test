@@ -75,7 +75,7 @@ export default async function AdminDashboard() {
           <Button variant="outline" asChild>
             <Link href="/admin/products">
               <PackageOpen />
-              Products
+              Ecosystem Projects
             </Link>
           </Button>
           <Button asChild>

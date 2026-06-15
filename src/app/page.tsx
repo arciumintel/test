@@ -100,20 +100,20 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Products */}
+      {/* Ecosystem projects */}
       <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
         <div className="mb-6 flex items-end justify-between">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight">
-              Explore products
+              Explore ecosystem projects
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Start with a product, then follow its curated courses.
+              Start with an ecosystem project, then follow its curated courses.
             </p>
           </div>
           <Button variant="ghost" asChild>
             <Link href="/products">
-              View products
+              View ecosystem projects
               <ArrowRight />
             </Link>
           </Button>
@@ -129,7 +129,6 @@ export default async function HomePage() {
                   name: product.name,
                   description: product.description,
                   logoUrl: product.logoUrl,
-                  links: product.links,
                   courseCount: product._count.courses,
                 }}
               />
@@ -138,9 +137,12 @@ export default async function HomePage() {
         ) : (
           <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
             <BookOpen className="mx-auto size-8 text-muted-foreground" />
-            <p className="mt-3 font-medium">No published products yet</p>
+            <p className="mt-3 font-medium">
+              No published ecosystem projects yet
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Product pages will appear here once the team publishes them.
+              Ecosystem project pages will appear here once the team publishes
+              them.
             </p>
           </div>
         )}

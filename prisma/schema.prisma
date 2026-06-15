@@ -38,13 +38,37 @@ enum LessonStatus {
   published
 }
 
+enum CourseType {
+  foundational
+  product_onboarding
+  builder_intro
+}
+
+enum QuizType {
+  final_course_quiz
+}
+
+enum QuizStatus {
+  draft
+  published
+}
+
+enum BadgeStatus {
+  draft
+  published
+  archived
+}
+
 model Product {
   id          String        @id @default(cuid())
   name        String
   slug        String        @unique
   description String
   logoUrl     String?
+  category    String?
   links       Json          @default("[]")
+  partnerName String?
+  referralUrl String?
   status      ProductStatus @default(draft)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -87,13 +111,15 @@ model Course {
   slug              String
   summary           String
   description       String?
-  level             CourseLevel   @default(beginner)
-  status            CourseStatus  @default(draft)
-  thumbnailUrl      String?
-  estimatedDuration Int? // minutes
-  learningOutcomes  String[] // bullet list of "what you'll learn"
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  level                 CourseLevel  @default(beginner)
+  status                CourseStatus @default(draft)
+  thumbnailUrl          String?
+  estimatedDuration     Int? // minutes
+  learningOutcomes      String[] // bullet list of "what you'll learn"
+  courseType            CourseType   @default(foundational)
+  prerequisiteCourseIds String[]     @default([])
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
 
   product     Product      @relation(fields: [productId], references: [id])
   lessons     Lesson[]
@@ -109,15 +135,17 @@ model Course {
 
 /// One ordered learning unit inside a course.
 model Lesson {
-  id        String       @id @default(cuid())
-  courseId  String
-  title     String
-  order     Int
-  content   String // rich text / markdown
-  mediaUrl  String?
-  status    LessonStatus @default(draft)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id                String       @id @default(cuid())
+  courseId          String
+  title             String
+  order             Int
+  content           String // rich text / markdown
+  mediaUrl          String?
+  status            LessonStatus @default(draft)
+  required          Boolean      @default(true)
+  estimatedDuration Int? // minutes
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
   course   Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
   quizzes  Quiz[]
@@ -129,13 +157,16 @@ model Lesson {
 
 /// An assessment for a course (final quiz) or a specific lesson.
 model Quiz {
-  id            String   @id @default(cuid())
+  id            String     @id @default(cuid())
   courseId      String
   lessonId      String?
-  title         String   @default("Course Quiz")
-  passThreshold Int      @default(70) // percent required to pass
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  title         String     @default("Course Quiz")
+  description   String?
+  type          QuizType   @default(final_course_quiz)
+  passThreshold Int        @default(70) // percent required to pass
+  status        QuizStatus @default(published)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   course    Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
   lesson    Lesson?       @relation(fields: [lessonId], references: [id], onDelete: SetNull)
@@ -201,13 +232,16 @@ model QuizAttempt {
 
 /// Course completion badge definition.
 model Badge {
-  id          String   @id @default(cuid())
-  courseId    String   @unique
+  id          String      @id @default(cuid())
+  courseId    String      @unique
   name        String
   description String
   imageUrl    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  criteria    String?
+  issuer      String?
+  status      BadgeStatus @default(published)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   course Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
   awards BadgeAward[]
@@ -215,11 +249,13 @@ model Badge {
 
 /// A badge granted to a learner (off-chain in V1).
 model BadgeAward {
-  id        String   @id @default(cuid())
-  userId    String
-  badgeId   String
-  courseId  String
-  awardedAt DateTime @default(now())
+  id               String   @id @default(cuid())
+  userId           String
+  badgeId          String
+  courseId         String
+  walletAddress    String?
+  verificationSlug String?  @unique
+  awardedAt        DateTime @default(now())
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   badge  Badge  @relation(fields: [badgeId], references: [id], onDelete: Cascade)

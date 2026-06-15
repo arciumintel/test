@@ -15,7 +15,7 @@ export function SiteFooter() {
             Courses
           </Link>
           <Link href="/products" className="hover:text-foreground">
-            Products
+            Ecosystem Projects
           </Link>
           <span className="font-mono text-xs uppercase tracking-wide">
             Solana · {SOLANA_CLUSTER}

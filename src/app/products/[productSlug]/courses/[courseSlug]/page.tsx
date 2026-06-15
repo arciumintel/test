@@ -70,7 +70,7 @@ export default async function CourseDetailPage({
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <Breadcrumbs
         items={[
-          { label: "Products", href: "/products" },
+          { label: "Ecosystem Projects", href: "/products" },
           { label: course.product.name, href: productPath(course.product.slug) },
           { label: course.title },
         ]}
@@ -227,7 +227,9 @@ export default async function CourseDetailPage({
 
                 <ul className="space-y-3 text-sm">
                   <li className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Product</span>
+                    <span className="text-muted-foreground">
+                      Ecosystem Project
+                    </span>
                     <span className="font-medium">{course.product.name}</span>
                   </li>
                   <li className="flex items-center justify-between">

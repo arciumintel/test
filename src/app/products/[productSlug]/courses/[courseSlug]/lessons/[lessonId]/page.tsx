@@ -107,7 +107,7 @@ export default async function LessonPage({
       <article className="min-w-0">
         <Breadcrumbs
           items={[
-            { label: "Products", href: "/products" },
+            { label: "Ecosystem Projects", href: "/products" },
             { label: course.product.name, href: productPath(course.product.slug) },
             { label: course.title, href: courseHref },
             { label: lesson.title },

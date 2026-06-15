@@ -89,20 +89,20 @@ export function ProductForm({ initial }: { initial?: Initial }) {
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="A plain-language explanation of what this product does."
+          placeholder="A plain-language explanation of what this ecosystem project does."
           required
           rows={5}
         />
       </div>
 
       <CloudinaryUpload
-        label="Product logo"
+        label="Ecosystem project logo"
         value={logoUrl}
         onChange={setLogoUrl}
       />
 
       <div className="grid gap-2">
-        <Label>Product links</Label>
+        <Label>Ecosystem project links</Label>
         <div className="space-y-2">
           {links.map((link, i) => (
             <div key={i} className="grid gap-2 sm:grid-cols-[160px_1fr_auto]">
@@ -156,7 +156,7 @@ export function ProductForm({ initial }: { initial?: Initial }) {
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={busy}>
           {busy ? <Loader2 className="animate-spin" /> : <Save />}
-          {isEdit ? "Save changes" : "Create product"}
+          {isEdit ? "Save changes" : "Create ecosystem project"}
         </Button>
         {saved && (
           <span className="flex items-center gap-1 text-sm text-success">

@@ -9,7 +9,7 @@ import { ProductStatusControls } from "@/components/admin/product-status-control
 import { prisma } from "@/lib/prisma";
 import type { ProductStatus } from "@prisma/client";
 
-export const metadata: Metadata = { title: "Admin products" };
+export const metadata: Metadata = { title: "Admin ecosystem projects" };
 
 const STATUS_VARIANT: Record<
   ProductStatus,
@@ -49,15 +49,17 @@ export default async function AdminProductsPage() {
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Products</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Ecosystem Projects
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Manage product landing pages and course ownership.
+            Manage ecosystem project landing pages and course ownership.
           </p>
         </div>
         <Button asChild>
           <Link href="/admin/products/new">
             <Plus />
-            New product
+            New ecosystem project
           </Link>
         </Button>
       </div>
@@ -67,7 +69,7 @@ export default async function AdminProductsPage() {
           <AlertTriangle />
           <AlertTitle>Database not reachable</AlertTitle>
           <AlertDescription>
-            Set <code>DATABASE_URL</code> and run the product migration.
+            Set <code>DATABASE_URL</code> and run the database migration.
           </AlertDescription>
         </Alert>
       )}
@@ -76,9 +78,9 @@ export default async function AdminProductsPage() {
         {products.length === 0 && !dbError && (
           <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
             <PackageOpen className="mx-auto size-8 text-muted-foreground" />
-            <p className="mt-3 font-medium">No products yet</p>
+            <p className="mt-3 font-medium">No ecosystem projects yet</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Create a product before publishing courses.
+              Create an ecosystem project before publishing courses.
             </p>
           </div>
         )}

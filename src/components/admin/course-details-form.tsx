@@ -115,7 +115,7 @@ export function CourseDetailsForm({
 
       <div className="grid gap-2 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="product">Product</Label>
+          <Label htmlFor="product">Ecosystem Project</Label>
           <Select
             id="product"
             value={productId}
@@ -131,7 +131,7 @@ export function CourseDetailsForm({
           </Select>
           {products.length === 0 && (
             <p className="text-xs text-destructive">
-              Create a product before creating courses.
+              Create an ecosystem project before creating courses.
             </p>
           )}
         </div>

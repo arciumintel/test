@@ -16,7 +16,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { productSlug } = await params;
   const product = await getProductBySlug(productSlug);
-  if (!product || product.status !== "published") return { title: "Product" };
+  if (!product || product.status !== "published")
+    return { title: "Ecosystem Project" };
   return { title: product.name, description: product.description };
 }
 
@@ -33,7 +34,7 @@ export default async function ProductPage({
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <Breadcrumbs
         items={[
-          { label: "Products", href: "/products" },
+          { label: "Ecosystem Projects", href: "/products" },
           { label: product.name },
         ]}
       />
@@ -41,7 +42,7 @@ export default async function ProductPage({
       <section className="grid gap-8 rounded-2xl border bg-card p-6 shadow-sm md:grid-cols-[1fr_280px] md:p-8">
         <div>
           <Badge variant="default" className="mb-4">
-            Product
+            Ecosystem Project
           </Badge>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             {product.name}
@@ -118,7 +119,8 @@ export default async function ProductPage({
             <PackageOpen className="mx-auto size-8 text-muted-foreground" />
             <p className="mt-3 font-medium">Courses are coming soon</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              The Arcademy team is preparing learning paths for this product.
+              The Arcademy team is preparing learning paths for this ecosystem
+              project.
             </p>
           </div>
         )}

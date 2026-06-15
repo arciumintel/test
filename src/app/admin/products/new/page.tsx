@@ -10,11 +10,13 @@ export default function NewProductPage() {
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        Products
+        Ecosystem Projects
       </Link>
-      <h1 className="text-2xl font-semibold tracking-tight">New product</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">
+        New ecosystem project
+      </h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Create a product page before assigning courses to it.
+        Create an ecosystem project page before assigning courses to it.
       </p>
       <div className="mt-8">
         <ProductForm />
