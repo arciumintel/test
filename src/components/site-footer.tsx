@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
-import { SOLANA_CLUSTER } from "@/lib/solana";
+import { SOLANA_CLUSTER } from "@/lib/solana-config";
 
 export function SiteFooter() {
   return (

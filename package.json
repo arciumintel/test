@@ -57,6 +57,9 @@
       "@prisma/engines",
       "esbuild",
       "prisma"
-    ]
+    ],
+    "overrides": {
+      "uuid": "9.0.1"
+    }
   }
 }

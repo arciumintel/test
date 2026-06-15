@@ -2,8 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 import nacl from "tweetnacl";
 import bs58 from "bs58";
 
-export const SOLANA_CLUSTER =
-  process.env.NEXT_PUBLIC_SOLANA_CLUSTER ?? "devnet";
+export { SOLANA_CLUSTER } from "@/lib/solana-config";
 
 /** The human-readable message a wallet signs to prove ownership. */
 export function buildSignInMessage(nonce: string): string {

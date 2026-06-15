@@ -9,8 +9,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Solana wallet adapter pulls in optional deps that aren't needed at build.
-  serverExternalPackages: ["@solana/web3.js"],
 };
 
 export default nextConfig;
