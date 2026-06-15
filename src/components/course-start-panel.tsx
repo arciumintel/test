@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2, Play, CheckCircle2, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { startCourse } from "@/app/actions/learn";
+import { lessonPath } from "@/lib/paths";
 
 type Props = {
   courseId: string;
-  slug: string;
+  productSlug: string;
+  courseSlug: string;
   isAuthed: boolean;
   started: boolean;
   completed: boolean;
@@ -17,7 +19,8 @@ type Props = {
 
 export function CourseStartPanel({
   courseId,
-  slug,
+  productSlug,
+  courseSlug,
   isAuthed,
   started,
   completed,
@@ -28,7 +31,7 @@ export function CourseStartPanel({
   const [error, setError] = React.useState<string | null>(null);
 
   function lessonHref(lessonId: string) {
-    return `/courses/${slug}/lessons/${lessonId}`;
+    return lessonPath(productSlug, courseSlug, lessonId);
   }
 
   async function handleStart() {

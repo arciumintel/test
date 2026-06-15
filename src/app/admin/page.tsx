@@ -8,6 +8,7 @@ import {
   Award,
   Pencil,
   AlertTriangle,
+  PackageOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -33,7 +34,7 @@ type AdminCourse = {
   id: string;
   title: string;
   slug: string;
-  partnerName: string | null;
+  product: { name: string; slug: string };
   status: CourseStatus;
   _count: { lessons: number; badgeAwards: number };
 };
@@ -47,6 +48,7 @@ export default async function AdminDashboard() {
       prisma.course.findMany({
         orderBy: { updatedAt: "desc" },
         include: {
+          product: { select: { name: true, slug: true } },
           _count: {
             select: { lessons: true, badgeAwards: true },
           },
@@ -69,12 +71,20 @@ export default async function AdminDashboard() {
             Create and manage official Arcademy courses.
           </p>
         </div>
-        <Button asChild>
-          <Link href="/admin/courses/new">
-            <Plus />
-            New course
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/admin/products">
+              <PackageOpen />
+              Products
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/admin/courses/new">
+              <Plus />
+              New course
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {dbError && (
@@ -133,8 +143,7 @@ export default async function AdminDashboard() {
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {course._count.lessons} lessons · {course._count.badgeAwards}{" "}
-                  badges awarded
-                  {course.partnerName ? ` · ${course.partnerName}` : ""}
+                  badges awarded · {course.product.name}
                 </p>
               </div>
               <div className="flex items-center gap-3">

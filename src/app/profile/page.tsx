@@ -10,6 +10,7 @@ import { BadgeMedallion } from "@/components/badge-medallion";
 import { DisplayNameForm } from "@/components/display-name-form";
 import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
+import { coursePath } from "@/lib/paths";
 import { shortWallet, formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "My learning" };
@@ -22,7 +23,16 @@ export default async function ProfilePage() {
     prisma.badgeAward.findMany({
       where: { userId: user.id },
       orderBy: { awardedAt: "desc" },
-      include: { badge: true, course: { select: { slug: true, title: true } } },
+      include: {
+        badge: true,
+        course: {
+          select: {
+            slug: true,
+            title: true,
+            product: { select: { slug: true } },
+          },
+        },
+      },
     }),
     prisma.progress.findMany({
       where: { userId: user.id },
@@ -33,6 +43,7 @@ export default async function ProfilePage() {
             slug: true,
             title: true,
             status: true,
+            product: { select: { slug: true } },
             _count: { select: { lessons: { where: { status: "published" } } } },
             quizzes: { where: { lessonId: null }, select: { id: true } },
           },
@@ -51,6 +62,7 @@ export default async function ProfilePage() {
   // Group progress by course.
   type CourseAgg = {
     slug: string;
+    productSlug: string;
     title: string;
     totalLessons: number;
     completedLessons: number;
@@ -65,6 +77,7 @@ export default async function ProfilePage() {
     if (!agg) {
       agg = {
         slug: c.slug,
+        productSlug: c.product.slug,
         title: c.title,
         totalLessons: c._count.lessons,
         completedLessons: 0,
@@ -152,7 +165,7 @@ export default async function ProfilePage() {
           <h2 className="text-lg font-semibold">Continue learning</h2>
           <div className="mt-4 space-y-3">
             {inProgress.map((c) => (
-              <CourseProgressRow key={c.slug} {...c} />
+              <CourseProgressRow key={`${c.productSlug}/${c.slug}`} {...c} />
             ))}
           </div>
         </section>
@@ -164,7 +177,7 @@ export default async function ProfilePage() {
           <h2 className="text-lg font-semibold">Completed courses</h2>
           <div className="mt-4 space-y-3">
             {completed.map((c) => (
-              <CourseProgressRow key={c.slug} {...c} />
+              <CourseProgressRow key={`${c.productSlug}/${c.slug}`} {...c} />
             ))}
           </div>
         </section>
@@ -212,17 +225,19 @@ function Stat({
 
 function CourseProgressRow({
   slug,
+  productSlug,
   title,
   pct,
   completed,
 }: {
   slug: string;
+  productSlug: string;
   title: string;
   pct: number;
   completed: boolean;
 }) {
   return (
-    <Link href={`/courses/${slug}`} className="block">
+    <Link href={coursePath(productSlug, slug)} className="block">
       <Card className="transition-colors hover:bg-muted/30">
         <CardContent className="flex items-center gap-4 py-4">
           <div className="min-w-0 flex-1">

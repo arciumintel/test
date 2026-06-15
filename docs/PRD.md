@@ -37,16 +37,16 @@ Supporting metrics:
 
 Build:
 
-- Public course catalog.
-- Course detail pages.
+- Public product index and cross-product course catalog.
+- Product landing pages with product-scoped course detail pages.
 - Lesson reading/viewing experience.
 - Quiz flow with pass/fail logic.
 - Solana wallet login.
 - Learner profile with progress and earned badges.
 - Off-chain completion badges.
 - Staff-only admin dashboard for creating/editing courses, lessons, quizzes, and viewing learner analytics.
-- Cloudinary-backed image/media uploads for course assets.
-- Neon Postgres database for users, wallets, courses, lessons, quizzes, attempts, progress, and badges.
+- Cloudinary-backed image/media uploads for product logos and course assets.
+- Neon Postgres database for users, wallets, products, courses, lessons, quizzes, attempts, progress, and badges.
 - Vercel deployment.
 
 Defer:
@@ -88,7 +88,7 @@ Session handling can use one of:
 Use Cloudinary for:
 
 - Lesson images.
-- Partner logos.
+- Product logos.
 - Course thumbnails.
 - Rich media assets.
 
@@ -101,11 +101,27 @@ Minimum roles:
 - `learner`
 - `staff_admin`
 
-Do not add partner roles in v1 unless needed internally. Design the schema so partner organizations can be added later without rewriting course ownership.
+Do not add partner roles in v1 unless needed internally. Products are staff-managed in V1; partner organizations can be added later without exposing partner self-service.
 
 ## Core Data Model
 
 Minimum entities:
+
+### Product
+
+Represents a staff-managed Arcium ecosystem product page.
+
+Fields:
+
+- `id`
+- `name`
+- `slug`
+- `description`
+- `logoUrl`
+- `links`
+- `status`
+- `createdAt`
+- `updatedAt`
 
 ### User
 
@@ -122,14 +138,14 @@ Fields:
 
 ### Course
 
-Represents a published or draft course.
+Represents a published or draft course owned by a product.
 
 Fields:
 
 - `id`
+- `productId`
 - `title`
 - `slug`
-- `partnerName`
 - `summary`
 - `level`
 - `status`
@@ -252,6 +268,8 @@ V1 badges are off-chain. They are stored in Postgres and displayed in the learne
 
 The staff dashboard should support:
 
+- Create and edit products.
+- Publish, unpublish, and archive products.
 - Create courses.
 - Edit courses.
 - Archive courses.
@@ -277,11 +295,12 @@ V1 analytics should include:
 - Drop-off lesson.
 - Badge awards.
 
-Avoid building a complex partner dashboard in v1. Staff can manually create the first partner courses after collecting content from ecosystem teams.
+Avoid building a complex partner dashboard in v1. Staff can manually create product pages and courses after collecting content from ecosystem teams.
 
 ## UX Requirements
 
 Public users can browse courses without connecting a wallet.
+Public users can also browse product pages without connecting a wallet.
 
 Wallet connection is required to:
 
@@ -306,7 +325,7 @@ Use:
 Each course should clearly show:
 
 - What the user will learn.
-- Who the product/course is from.
+- Which product it belongs to.
 - Estimated time.
 - Difficulty.
 - Wallet requirement for tracked progress.
@@ -353,7 +372,7 @@ Partner-created content may be too technical, inconsistent, or unclear.
 Solution:
 
 - Arcademy staff owns publishing in v1.
-- Create a repeatable course template partners must follow.
+- Create a repeatable course template ecosystem teams can follow.
 
 ### Risk: Wallet login adds friction
 
@@ -403,7 +422,9 @@ It should explain:
 
 V1 is ready when:
 
+- A new visitor can browse published products without logging in.
 - A new visitor can browse published courses without logging in.
+- A new visitor can view a course under `/products/[productSlug]/courses/[courseSlug]`.
 - A learner can connect a Solana wallet.
 - A learner can start a course.
 - Lesson progress persists across sessions.
@@ -411,10 +432,10 @@ V1 is ready when:
 - A learner can pass a quiz.
 - A badge is awarded after completion.
 - The badge appears in the learner profile.
-- Staff can create, edit, preview, and publish a course.
+- Staff can create, edit, preview, and publish products and courses.
 - Staff can create lessons and quizzes.
 - Staff can view completion and quiz analytics.
-- Course media can be uploaded or selected through Cloudinary.
+- Product logos and course media can be uploaded or selected through Cloudinary.
 - Production deployment works on Vercel with Neon Postgres.
 
 ## Assumptions

@@ -8,11 +8,11 @@ Built with **Next.js (App Router)**, **Prisma + Neon Postgres**, **Solana wallet
 
 ## Features
 
-- **Public catalog** — browse and view course details without a wallet.
+- **Public catalog** — browse products and courses without a wallet; course detail pages live under product pages.
 - **Solana wallet sign‑in** — nonce challenge + ed25519 signature verification, session in an httpOnly JWT cookie. Accounts are anchored to a wallet address (no email/password).
 - **Learning flow** — ordered lessons, persisted progress, and a final quiz with pass/fail logic and per‑question feedback.
 - **Off‑chain badges** — awarded automatically when all lessons are complete and the final quiz is passed; shown in the learner profile.
-- **Staff admin** — create/edit/archive courses, manage lessons (with reordering), build quizzes and multiple‑choice questions, define badges, publish/unpublish, preview as a learner, and view per‑course analytics (starts, completions, quiz pass rate, average score, drop‑off lesson, badge awards).
+- **Staff admin** — create/edit/archive products and courses, manage lessons (with reordering), build quizzes and multiple‑choice questions, define badges, publish/unpublish, preview as a learner, and view per‑course analytics (starts, completions, quiz pass rate, average score, drop‑off lesson, badge awards).
 - **Cloudinary media** — signed, direct‑to‑Cloudinary uploads for thumbnails and lesson/badge images. Only the asset URL is stored in Postgres.
 
 ## Prerequisites
@@ -50,7 +50,7 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 
 ```bash
 pnpm db:push     # create tables from prisma/schema.prisma
-pnpm db:seed     # seed the two launch courses (+ staff admins from env)
+pnpm db:seed     # seed Arcium product + two launch courses (+ staff admins from env)
 pnpm db:studio   # optional: browse data
 ```
 
@@ -91,8 +91,9 @@ src/
   app/
     actions/        Server actions (auth, learn, admin)
     api/cloudinary/ Signed upload endpoint
-    admin/          Staff dashboard + course editor
-    courses/        Catalog, detail, lessons, quiz
+    admin/          Staff dashboard + product/course editors
+    courses/        Cross-product course catalog
+    products/       Product pages + product-scoped course, lesson, and quiz routes
     profile/        Learner profile + badges
   components/
     ui/             Design-system primitives
@@ -100,10 +101,10 @@ src/
   lib/              prisma, session, solana, cloudinary, courses, completion, analytics
 prisma/
   schema.prisma     Data model
-  seed.ts           Launch courses
+  seed.ts           Arcium product + launch courses
 ```
 
 ## Notes
 
 - **Badges are off‑chain** in V1 (stored in Postgres). The `BadgeAward` model is designed so NFT minting can be layered on later without schema changes.
-- **Partner organizations** are represented only by a `partnerName` string today; the schema leaves room to add a partner relation later without rewriting course ownership.
+- **Products are first-class** in V1. Courses belong to a product through `productId`, public course URLs are nested under `/products/[productSlug]/courses/[courseSlug]`, and `/courses` remains a cross-product catalog.

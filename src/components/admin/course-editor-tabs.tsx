@@ -12,13 +12,19 @@ import type { CourseLevel } from "@prisma/client";
 type CourseInitial = {
   id: string;
   title: string;
-  partnerName: string | null;
+  productId: string;
   summary: string;
   description: string | null;
   level: CourseLevel;
   thumbnailUrl: string | null;
   estimatedDuration: number | null;
   learningOutcomes: string[];
+};
+
+type ProductOption = {
+  id: string;
+  name: string;
+  status: string;
 };
 
 type BadgeInitial = {
@@ -33,12 +39,14 @@ export function CourseEditorTabs({
   quiz,
   badge,
   analytics,
+  products,
 }: {
   course: CourseInitial;
   lessons: AdminLesson[];
   quiz: AdminQuiz;
   badge: BadgeInitial;
   analytics: CourseAnalytics;
+  products: ProductOption[];
 }) {
   return (
     <Tabs defaultValue="details" className="mt-6">
@@ -51,7 +59,7 @@ export function CourseEditorTabs({
       </TabsList>
 
       <TabsContent value="details" className="max-w-3xl">
-        <CourseDetailsForm initial={course} />
+        <CourseDetailsForm initial={course} products={products} />
       </TabsContent>
 
       <TabsContent value="lessons">

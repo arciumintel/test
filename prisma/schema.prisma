@@ -27,9 +27,31 @@ enum CourseStatus {
   archived
 }
 
+enum ProductStatus {
+  draft
+  published
+  archived
+}
+
 enum LessonStatus {
   draft
   published
+}
+
+model Product {
+  id          String        @id @default(cuid())
+  name        String
+  slug        String        @unique
+  description String
+  logoUrl     String?
+  links       Json          @default("[]")
+  status      ProductStatus @default(draft)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  courses Course[]
+
+  @@index([status])
 }
 
 /// Learner / admin identity, anchored to a Solana wallet address.
@@ -57,31 +79,32 @@ model AuthNonce {
   @@index([walletAddress])
 }
 
-/// A published or draft course. `partnerName` attributes the source;
-/// a real partner organization relation can be added later without
-/// rewriting ownership.
+/// A published or draft course owned by a staff-managed ecosystem product.
 model Course {
-  id                String       @id @default(cuid())
+  id                String        @id @default(cuid())
+  productId         String
   title             String
-  slug              String       @unique
-  partnerName       String?
+  slug              String
   summary           String
   description       String?
-  level             CourseLevel  @default(beginner)
-  status            CourseStatus @default(draft)
+  level             CourseLevel   @default(beginner)
+  status            CourseStatus  @default(draft)
   thumbnailUrl      String?
   estimatedDuration Int? // minutes
   learningOutcomes  String[] // bullet list of "what you'll learn"
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
+  product     Product      @relation(fields: [productId], references: [id])
   lessons     Lesson[]
   quizzes     Quiz[]
   progress    Progress[]
   badge       Badge?
   badgeAwards BadgeAward[]
 
+  @@unique([productId, slug])
   @@index([status])
+  @@index([productId])
 }
 
 /// One ordered learning unit inside a course.

@@ -15,8 +15,9 @@ Full product requirements: [docs/PRD.md](docs/PRD.md)
 | Term | Meaning |
 |------|---------|
 | **Learner** | A user with role `learner` who browses courses, completes lessons, takes quizzes, and earns badges. |
-| **Staff admin** | A user with role `staff_admin` who creates, edits, publishes courses and views analytics. |
-| **Course** | A structured learning path with metadata (title, slug, partner, level, duration, thumbnail). Status: draft or published. |
+| **Staff admin** | A user with role `staff_admin` who creates, edits, publishes products/courses and views analytics. |
+| **Product** | A staff-managed Arcium ecosystem product page with metadata (name, slug, description, logo, links). Status: draft, published, or archived. |
+| **Course** | A structured learning path owned by a product, with metadata (title, slug, level, duration, thumbnail). Status: draft, published, or archived. Public course URLs are product-scoped. |
 | **Lesson** | An ordered unit within a course. Contains content and optional media. |
 | **Quiz** | An assessment tied to a course (and optionally a lesson). Has a pass threshold. |
 | **Question** | A multiple-choice item within a quiz with prompt, options, correct answer, and explanation. |
@@ -24,12 +25,11 @@ Full product requirements: [docs/PRD.md](docs/PRD.md)
 | **Quiz attempt** | A submitted quiz with score and pass/fail outcome. |
 | **Badge** | A course completion credential definition (name, description, image). |
 | **Badge award** | An instance of a badge granted to a learner after course completion. V1: off-chain only, stored in Postgres. |
-| **Partner name** | Display attribution for who the course/product is from. Not a partner role or dashboard in V1. |
 
 ## User Journey (V1)
 
-1. Browse published courses (no wallet required).
-2. View course detail (overview, lessons, difficulty, time, badge reward).
+1. Browse published products or courses (no wallet required).
+2. View product-scoped course detail (overview, lessons, difficulty, time, badge reward).
 3. Connect Solana wallet to start tracked progress.
 4. Complete lessons in order.
 5. Pass the final quiz.
@@ -50,6 +50,7 @@ On completion → create a `BadgeAward`.
 
 | Action | Wallet required? |
 |--------|------------------|
+| Browse products | No |
 | Browse course catalog | No |
 | View course details | No |
 | Start course / save progress | Yes |
@@ -62,7 +63,7 @@ On completion → create a `BadgeAward`.
 - `learner` — default role for wallet-connected users.
 - `staff_admin` — access to admin dashboard.
 
-No partner roles in V1. Schema should allow future partner organizations without rewriting course ownership.
+No partner roles in V1. Products are staff-managed; future partner organizations can be added later without exposing partner self-service.
 
 ## Infrastructure (Fixed for V1)
 
@@ -87,4 +88,4 @@ Soulbound NFTs, on-chain credentials, partner self-service publishing, paid cour
 ## Launch Content
 
 1. **Welcome to Arcium** — intro to Arcium, privacy-preserving computation, ecosystem overview.
-2. **Flagship partner/product course** — practical onboarding for one ecosystem product, written for new users.
+2. **Flagship product course** — practical onboarding for one ecosystem product, written for new users.

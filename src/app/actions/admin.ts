@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { coursePath, productPath } from "@/lib/paths";
 import { requireStaff } from "@/lib/session";
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
@@ -18,12 +19,18 @@ function slugify(input: string): string {
     .replace(/^-|-$/g, "");
 }
 
-async function uniqueSlug(base: string, ignoreId?: string): Promise<string> {
+async function uniqueSlug(
+  base: string,
+  productId: string,
+  ignoreId?: string
+): Promise<string> {
   const root = slugify(base) || "course";
   let slug = root;
   let n = 1;
   for (;;) {
-    const existing = await prisma.course.findUnique({ where: { slug } });
+    const existing = await prisma.course.findUnique({
+      where: { productId_slug: { productId, slug } },
+    });
     if (!existing || existing.id === ignoreId) return slug;
     n += 1;
     slug = `${root}-${n}`;
@@ -43,7 +50,7 @@ async function guard(): Promise<string | null> {
 
 const courseSchema = z.object({
   title: z.string().min(2, "Title is required").max(140),
-  partnerName: z.string().max(120).optional().nullable(),
+  productId: z.string().min(1, "Product is required"),
   summary: z.string().min(2, "Summary is required").max(400),
   description: z.string().max(8000).optional().nullable(),
   level: z.enum(["beginner", "intermediate", "advanced"]),
@@ -60,12 +67,17 @@ export async function createCourse(
   const parsed = courseSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const data = parsed.data;
+  const product = await prisma.product.findUnique({
+    where: { id: data.productId },
+    select: { id: true, slug: true },
+  });
+  if (!product) return { error: "Product not found." };
 
   const course = await prisma.course.create({
     data: {
+      productId: product.id,
       title: data.title,
-      slug: await uniqueSlug(data.title),
-      partnerName: data.partnerName || null,
+      slug: await uniqueSlug(data.title, product.id),
       summary: data.summary,
       description: data.description || null,
       level: data.level,
@@ -76,6 +88,7 @@ export async function createCourse(
   });
 
   revalidatePath("/admin");
+  revalidatePath("/admin/products");
   return { ok: true, id: course.id };
 }
 
@@ -89,18 +102,27 @@ export async function updateCourse(
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const data = parsed.data;
 
-  const current = await prisma.course.findUnique({ where: { id } });
+  const current = await prisma.course.findUnique({
+    where: { id },
+    include: { product: { select: { slug: true } } },
+  });
   if (!current) return { error: "Course not found." };
+  const product = await prisma.product.findUnique({
+    where: { id: data.productId },
+    select: { id: true, slug: true },
+  });
+  if (!product) return { error: "Product not found." };
+  const nextSlug =
+    slugify(data.title) === current.slug && product.id === current.productId
+      ? current.slug
+      : await uniqueSlug(data.title, product.id, id);
 
   await prisma.course.update({
     where: { id },
     data: {
+      productId: product.id,
       title: data.title,
-      slug:
-        slugify(data.title) === current.slug
-          ? current.slug
-          : await uniqueSlug(data.title, id),
-      partnerName: data.partnerName || null,
+      slug: nextSlug,
       summary: data.summary,
       description: data.description || null,
       level: data.level,
@@ -112,7 +134,12 @@ export async function updateCourse(
 
   revalidatePath("/admin");
   revalidatePath(`/admin/courses/${id}`);
-  revalidatePath(`/courses/${current.slug}`);
+  revalidatePath("/courses");
+  revalidatePath("/products");
+  revalidatePath(productPath(current.product.slug));
+  revalidatePath(productPath(product.slug));
+  revalidatePath(coursePath(current.product.slug, current.slug));
+  revalidatePath(coursePath(product.slug, nextSlug));
   return { ok: true };
 }
 
@@ -124,6 +151,15 @@ export async function setCourseStatus(
   if (err) return { error: err };
 
   if (status === "published") {
+    const course = await prisma.course.findUnique({
+      where: { id },
+      include: { product: { select: { status: true, slug: true } } },
+    });
+    if (!course) return { error: "Course not found." };
+    if (course.product.status !== "published") {
+      return { error: "Publish the product before publishing this course." };
+    }
+
     const lessonCount = await prisma.lesson.count({
       where: { courseId: id, status: "published" },
     });
@@ -132,10 +168,17 @@ export async function setCourseStatus(
     }
   }
 
-  await prisma.course.update({ where: { id }, data: { status } });
+  const course = await prisma.course.update({
+    where: { id },
+    data: { status },
+    include: { product: { select: { slug: true } } },
+  });
   revalidatePath("/admin");
   revalidatePath(`/admin/courses/${id}`);
   revalidatePath("/courses");
+  revalidatePath("/products");
+  revalidatePath(productPath(course.product.slug));
+  revalidatePath(coursePath(course.product.slug, course.slug));
   return { ok: true };
 }
 

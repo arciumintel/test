@@ -3,19 +3,24 @@ import { prisma } from "@/lib/prisma";
 /** Catalog cards: published courses with light counts. */
 export async function getPublishedCourses() {
   return prisma.course.findMany({
-    where: { status: "published" },
+    where: { status: "published", product: { status: "published" } },
     orderBy: { createdAt: "asc" },
     include: {
+      product: true,
       badge: true,
       _count: { select: { lessons: { where: { status: "published" } } } },
     },
   });
 }
 
-export async function getCourseBySlug(slug: string) {
-  return prisma.course.findUnique({
-    where: { slug },
+export async function getCourseBySlugs(productSlug: string, courseSlug: string) {
+  return prisma.course.findFirst({
+    where: {
+      slug: courseSlug,
+      product: { slug: productSlug, status: "published" },
+    },
     include: {
+      product: true,
       badge: true,
       lessons: {
         where: { status: "published" },

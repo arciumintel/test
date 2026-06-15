@@ -17,7 +17,6 @@ type SeedQuestion = {
 type SeedCourse = {
   slug: string;
   title: string;
-  partnerName: string;
   summary: string;
   description: string;
   level: CourseLevel;
@@ -33,7 +32,6 @@ const COURSES: SeedCourse[] = [
   {
     slug: "welcome-to-arcium",
     title: "Welcome to Arcium",
-    partnerName: "Arcium",
     summary:
       "A friendly introduction to Arcium and why privacy-preserving computation matters — no prior crypto knowledge needed.",
     description:
@@ -115,7 +113,6 @@ const COURSES: SeedCourse[] = [
   {
     slug: "getting-started-with-private-apps",
     title: "Getting Started with Private Apps",
-    partnerName: "Arcium",
     summary:
       "A practical, beginner-friendly walkthrough of using a privacy-first app in the Arcium ecosystem.",
     description:
@@ -195,19 +192,33 @@ const COURSES: SeedCourse[] = [
   },
 ];
 
-async function seedCourse(c: SeedCourse) {
+const ARCIUM_PRODUCT = {
+  id: "product_arcium",
+  name: "Arcium",
+  slug: "arcium",
+  description:
+    "Arcium is a network for private computation. Programs can use sensitive data to produce results without exposing the underlying data itself.",
+  links: [
+    { label: "Website", url: "https://arcium.com" },
+    { label: "Docs", url: "https://docs.arcium.com" },
+    { label: "X", url: "https://x.com/arciumhq" },
+  ],
+};
+
+async function seedCourse(productId: string, c: SeedCourse) {
   // Reset the course so seeding stays idempotent.
-  const existing = await prisma.course.findUnique({ where: { slug: c.slug } });
+  const existing = await prisma.course.findUnique({
+    where: { productId_slug: { productId, slug: c.slug } },
+  });
   if (existing) {
     await prisma.lesson.deleteMany({ where: { courseId: existing.id } });
     await prisma.quiz.deleteMany({ where: { courseId: existing.id } });
   }
 
   const course = await prisma.course.upsert({
-    where: { slug: c.slug },
+    where: { productId_slug: { productId, slug: c.slug } },
     update: {
       title: c.title,
-      partnerName: c.partnerName,
       summary: c.summary,
       description: c.description,
       level: c.level,
@@ -216,9 +227,9 @@ async function seedCourse(c: SeedCourse) {
       learningOutcomes: c.learningOutcomes,
     },
     create: {
+      productId,
       slug: c.slug,
       title: c.title,
-      partnerName: c.partnerName,
       summary: c.summary,
       description: c.description,
       level: c.level,
@@ -271,8 +282,23 @@ async function seedCourse(c: SeedCourse) {
 }
 
 async function main() {
+  const product = await prisma.product.upsert({
+    where: { slug: ARCIUM_PRODUCT.slug },
+    update: {
+      name: ARCIUM_PRODUCT.name,
+      description: ARCIUM_PRODUCT.description,
+      links: ARCIUM_PRODUCT.links,
+      status: "published",
+    },
+    create: {
+      ...ARCIUM_PRODUCT,
+      status: "published",
+    },
+  });
+  console.log(`✓ Seeded product: ${product.name}`);
+
   for (const c of COURSES) {
-    await seedCourse(c);
+    await seedCourse(product.id, c);
   }
 
   const staffWallets = (process.env.STAFF_ADMIN_WALLETS ?? "")

@@ -7,6 +7,7 @@ import { CourseStatusControls } from "@/components/admin/course-status-controls"
 import { CourseEditorTabs } from "@/components/admin/course-editor-tabs";
 import { prisma } from "@/lib/prisma";
 import { getCourseAnalytics } from "@/lib/analytics";
+import { coursePath } from "@/lib/paths";
 import type { CourseStatus } from "@prisma/client";
 
 const STATUS_VARIANT: Record<CourseStatus, "success" | "muted" | "secondary"> = {
@@ -22,17 +23,24 @@ export default async function CourseEditorPage({
 }) {
   const { id } = await params;
 
-  const course = await prisma.course.findUnique({
-    where: { id },
-    include: {
-      lessons: { orderBy: { order: "asc" } },
-      badge: true,
-      quizzes: {
-        where: { lessonId: null },
-        include: { questions: { orderBy: { order: "asc" } } },
+  const [course, products] = await Promise.all([
+    prisma.course.findUnique({
+      where: { id },
+      include: {
+        product: true,
+        lessons: { orderBy: { order: "asc" } },
+        badge: true,
+        quizzes: {
+          where: { lessonId: null },
+          include: { questions: { orderBy: { order: "asc" } } },
+        },
       },
-    },
-  });
+    }),
+    prisma.product.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, status: true },
+    }),
+  ]);
 
   if (!course) notFound();
 
@@ -63,12 +71,15 @@ export default async function CourseEditorPage({
             </Badge>
           </div>
           <p className="mt-1 font-mono text-xs text-muted-foreground">
-            /courses/{course.slug}
+            /products/{course.product.slug}/courses/{course.slug}
           </p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/courses/${course.slug}`} target="_blank">
+            <Link
+              href={coursePath(course.product.slug, course.slug)}
+              target="_blank"
+            >
               <Eye />
               Preview
             </Link>
@@ -81,7 +92,7 @@ export default async function CourseEditorPage({
         course={{
           id: course.id,
           title: course.title,
-          partnerName: course.partnerName,
+          productId: course.productId,
           summary: course.summary,
           description: course.description,
           level: course.level,
@@ -123,6 +134,7 @@ export default async function CourseEditorPage({
             : null
         }
         analytics={analytics}
+        products={products}
       />
     </div>
   );

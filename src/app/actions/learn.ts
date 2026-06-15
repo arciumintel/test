@@ -37,6 +37,7 @@ export async function startCourse(
   );
 
   revalidatePath("/courses");
+  revalidatePath("/products");
   return { ok: true, firstLessonId: lessons[0].id };
 }
 
@@ -71,6 +72,7 @@ export async function completeLesson(
   const result = await evaluateCourseCompletion(user.id, lesson.courseId);
 
   revalidatePath(`/courses`);
+  revalidatePath(`/products`);
   revalidatePath(`/profile`);
   return {
     ok: true,
@@ -138,6 +140,7 @@ export async function submitQuiz(
   }
 
   revalidatePath(`/courses`);
+  revalidatePath(`/products`);
   revalidatePath(`/profile`);
   return { ok: true, score, passed, results, courseCompleted: completed, newBadge };
 }

@@ -27,7 +27,7 @@ This remains within V1 scope because staff still curates all content. This does 
 
 ## Non-Goals
 
-- No partner self-service authoring.
+- No partner self-service authoring yet.
 - No partner roles.
 - No per-product analytics dashboard.
 - No product reordering or featured-product management.

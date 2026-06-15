@@ -1,8 +1,26 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { CourseDetailsForm } from "@/components/admin/course-details-form";
+import { prisma } from "@/lib/prisma";
+import type { ProductStatus } from "@prisma/client";
 
-export default function NewCoursePage() {
+type ProductOption = {
+  id: string;
+  name: string;
+  status: ProductStatus;
+};
+
+export default async function NewCoursePage() {
+  let products: ProductOption[] = [];
+  try {
+    products = await prisma.product.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, status: true },
+    });
+  } catch {
+    products = [];
+  }
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <Link
@@ -18,7 +36,7 @@ export default function NewCoursePage() {
         creating the course.
       </p>
       <div className="mt-8">
-        <CourseDetailsForm />
+        <CourseDetailsForm products={products} />
       </div>
     </div>
   );

@@ -10,16 +10,24 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CourseCard } from "@/components/course-card";
+import { ProductCard } from "@/components/product-card";
 import { getPublishedCourses } from "@/lib/courses";
+import { getPublishedProducts } from "@/lib/products";
 
 export default async function HomePage() {
   let courses: Awaited<ReturnType<typeof getPublishedCourses>> = [];
+  let products: Awaited<ReturnType<typeof getPublishedProducts>> = [];
   try {
-    courses = await getPublishedCourses();
+    [courses, products] = await Promise.all([
+      getPublishedCourses(),
+      getPublishedProducts(),
+    ]);
   } catch {
     courses = [];
+    products = [];
   }
   const featured = courses.slice(0, 3);
+  const featuredProducts = products.slice(0, 3);
 
   return (
     <div>
@@ -92,6 +100,52 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Products */}
+      <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+        <div className="mb-6 flex items-end justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Explore products
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Start with a product, then follow its curated courses.
+            </p>
+          </div>
+          <Button variant="ghost" asChild>
+            <Link href="/products">
+              View products
+              <ArrowRight />
+            </Link>
+          </Button>
+        </div>
+
+        {featuredProducts.length > 0 ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featuredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={{
+                  slug: product.slug,
+                  name: product.name,
+                  description: product.description,
+                  logoUrl: product.logoUrl,
+                  links: product.links,
+                  courseCount: product._count.courses,
+                }}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
+            <BookOpen className="mx-auto size-8 text-muted-foreground" />
+            <p className="mt-3 font-medium">No published products yet</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Product pages will appear here once the team publishes them.
+            </p>
+          </div>
+        )}
+      </section>
+
       {/* Featured courses */}
       <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
         <div className="mb-6 flex items-end justify-between">
@@ -118,9 +172,10 @@ export default async function HomePage() {
                 key={c.id}
                 course={{
                   slug: c.slug,
+                  productSlug: c.product.slug,
+                  productName: c.product.name,
                   title: c.title,
                   summary: c.summary,
-                  partnerName: c.partnerName,
                   level: c.level,
                   thumbnailUrl: c.thumbnailUrl,
                   estimatedDuration: c.estimatedDuration,

@@ -15,7 +15,7 @@ import type { CourseLevel } from "@prisma/client";
 type Initial = {
   id?: string;
   title: string;
-  partnerName: string | null;
+  productId: string;
   summary: string;
   description: string | null;
   level: CourseLevel;
@@ -24,13 +24,25 @@ type Initial = {
   learningOutcomes: string[];
 };
 
-export function CourseDetailsForm({ initial }: { initial?: Initial }) {
+type ProductOption = {
+  id: string;
+  name: string;
+  status: string;
+};
+
+export function CourseDetailsForm({
+  initial,
+  products,
+}: {
+  initial?: Initial;
+  products: ProductOption[];
+}) {
   const router = useRouter();
   const isEdit = Boolean(initial?.id);
 
   const [title, setTitle] = React.useState(initial?.title ?? "");
-  const [partnerName, setPartnerName] = React.useState(
-    initial?.partnerName ?? ""
+  const [productId, setProductId] = React.useState(
+    initial?.productId ?? products[0]?.id ?? ""
   );
   const [summary, setSummary] = React.useState(initial?.summary ?? "");
   const [description, setDescription] = React.useState(
@@ -61,7 +73,7 @@ export function CourseDetailsForm({ initial }: { initial?: Initial }) {
 
     const payload = {
       title,
-      partnerName: partnerName || null,
+      productId,
       summary,
       description: description || null,
       level,
@@ -103,13 +115,25 @@ export function CourseDetailsForm({ initial }: { initial?: Initial }) {
 
       <div className="grid gap-2 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="partner">Partner / product name</Label>
-          <Input
-            id="partner"
-            value={partnerName}
-            onChange={(e) => setPartnerName(e.target.value)}
-            placeholder="Arcium"
-          />
+          <Label htmlFor="product">Product</Label>
+          <Select
+            id="product"
+            value={productId}
+            onChange={(e) => setProductId(e.target.value)}
+            required
+          >
+            {products.map((product) => (
+              <option key={product.id} value={product.id}>
+                {product.name}
+                {product.status !== "published" ? ` (${product.status})` : ""}
+              </option>
+            ))}
+          </Select>
+          {products.length === 0 && (
+            <p className="text-xs text-destructive">
+              Create a product before creating courses.
+            </p>
+          )}
         </div>
         <div className="grid gap-2">
           <Label htmlFor="duration">Estimated duration (minutes)</Label>
@@ -209,7 +233,7 @@ export function CourseDetailsForm({ initial }: { initial?: Initial }) {
       />
 
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={busy}>
+        <Button type="submit" disabled={busy || products.length === 0}>
           {busy ? <Loader2 className="animate-spin" /> : <Save />}
           {isEdit ? "Save changes" : "Create course"}
         </Button>

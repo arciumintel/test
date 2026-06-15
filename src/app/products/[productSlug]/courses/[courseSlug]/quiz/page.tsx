@@ -2,27 +2,25 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ChevronLeft, HelpCircle } from "lucide-react";
 import { QuizRunner } from "@/components/quiz-runner";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { getCourseBySlug, getFinalQuiz } from "@/lib/courses";
+import { getCourseBySlugs, getFinalQuiz } from "@/lib/courses";
 import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
+import { coursePath, productPath } from "@/lib/paths";
 
 export default async function QuizPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ productSlug: string; courseSlug: string }>;
 }) {
-  const { slug } = await params;
+  const { productSlug, courseSlug } = await params;
+  const courseHref = coursePath(productSlug, courseSlug);
 
   const user = await getCurrentUser();
-  if (!user) redirect(`/courses/${slug}`);
+  if (!user) redirect(courseHref);
 
-  let course;
-  try {
-    course = await getCourseBySlug(slug);
-  } catch {
-    course = null;
-  }
+  const course = await getCourseBySlugs(productSlug, courseSlug);
   if (!course) notFound();
 
   const finalQuizMeta = getFinalQuiz(course.quizzes);
@@ -41,8 +39,16 @@ export default async function QuizPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+      <Breadcrumbs
+        items={[
+          { label: "Products", href: "/products" },
+          { label: course.product.name, href: productPath(course.product.slug) },
+          { label: course.title, href: courseHref },
+          { label: "Final quiz" },
+        ]}
+      />
       <Link
-        href={`/courses/${slug}`}
+        href={courseHref}
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
@@ -76,7 +82,8 @@ export default async function QuizPage({
           quizId={quiz.id}
           passThreshold={quiz.passThreshold}
           questions={quiz.questions}
-          courseSlug={slug}
+          productSlug={productSlug}
+          courseSlug={courseSlug}
         />
       )}
     </div>

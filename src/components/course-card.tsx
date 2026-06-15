@@ -5,13 +5,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LevelBadge } from "@/components/level-badge";
 import { formatDuration } from "@/lib/utils";
+import { coursePath } from "@/lib/paths";
 import type { CourseLevel } from "@prisma/client";
 
 export type CourseCardData = {
+  productSlug: string;
+  productName: string;
   slug: string;
   title: string;
   summary: string;
-  partnerName: string | null;
   level: CourseLevel;
   thumbnailUrl: string | null;
   estimatedDuration: number | null;
@@ -21,7 +23,10 @@ export type CourseCardData = {
 
 export function CourseCard({ course }: { course: CourseCardData }) {
   return (
-    <Link href={`/courses/${course.slug}`} className="group block">
+    <Link
+      href={coursePath(course.productSlug, course.slug)}
+      className="group block"
+    >
       <Card className="h-full gap-0 overflow-hidden p-0 transition-all hover:-translate-y-0.5 hover:shadow-md">
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-gradient-to-br from-primary/15 via-accent to-secondary">
           {course.thumbnailUrl ? (
@@ -42,11 +47,9 @@ export function CourseCard({ course }: { course: CourseCardData }) {
           </div>
         </div>
         <CardContent className="flex flex-col gap-3 p-5">
-          {course.partnerName && (
-            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              {course.partnerName}
-            </span>
-          )}
+          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            {course.productName}
+          </span>
           <h3 className="font-semibold leading-snug tracking-tight group-hover:text-primary">
             {course.title}
           </h3>

@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
+import { coursePath } from "@/lib/paths";
 import { submitQuiz } from "@/app/actions/learn";
 
 type Question = { id: string; prompt: string; answerOptions: string[] };
@@ -37,6 +38,7 @@ type Props = {
   quizId: string;
   passThreshold: number;
   questions: Question[];
+  productSlug: string;
   courseSlug: string;
 };
 
@@ -44,6 +46,7 @@ export function QuizRunner({
   quizId,
   passThreshold,
   questions,
+  productSlug,
   courseSlug,
 }: Props) {
   const router = useRouter();
@@ -123,7 +126,9 @@ export function QuizRunner({
                     </Link>
                   </Button>
                   <Button variant="outline" asChild>
-                    <Link href={`/courses/${courseSlug}`}>Back to course</Link>
+                    <Link href={coursePath(productSlug, courseSlug)}>
+                      Back to course
+                    </Link>
                   </Button>
                 </>
               ) : (

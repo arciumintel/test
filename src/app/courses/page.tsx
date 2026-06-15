@@ -34,9 +34,10 @@ export default async function CoursesPage() {
               key={c.id}
               course={{
                 slug: c.slug,
+                productSlug: c.product.slug,
+                productName: c.product.name,
                 title: c.title,
                 summary: c.summary,
-                partnerName: c.partnerName,
                 level: c.level,
                 thumbnailUrl: c.thumbnailUrl,
                 estimatedDuration: c.estimatedDuration,

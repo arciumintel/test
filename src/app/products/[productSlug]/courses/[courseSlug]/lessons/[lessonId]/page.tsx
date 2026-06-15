@@ -4,28 +4,30 @@ import { notFound, redirect } from "next/navigation";
 import { CheckCircle2, Circle, HelpCircle, ChevronLeft } from "lucide-react";
 import { LessonContent } from "@/components/lesson-content";
 import { LessonActions } from "@/components/lesson-actions";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { getCourseBySlug, getFinalQuiz } from "@/lib/courses";
+import { getCourseBySlugs, getFinalQuiz } from "@/lib/courses";
 import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
+import { coursePath, lessonPath, productPath, quizPath } from "@/lib/paths";
 
 export default async function LessonPage({
   params,
 }: {
-  params: Promise<{ slug: string; lessonId: string }>;
+  params: Promise<{
+    productSlug: string;
+    courseSlug: string;
+    lessonId: string;
+  }>;
 }) {
-  const { slug, lessonId } = await params;
+  const { productSlug, courseSlug, lessonId } = await params;
+  const courseHref = coursePath(productSlug, courseSlug);
 
   const user = await getCurrentUser();
-  if (!user) redirect(`/courses/${slug}`);
+  if (!user) redirect(courseHref);
 
-  let course;
-  try {
-    course = await getCourseBySlug(slug);
-  } catch {
-    course = null;
-  }
+  const course = await getCourseBySlugs(productSlug, courseSlug);
   if (!course) notFound();
 
   const lessonIndex = course.lessons.findIndex((l) => l.id === lessonId);
@@ -48,22 +50,21 @@ export default async function LessonPage({
   let nextHref: string;
   let nextLabel: string;
   if (nextLesson) {
-    nextHref = `/courses/${slug}/lessons/${nextLesson.id}`;
+    nextHref = lessonPath(productSlug, courseSlug, nextLesson.id);
     nextLabel = "Next lesson";
   } else if (finalQuiz) {
-    nextHref = `/courses/${slug}/quiz`;
+    nextHref = quizPath(productSlug, courseSlug);
     nextLabel = "Go to quiz";
   } else {
-    nextHref = `/courses/${slug}`;
+    nextHref = courseHref;
     nextLabel = "Finish";
   }
 
   return (
     <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[280px_1fr]">
-      {/* Sidebar */}
       <aside className="lg:sticky lg:top-20 lg:h-fit">
         <Link
-          href={`/courses/${slug}`}
+          href={courseHref}
           className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="size-4" />
@@ -76,7 +77,7 @@ export default async function LessonPage({
             return (
               <Link
                 key={l.id}
-                href={`/courses/${slug}/lessons/${l.id}`}
+                href={lessonPath(productSlug, courseSlug, l.id)}
                 className={cn(
                   "flex items-center gap-2.5 border-b px-3 py-2.5 text-sm transition-colors last:border-b-0",
                   active ? "bg-accent font-medium" : "hover:bg-muted/50"
@@ -93,7 +94,7 @@ export default async function LessonPage({
           })}
           {finalQuiz && (
             <Link
-              href={`/courses/${slug}/quiz`}
+              href={quizPath(productSlug, courseSlug)}
               className="flex items-center gap-2.5 bg-muted/40 px-3 py-2.5 text-sm font-medium hover:bg-muted/70"
             >
               <HelpCircle className="size-4 shrink-0 text-primary" />
@@ -103,8 +104,15 @@ export default async function LessonPage({
         </nav>
       </aside>
 
-      {/* Lesson body */}
       <article className="min-w-0">
+        <Breadcrumbs
+          items={[
+            { label: "Products", href: "/products" },
+            { label: course.product.name, href: productPath(course.product.slug) },
+            { label: course.title, href: courseHref },
+            { label: lesson.title },
+          ]}
+        />
         <p className="text-sm font-medium text-muted-foreground">
           Lesson {lessonIndex + 1} of {course.lessons.length}
         </p>
@@ -133,7 +141,11 @@ export default async function LessonPage({
         <div className="flex items-center justify-between gap-4">
           {lessonIndex > 0 ? (
             <Link
-              href={`/courses/${slug}/lessons/${course.lessons[lessonIndex - 1].id}`}
+              href={lessonPath(
+                productSlug,
+                courseSlug,
+                course.lessons[lessonIndex - 1].id
+              )}
               className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
             >
               <ChevronLeft className="size-4" />

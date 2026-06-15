@@ -18,42 +18,34 @@ import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { LevelBadge } from "@/components/level-badge";
 import { CourseStartPanel } from "@/components/course-start-panel";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 import { formatDuration } from "@/lib/utils";
 import {
-  getCourseBySlug,
+  getCourseBySlugs,
   getFinalQuiz,
   getLearnerCourseState,
 } from "@/lib/courses";
 import { getCurrentUser } from "@/lib/session";
+import { productPath } from "@/lib/paths";
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ productSlug: string; courseSlug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
-  try {
-    const course = await getCourseBySlug(slug);
-    if (course) return { title: course.title, description: course.summary };
-  } catch {
-    /* ignore */
-  }
+  const { productSlug, courseSlug } = await params;
+  const course = await getCourseBySlugs(productSlug, courseSlug);
+  if (course) return { title: course.title, description: course.summary };
   return { title: "Course" };
 }
 
 export default async function CourseDetailPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ productSlug: string; courseSlug: string }>;
 }) {
-  const { slug } = await params;
-
-  let course;
-  try {
-    course = await getCourseBySlug(slug);
-  } catch {
-    course = null;
-  }
+  const { productSlug, courseSlug } = await params;
+  const course = await getCourseBySlugs(productSlug, courseSlug);
   if (!course || course.status !== "published") notFound();
 
   const user = await getCurrentUser();
@@ -76,14 +68,19 @@ export default async function CourseDetailPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <Breadcrumbs
+        items={[
+          { label: "Products", href: "/products" },
+          { label: course.product.name, href: productPath(course.product.slug) },
+          { label: course.title },
+        ]}
+      />
+
       <div className="grid gap-10 lg:grid-cols-3">
-        {/* Main */}
         <div className="lg:col-span-2">
-          {course.partnerName && (
-            <span className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
-              {course.partnerName}
-            </span>
-          )}
+          <span className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+            {course.product.name}
+          </span>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
             {course.title}
           </h1>
@@ -133,7 +130,6 @@ export default async function CourseDetailPage({
             </div>
           )}
 
-          {/* Lessons */}
           <div className="mt-10">
             <h2 className="text-lg font-semibold">Course content</h2>
             <div className="mt-3 overflow-hidden rounded-xl border">
@@ -185,7 +181,6 @@ export default async function CourseDetailPage({
           </div>
         </div>
 
-        {/* Sidebar */}
         <aside className="lg:col-span-1">
           <div className="lg:sticky lg:top-20">
             <Card className="overflow-hidden p-0">
@@ -217,10 +212,14 @@ export default async function CourseDetailPage({
 
                 <CourseStartPanel
                   courseId={course.id}
-                  slug={course.slug}
+                  productSlug={course.product.slug}
+                  courseSlug={course.slug}
                   isAuthed={Boolean(user)}
                   started={Boolean(state?.startedAt)}
-                  completed={Boolean(state?.badgeAwarded) || (totalSteps > 0 && doneSteps === totalSteps)}
+                  completed={
+                    Boolean(state?.badgeAwarded) ||
+                    (totalSteps > 0 && doneSteps === totalSteps)
+                  }
                   nextLessonId={nextLesson?.id ?? null}
                 />
 
@@ -228,10 +227,12 @@ export default async function CourseDetailPage({
 
                 <ul className="space-y-3 text-sm">
                   <li className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Product</span>
+                    <span className="font-medium">{course.product.name}</span>
+                  </li>
+                  <li className="flex items-center justify-between">
                     <span className="text-muted-foreground">Level</span>
-                    <span className="font-medium capitalize">
-                      {course.level}
-                    </span>
+                    <span className="font-medium capitalize">{course.level}</span>
                   </li>
                   <li className="flex items-center justify-between">
                     <span className="text-muted-foreground">Estimated time</span>
