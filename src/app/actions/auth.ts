@@ -9,6 +9,7 @@ import {
   verifyWalletSignature,
 } from "@/lib/solana";
 import { createSession, destroySession, getCurrentUser } from "@/lib/session";
+import { trackEventFireAndForget } from "@/lib/analytics-events";
 
 const NONCE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -86,6 +87,15 @@ export async function verifySignature(
     userId: user.id,
     walletAddress: user.walletAddress,
     role: user.role,
+  });
+
+  trackEventFireAndForget({
+    eventName: "wallet_connected",
+    source: "server_action",
+    path: "/",
+    userId: user.id,
+    walletAddress: user.walletAddress,
+    metadata: { role: user.role },
   });
 
   revalidatePath("/", "layout");

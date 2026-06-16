@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { productPath } from "@/lib/paths";
 import { getProductPublishReadiness } from "@/lib/publish-readiness";
 import { requireStaff } from "@/lib/session";
+import { trackEventFireAndForget } from "@/lib/analytics-events";
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
 
@@ -52,10 +53,6 @@ const productSchema = z.object({
   logoUrl: z.string().optional().nullable(),
   category: z.string().max(80).optional().nullable(),
   partnerName: z.string().max(120).optional().nullable(),
-  referralUrl: z
-    .union([z.string().url().max(500), z.literal(""), z.null()])
-    .optional()
-    .transform((v) => (v && String(v).trim() ? String(v).trim() : null)),
   links: z.array(productLinkSchema).max(8).optional(),
 });
 
@@ -76,10 +73,22 @@ export async function createProduct(
       logoUrl: data.logoUrl || null,
       category: data.category?.trim() || null,
       partnerName: data.partnerName?.trim() || null,
-      referralUrl: data.referralUrl?.trim() || null,
       links: data.links ?? [],
     },
   });
+
+  const staff = await requireStaff().catch(() => null);
+  if (staff) {
+    trackEventFireAndForget({
+      eventName: "admin_ecosystem_project_created",
+      source: "admin",
+      path: "/admin/products/new",
+      userId: staff.id,
+      ecosystemProjectId: product.id,
+      ecosystemProjectSlug: product.slug,
+      metadata: { adminUserId: staff.id },
+    });
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/products");
@@ -113,7 +122,6 @@ export async function updateProduct(
       logoUrl: data.logoUrl || null,
       category: data.category?.trim() || null,
       partnerName: data.partnerName?.trim() || null,
-      referralUrl: data.referralUrl?.trim() || null,
       links: data.links ?? [],
     },
   });
@@ -141,11 +149,36 @@ export async function setProductStatus(
     }
   }
 
+  const current = await prisma.product.findUnique({
+    where: { id },
+    select: { status: true, slug: true },
+  });
+  if (!current) return { error: "Product not found." };
+
   const product = await prisma.product.update({
     where: { id },
     data: { status },
     select: { slug: true },
   });
+
+  if (status === "published" && current.status !== "published") {
+    const staff = await requireStaff().catch(() => null);
+    if (staff) {
+      trackEventFireAndForget({
+        eventName: "admin_ecosystem_project_published",
+        source: "admin",
+        path: `/admin/products/${id}`,
+        userId: staff.id,
+        ecosystemProjectId: id,
+        ecosystemProjectSlug: product.slug,
+        metadata: {
+          adminUserId: staff.id,
+          previousStatus: current.status,
+          nextStatus: status,
+        },
+      });
+    }
+  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/products");

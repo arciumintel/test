@@ -200,7 +200,6 @@ const ARCIUM_PRODUCT = {
     "Arcium is a network for private computation. Programs can use sensitive data to produce results without exposing the underlying data itself.",
   category: "Privacy Infrastructure",
   partnerName: "Arcium",
-  referralUrl: "https://arcium.com",
   links: [
     { label: "Website", url: "https://arcium.com" },
     { label: "Docs", url: "https://docs.arcium.com" },
@@ -301,7 +300,6 @@ async function main() {
       description: ARCIUM_PRODUCT.description,
       category: ARCIUM_PRODUCT.category,
       partnerName: ARCIUM_PRODUCT.partnerName,
-      referralUrl: ARCIUM_PRODUCT.referralUrl,
       links: ARCIUM_PRODUCT.links,
       status: "published",
     },

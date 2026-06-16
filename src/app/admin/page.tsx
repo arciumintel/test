@@ -9,6 +9,7 @@ import {
   Pencil,
   AlertTriangle,
   PackageOpen,
+  ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -76,6 +77,12 @@ export default async function AdminDashboard() {
             <Link href="/admin/products">
               <PackageOpen />
               Ecosystem Projects
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href="/admin/partner-intake">
+              <ClipboardList />
+              Partner intake
             </Link>
           </Button>
           <Button asChild>

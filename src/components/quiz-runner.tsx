@@ -18,6 +18,13 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { coursePath, badgeVerificationPath } from "@/lib/paths";
 import { submitQuiz } from "@/app/actions/learn";
+import { trackClientEvent } from "@/app/actions/tracking";
+import {
+  getBrowserReferrer,
+  getTrackingAnonymousId,
+  getTrackingSessionId,
+  getUtmParams,
+} from "@/lib/tracking-client";
 
 type Question = { id: string; prompt: string; answerOptions: string[] };
 
@@ -37,18 +44,28 @@ type SubmitResult = {
 
 type Props = {
   quizId: string;
+  courseId: string;
+  courseSlug: string;
+  ecosystemProjectId: string;
+  ecosystemProjectSlug: string;
   passThreshold: number;
   questions: Question[];
   productSlug: string;
-  courseSlug: string;
+  previouslyPassed: boolean;
+  quizPath: string;
 };
 
 export function QuizRunner({
   quizId,
+  courseId,
+  courseSlug,
+  ecosystemProjectId,
+  ecosystemProjectSlug,
   passThreshold,
   questions,
   productSlug,
-  courseSlug,
+  previouslyPassed,
+  quizPath,
 }: Props) {
   const router = useRouter();
   const [answers, setAnswers] = React.useState<(number | null)[]>(
@@ -57,6 +74,37 @@ export function QuizRunner({
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [result, setResult] = React.useState<SubmitResult | null>(null);
+
+  React.useEffect(() => {
+    void trackClientEvent({
+      eventName: "quiz_started",
+      path: quizPath,
+      sessionId: getTrackingSessionId(),
+      anonymousId: getTrackingAnonymousId(),
+      referrer: getBrowserReferrer(),
+      ...getUtmParams(),
+      ecosystemProjectId,
+      ecosystemProjectSlug,
+      courseId,
+      courseSlug,
+      quizId,
+      metadata: {
+        questionCount: questions.length,
+        passThreshold,
+        previouslyPassed,
+      },
+    });
+  }, [
+    quizPath,
+    ecosystemProjectId,
+    ecosystemProjectSlug,
+    courseId,
+    courseSlug,
+    quizId,
+    questions.length,
+    passThreshold,
+    previouslyPassed,
+  ]);
 
   const answeredCount = answers.filter((a) => a !== null).length;
   const allAnswered = answeredCount === questions.length;

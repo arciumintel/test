@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { coursePath, productPath } from "@/lib/paths";
 import { getCoursePublishReadiness } from "@/lib/publish-readiness";
 import { requireStaff } from "@/lib/session";
+import { trackEventFireAndForget } from "@/lib/analytics-events";
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
 
@@ -92,6 +93,21 @@ export async function createCourse(
     },
   });
 
+  const staff = await requireStaff().catch(() => null);
+  if (staff) {
+    trackEventFireAndForget({
+      eventName: "admin_course_created",
+      source: "admin",
+      path: "/admin/courses/new",
+      userId: staff.id,
+      courseId: course.id,
+      courseSlug: course.slug,
+      ecosystemProjectId: product.id,
+      ecosystemProjectSlug: product.slug,
+      metadata: { adminUserId: staff.id },
+    });
+  }
+
   revalidatePath("/admin");
   revalidatePath("/admin/products");
   return { ok: true, id: course.id };
@@ -164,11 +180,58 @@ export async function setCourseStatus(
     }
   }
 
+  const current = await prisma.course.findUnique({
+    where: { id },
+    select: {
+      status: true,
+      slug: true,
+      product: { select: { id: true, slug: true } },
+    },
+  });
+  if (!current) return { error: "Course not found." };
+
   const course = await prisma.course.update({
     where: { id },
     data: { status },
-    include: { product: { select: { slug: true } } },
+    include: {
+      product: { select: { slug: true, id: true } },
+      lessons: { where: { status: "published" }, select: { id: true } },
+      quizzes: {
+        where: { lessonId: null },
+        include: { _count: { select: { questions: true } } },
+      },
+      badge: { select: { id: true } },
+    },
   });
+
+  if (status === "published" && current.status !== "published") {
+    const readiness = await getCoursePublishReadiness(id);
+    const staff = await requireStaff().catch(() => null);
+    const finalQuiz = course.quizzes[0];
+    if (staff) {
+      trackEventFireAndForget({
+        eventName: "admin_course_published",
+        source: "admin",
+        path: `/admin/courses/${id}`,
+        userId: staff.id,
+        courseId: course.id,
+        courseSlug: course.slug,
+        ecosystemProjectId: course.product.id,
+        ecosystemProjectSlug: course.product.slug,
+        metadata: {
+          adminUserId: staff.id,
+          previousStatus: current.status,
+          nextStatus: status,
+          publishedLessonCount: course.lessons.length,
+          hasFinalQuiz: Boolean(finalQuiz),
+          questionCount: finalQuiz?._count.questions ?? 0,
+          hasBadge: Boolean(course.badge),
+          readinessWarningCount: readiness.warnings.length,
+        },
+      });
+    }
+  }
+
   revalidatePath("/admin");
   revalidatePath(`/admin/courses/${id}`);
   revalidatePath("/courses");
@@ -323,6 +386,26 @@ export async function upsertFinalQuiz(
         },
       });
 
+  if (!existing) {
+    const questionCount = await prisma.question.count({ where: { quizId: quiz.id } });
+    const staff = await requireStaff().catch(() => null);
+    if (staff) {
+      trackEventFireAndForget({
+        eventName: "admin_quiz_created",
+        source: "admin",
+        path: `/admin/courses/${courseId}`,
+        userId: staff.id,
+        courseId,
+        quizId: quiz.id,
+        metadata: {
+          adminUserId: staff.id,
+          passThreshold: threshold,
+          questionCount,
+        },
+      });
+    }
+  }
+
   revalidatePath(`/admin/courses/${courseId}`);
   return { ok: true, id: quiz.id };
 }
@@ -434,6 +517,8 @@ export async function upsertBadge(
   const parsed = badgeSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
+  const existingBadge = await prisma.badge.findUnique({ where: { courseId } });
+
   await prisma.badge.upsert({
     where: { courseId },
     update: {
@@ -454,6 +539,26 @@ export async function upsertBadge(
       status: parsed.data.status,
     },
   });
+
+  if (!existingBadge) {
+    const badge = await prisma.badge.findUnique({ where: { courseId } });
+    const staff = await requireStaff().catch(() => null);
+    if (staff && badge) {
+      trackEventFireAndForget({
+        eventName: "admin_badge_created",
+        source: "admin",
+        path: `/admin/courses/${courseId}`,
+        userId: staff.id,
+        courseId,
+        badgeId: badge.id,
+        metadata: {
+          adminUserId: staff.id,
+          hasImage: Boolean(badge.imageUrl),
+          hasCriteria: Boolean(badge.criteria),
+        },
+      });
+    }
+  }
 
   revalidatePath(`/admin/courses/${courseId}`);
   return { ok: true };

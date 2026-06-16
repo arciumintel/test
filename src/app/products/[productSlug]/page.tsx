@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, ExternalLink, PackageOpen } from "lucide-react";
+import { ArrowRight, PackageOpen, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CourseCard } from "@/components/course-card";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { TrackView } from "@/components/analytics/track-view";
+import { ProductReferralLinks } from "@/components/analytics/product-referral-links";
 import { getProductBySlug } from "@/lib/products";
+import { productPath } from "@/lib/paths";
 
 export async function generateMetadata({
   params,
@@ -30,8 +33,17 @@ export default async function ProductPage({
   const product = await getProductBySlug(productSlug);
   if (!product || product.status !== "published") notFound();
 
+  const pagePath = productPath(product.slug);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <TrackView
+        eventName="ecosystem_project_viewed"
+        path={pagePath}
+        ecosystemProjectId={product.id}
+        ecosystemProjectSlug={product.slug}
+        metadata={{ visibleCourseCount: product.courses.length }}
+      />
       <Breadcrumbs
         items={[
           { label: "Ecosystem Projects", href: "/products" },
@@ -58,30 +70,21 @@ export default async function ProductPage({
           <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
             {product.description}
           </p>
-          {(product.referralUrl || product.links.length > 0) && (
-            <div className="mt-6 flex flex-wrap gap-3">
-              {product.referralUrl && (
-                <Button size="sm" asChild>
-                  <Link
-                    href={product.referralUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Visit {product.name}
-                    <ExternalLink />
-                  </Link>
-                </Button>
-              )}
-              {product.links.map((link) => (
-                <Button key={link.url} variant="outline" size="sm" asChild>
-                  <Link href={link.url} target="_blank" rel="noreferrer">
-                    {link.label}
-                    <ExternalLink />
-                  </Link>
-                </Button>
-              ))}
-            </div>
-          )}
+          <div className="mt-4 flex items-start gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
+            <GraduationCap className="mt-0.5 size-4 shrink-0 text-primary" />
+            <p>
+              Official Arcademy learning for {product.name}.
+              {product.partnerName && product.partnerName !== product.name
+                ? ` Curated in partnership with ${product.partnerName}.`
+                : " Start with a structured course and earn recognition tied to your wallet."}
+            </p>
+          </div>
+          <ProductReferralLinks
+            links={product.links}
+            ecosystemProjectId={product.id}
+            ecosystemProjectSlug={product.slug}
+            path={pagePath}
+          />
         </div>
         <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-accent to-secondary">
           {product.logoUrl ? (

@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { BadgeMedallion } from "@/components/badge-medallion";
 import { DisplayNameForm } from "@/components/display-name-form";
+import { TrackView } from "@/components/analytics/track-view";
 import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { coursePath, badgeVerificationPath } from "@/lib/paths";
@@ -102,6 +103,15 @@ export default async function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+      <TrackView
+        eventName="profile_viewed"
+        path="/profile"
+        metadata={{
+          inProgressCourseCount: inProgress.length,
+          completedCourseCount: completed.length,
+          badgeCount: awards.length,
+        }}
+      />
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">

@@ -3,6 +3,11 @@ import {
   backfillBadgeAwardMetadata,
   generateVerificationSlug,
 } from "@/lib/badges";
+import {
+  hasAnalyticsEvent,
+  trackEventFireAndForget,
+} from "@/lib/analytics-events";
+import { coursePath } from "@/lib/paths";
 
 export type CompletionResult = {
   completed: boolean;
@@ -32,6 +37,7 @@ export async function evaluateCourseCompletion(
         },
         quizzes: { where: { lessonId: null }, select: { id: true } },
         badge: true,
+        product: { select: { id: true, slug: true } },
       },
     }),
     prisma.user.findUnique({
@@ -72,6 +78,29 @@ export async function evaluateCourseCompletion(
   const completed = allRequiredDone && finalQuizPassed;
   if (!completed) return { completed: false, newlyAwarded: false };
 
+  const path = coursePath(course.product.slug, course.slug);
+  const alreadyLogged = await hasAnalyticsEvent("course_completed", {
+    userId,
+    courseId,
+  });
+  if (!alreadyLogged) {
+    trackEventFireAndForget({
+      eventName: "course_completed",
+      source: "server_action",
+      path,
+      userId,
+      courseId,
+      courseSlug: course.slug,
+      ecosystemProjectId: course.product.id,
+      ecosystemProjectSlug: course.product.slug,
+      metadata: {
+        completedLessonCount: completedCount,
+        totalRequiredLessonCount: requiredLessonIds.length,
+        quizId: finalQuiz?.id ?? null,
+      },
+    });
+  }
+
   // 3. Award the badge (idempotent).
   if (!course.badge || course.badge.status !== "published") {
     return { completed: true, newlyAwarded: false };
@@ -106,7 +135,7 @@ export async function evaluateCourseCompletion(
   if (created.count === 0) {
     const award = await prisma.badgeAward.findFirst({
       where: { userId, badgeId: course.badge.id },
-      select: { verificationSlug: true },
+      select: { id: true, verificationSlug: true },
     });
     return {
       completed: true,
@@ -114,6 +143,25 @@ export async function evaluateCourseCompletion(
       verificationSlug: award?.verificationSlug ?? undefined,
     };
   }
+
+  const award = await prisma.badgeAward.findFirst({
+    where: { userId, badgeId: course.badge.id },
+    select: { id: true },
+  });
+
+  trackEventFireAndForget({
+    eventName: "badge_awarded",
+    source: "server_action",
+    path,
+    userId,
+    courseId,
+    courseSlug: course.slug,
+    badgeId: course.badge.id,
+    badgeAwardId: award?.id,
+    verificationSlug: slug,
+    ecosystemProjectId: course.product.id,
+    ecosystemProjectSlug: course.product.slug,
+  });
 
   return { completed: true, newlyAwarded: true, verificationSlug: slug };
 }

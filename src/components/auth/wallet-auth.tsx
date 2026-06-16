@@ -9,15 +9,41 @@ import { LogOut, Loader2, Wallet, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { shortWallet } from "@/lib/utils";
 import { requestNonce, verifySignature, signOut } from "@/app/actions/auth";
+import { trackClientEvent } from "@/app/actions/tracking";
+import {
+  getBrowserReferrer,
+  getTrackingAnonymousId,
+  getTrackingSessionId,
+  getUtmParams,
+} from "@/lib/tracking-client";
 
 type Props = {
   authedWallet?: string | null;
   className?: string;
 };
 
+function currentPath(): string {
+  return typeof window !== "undefined" ? window.location.pathname : "/";
+}
+
+async function trackWalletFailure(
+  failureStage: string,
+  failureReason: string
+): Promise<void> {
+  await trackClientEvent({
+    eventName: "wallet_connect_failed",
+    path: currentPath(),
+    sessionId: getTrackingSessionId(),
+    anonymousId: getTrackingAnonymousId(),
+    referrer: getBrowserReferrer(),
+    ...getUtmParams(),
+    metadata: { failureStage, failureReason },
+  });
+}
+
 export function WalletAuth({ authedWallet, className }: Props) {
   const router = useRouter();
-  const { publicKey, signMessage, connected, disconnect } = useWallet();
+  const { publicKey, signMessage, connected, disconnect, wallet } = useWallet();
   const { setVisible } = useWalletModal();
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -27,15 +53,39 @@ export function WalletAuth({ authedWallet, className }: Props) {
     if (!publicKey || !signMessage) return;
     setBusy(true);
     setError(null);
+    void trackClientEvent({
+      eventName: "wallet_connect_started",
+      path: currentPath(),
+      sessionId: getTrackingSessionId(),
+      anonymousId: getTrackingAnonymousId(),
+      referrer: getBrowserReferrer(),
+      ...getUtmParams(),
+      metadata: {
+        ctaPlacement: "header",
+        walletAdapterName: wallet?.adapter.name,
+      },
+    });
     try {
       const address = publicKey.toBase58();
       const nonceRes = await requestNonce(address);
       if ("error" in nonceRes) {
         setError(nonceRes.error);
+        await trackWalletFailure("nonce_request", nonceRes.error);
         return;
       }
       const encoded = new TextEncoder().encode(nonceRes.message);
-      const signature = await signMessage(encoded);
+      let signature: Uint8Array;
+      try {
+        signature = await signMessage(encoded);
+      } catch (e) {
+        const reason =
+          e instanceof Error && e.message.includes("User rejected")
+            ? "Signature request was rejected."
+            : "Could not sign the message.";
+        setError(reason);
+        await trackWalletFailure("signature_request", reason);
+        return;
+      }
       const res = await verifySignature(
         address,
         bs58.encode(signature),
@@ -43,19 +93,21 @@ export function WalletAuth({ authedWallet, className }: Props) {
       );
       if ("error" in res) {
         setError(res.error);
+        await trackWalletFailure("signature_verification", res.error);
         return;
       }
       router.refresh();
     } catch (e) {
-      setError(
+      const reason =
         e instanceof Error && e.message.includes("User rejected")
           ? "Signature request was rejected."
-          : "Could not complete sign-in. Please try again."
-      );
+          : "Could not complete sign-in. Please try again.";
+      setError(reason);
+      await trackWalletFailure("session_create", reason);
     } finally {
       setBusy(false);
     }
-  }, [publicKey, signMessage, router]);
+  }, [publicKey, signMessage, router, wallet?.adapter.name]);
 
   async function handleSignOut() {
     setBusy(true);
@@ -67,6 +119,19 @@ export function WalletAuth({ authedWallet, className }: Props) {
     } finally {
       setBusy(false);
     }
+  }
+
+  function openWalletModal() {
+    void trackClientEvent({
+      eventName: "wallet_connect_started",
+      path: currentPath(),
+      sessionId: getTrackingSessionId(),
+      anonymousId: getTrackingAnonymousId(),
+      referrer: getBrowserReferrer(),
+      ...getUtmParams(),
+      metadata: { ctaPlacement: "header", walletAdapterName: wallet?.adapter.name },
+    });
+    setVisible(true);
   }
 
   // Already authenticated on the server.
@@ -123,7 +188,7 @@ export function WalletAuth({ authedWallet, className }: Props) {
   // Not connected.
   return (
     <div className={`flex flex-col items-end gap-1 ${className ?? ""}`}>
-      <Button onClick={() => setVisible(true)} disabled={busy}>
+      <Button onClick={openWalletModal} disabled={busy}>
         <Wallet />
         Connect wallet
       </Button>

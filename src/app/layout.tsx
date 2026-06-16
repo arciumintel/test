@@ -4,6 +4,9 @@ import "./globals.css";
 import { ProvidersLoader } from "@/components/providers-loader";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { logDeploymentWarnings } from "@/lib/env";
+
+logDeploymentWarnings();
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

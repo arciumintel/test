@@ -59,6 +59,15 @@ enum BadgeStatus {
   archived
 }
 
+enum PartnerIntakeReviewStatus {
+  received
+  in_review
+  draft_created
+  partner_review
+  approved
+  published
+}
+
 model Product {
   id          String        @id @default(cuid())
   name        String
@@ -73,7 +82,8 @@ model Product {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  courses Course[]
+  courses        Course[]
+  partnerIntakes PartnerIntake[]
 
   @@index([status])
 }
@@ -263,4 +273,59 @@ model BadgeAward {
 
   @@unique([userId, badgeId])
   @@index([userId])
+}
+
+/// Internal partner intake tracking (staff-managed; no partner login).
+model PartnerIntake {
+  id                   String                    @id @default(cuid())
+  productId            String?
+  partnerName          String
+  contactName          String?
+  contactEmail         String?
+  sourceMaterialUrl    String?
+  requestedCourseTopic String?
+  reviewStatus         PartnerIntakeReviewStatus @default(received)
+  notes                String?
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
+
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([productId])
+  @@index([reviewStatus])
+}
+
+/// Append-only funnel and audit events (additive instrumentation).
+model AnalyticsEvent {
+  id                   String   @id @default(cuid())
+  eventName            String
+  occurredAt           DateTime @default(now())
+  anonymousId          String?
+  userId               String?
+  walletAddress        String?
+  sessionId            String?
+  source               String
+  path                 String?
+  referrer             String?
+  utmSource            String?
+  utmMedium            String?
+  utmCampaign          String?
+  utmContent           String?
+  ecosystemProjectId   String?
+  ecosystemProjectSlug String?
+  courseId             String?
+  courseSlug           String?
+  lessonId             String?
+  quizId               String?
+  badgeId              String?
+  badgeAwardId         String?
+  verificationSlug     String?
+  metadata             Json?
+  createdAt            DateTime @default(now())
+
+  @@index([eventName])
+  @@index([occurredAt])
+  @@index([userId])
+  @@index([courseId])
+  @@index([ecosystemProjectId])
 }

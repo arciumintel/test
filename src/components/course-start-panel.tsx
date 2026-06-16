@@ -5,12 +5,20 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2, Play, CheckCircle2, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { startCourse } from "@/app/actions/learn";
+import { trackClientEvent } from "@/app/actions/tracking";
 import { lessonPath } from "@/lib/paths";
+import {
+  getBrowserReferrer,
+  getTrackingAnonymousId,
+  getTrackingSessionId,
+  getUtmParams,
+} from "@/lib/tracking-client";
 
 type Props = {
   courseId: string;
   productSlug: string;
   courseSlug: string;
+  ecosystemProjectId: string;
   isAuthed: boolean;
   started: boolean;
   completed: boolean;
@@ -21,6 +29,7 @@ export function CourseStartPanel({
   courseId,
   productSlug,
   courseSlug,
+  ecosystemProjectId,
   isAuthed,
   started,
   completed,
@@ -29,12 +38,30 @@ export function CourseStartPanel({
   const router = useRouter();
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const path = `/products/${productSlug}/courses/${courseSlug}`;
 
   function lessonHref(lessonId: string) {
     return lessonPath(productSlug, courseSlug, lessonId);
   }
 
   async function handleStart() {
+    void trackClientEvent({
+      eventName: "start_course_clicked",
+      path,
+      sessionId: getTrackingSessionId(),
+      anonymousId: getTrackingAnonymousId(),
+      referrer: getBrowserReferrer(),
+      ...getUtmParams(),
+      ecosystemProjectId,
+      ecosystemProjectSlug: productSlug,
+      courseId,
+      courseSlug,
+      metadata: {
+        walletConnected: isAuthed,
+        ctaPlacement: "course_sidebar",
+      },
+    });
+
     setBusy(true);
     setError(null);
     const res = await startCourse(courseId);

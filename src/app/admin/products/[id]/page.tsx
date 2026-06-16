@@ -6,8 +6,11 @@ import { Button } from "@/components/ui/button";
 import { ProductForm } from "@/components/admin/product-form";
 import { ProductStatusControls } from "@/components/admin/product-status-controls";
 import { PublishReadinessPanel } from "@/components/admin/publish-readiness-panel";
+import { PartnerReferralToolkit } from "@/components/admin/partner-referral-toolkit";
+import { ProductAnalyticsPanel } from "@/components/admin/product-analytics-panel";
 import { prisma } from "@/lib/prisma";
 import { getProductPublishReadiness } from "@/lib/publish-readiness";
+import { getProductAnalytics } from "@/lib/analytics";
 import { productPath } from "@/lib/paths";
 import type { ProductStatus } from "@prisma/client";
 
@@ -41,12 +44,20 @@ export default async function ProductEditorPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [product, readiness] = await Promise.all([
+  const [product, readiness, analytics] = await Promise.all([
     prisma.product.findUnique({
       where: { id },
-      include: { _count: { select: { courses: true } } },
+      include: {
+        _count: { select: { courses: true } },
+        courses: {
+          where: { status: "published" },
+          orderBy: { title: "asc" },
+          select: { title: true, slug: true },
+        },
+      },
     }),
     getProductPublishReadiness(id),
+    getProductAnalytics(id),
   ]);
 
   if (!product) notFound();
@@ -77,6 +88,7 @@ export default async function ProductEditorPage({
           <p className="mt-1 font-mono text-xs text-muted-foreground">
             /products/{product.slug} · {product._count.courses} course
             {product._count.courses === 1 ? "" : "s"}
+            {product.partnerName ? ` · Partner: ${product.partnerName}` : ""}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -96,20 +108,41 @@ export default async function ProductEditorPage({
         entityLabel="ecosystem project"
       />
 
-      <div className="mt-8 max-w-3xl">
-        <ProductForm
-          initial={{
-            id: product.id,
-            name: product.name,
-            description: product.description,
-            logoUrl: product.logoUrl,
-            category: product.category,
-            partnerName: product.partnerName,
-            referralUrl: product.referralUrl,
-            links: normalizeLinks(product.links),
-          }}
-        />
+      <div className="mt-8 grid gap-8 lg:grid-cols-2">
+        <div className="max-w-3xl">
+          <h2 className="text-lg font-semibold">Details</h2>
+          <div className="mt-4">
+            <ProductForm
+              initial={{
+                id: product.id,
+                name: product.name,
+                description: product.description,
+                logoUrl: product.logoUrl,
+                category: product.category,
+                partnerName: product.partnerName,
+                links: normalizeLinks(product.links),
+              }}
+            />
+          </div>
+        </div>
+        <div className="space-y-8">
+          <PartnerReferralToolkit
+            productName={product.name}
+            productSlug={product.slug}
+            partnerName={product.partnerName}
+            courses={product.courses}
+          />
+        </div>
       </div>
+
+      {analytics && (
+        <section className="mt-12">
+          <h2 className="text-lg font-semibold">Partner reporting</h2>
+          <div className="mt-4">
+            <ProductAnalyticsPanel data={analytics} productId={product.id} />
+          </div>
+        </section>
+      )}
     </div>
   );
 }

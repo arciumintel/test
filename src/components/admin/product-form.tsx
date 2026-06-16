@@ -22,7 +22,6 @@ type Initial = {
   logoUrl: string | null;
   category: string | null;
   partnerName: string | null;
-  referralUrl: string | null;
   links: ProductLink[];
 };
 
@@ -37,7 +36,6 @@ export function ProductForm({ initial }: { initial?: Initial }) {
   const [logoUrl, setLogoUrl] = React.useState(initial?.logoUrl ?? "");
   const [category, setCategory] = React.useState(initial?.category ?? "");
   const [partnerName, setPartnerName] = React.useState(initial?.partnerName ?? "");
-  const [referralUrl, setReferralUrl] = React.useState(initial?.referralUrl ?? "");
   const [links, setLinks] = React.useState<ProductLink[]>(
     initial?.links?.length ? initial.links : [{ label: "", url: "" }]
   );
@@ -57,7 +55,6 @@ export function ProductForm({ initial }: { initial?: Initial }) {
       logoUrl: logoUrl || null,
       category: category || null,
       partnerName: partnerName || null,
-      referralUrl: referralUrl || null,
       links: links.filter((link) => link.label.trim() && link.url.trim()),
     };
 
@@ -129,20 +126,6 @@ export function ProductForm({ initial }: { initial?: Initial }) {
             placeholder="Arcium"
           />
         </div>
-      </div>
-
-      <div className="grid gap-2">
-        <Label htmlFor="referralUrl">Referral URL</Label>
-        <Input
-          id="referralUrl"
-          type="url"
-          value={referralUrl}
-          onChange={(e) => setReferralUrl(e.target.value)}
-          placeholder="https://example.com"
-        />
-        <p className="text-xs text-muted-foreground">
-          Primary link learners follow after discovering this ecosystem project.
-        </p>
       </div>
 
       <div className="grid gap-2">

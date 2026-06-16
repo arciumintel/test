@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { absoluteUrl, getSiteUrl } from "@/lib/site";
+import { coursePath, productPath } from "@/lib/paths";
 
 export type CourseAnalytics = {
   starts: number;
@@ -130,4 +132,189 @@ export async function getPlatformSummary() {
     prisma.badge.count(),
   ]);
   return { learners, published, completions, badges };
+}
+
+export type ProductCourseMetric = {
+  courseId: string;
+  title: string;
+  slug: string;
+  status: string;
+  starts: number;
+  completions: number;
+  badgeAwards: number;
+  quizPassRate: number | null;
+};
+
+export type ProductAnalytics = {
+  productId: string;
+  productName: string;
+  productSlug: string;
+  publishedCourses: number;
+  totalCourses: number;
+  starts: number;
+  completions: number;
+  badgeAwards: number;
+  completionRate: number;
+  courses: ProductCourseMetric[];
+};
+
+/** Aggregates learner metrics across all courses for an ecosystem project. */
+export async function getProductAnalytics(
+  productId: string
+): Promise<ProductAnalytics | null> {
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      courses: {
+        orderBy: { title: "asc" },
+        select: { id: true, title: true, slug: true, status: true },
+      },
+    },
+  });
+  if (!product) return null;
+
+  const courseMetrics = await Promise.all(
+    product.courses.map(async (course) => {
+      const analytics = await getCourseAnalytics(course.id);
+      return {
+        courseId: course.id,
+        title: course.title,
+        slug: course.slug,
+        status: course.status,
+        starts: analytics.starts,
+        completions: analytics.completions,
+        badgeAwards: analytics.badgeAwards,
+        quizPassRate: analytics.quizPassRate,
+      };
+    })
+  );
+
+  const starts = courseMetrics.reduce((sum, c) => sum + c.starts, 0);
+  const completions = courseMetrics.reduce((sum, c) => sum + c.completions, 0);
+  const badgeAwards = courseMetrics.reduce((sum, c) => sum + c.badgeAwards, 0);
+  const publishedCourses = product.courses.filter((c) => c.status === "published").length;
+
+  return {
+    productId: product.id,
+    productName: product.name,
+    productSlug: product.slug,
+    publishedCourses,
+    totalCourses: product.courses.length,
+    starts,
+    completions,
+    badgeAwards,
+    completionRate: starts > 0 ? Math.round((completions / starts) * 100) : 0,
+    courses: courseMetrics,
+  };
+}
+
+export type PartnerReport = {
+  markdown: string;
+  filename: string;
+};
+
+/** Staff-generated summary for manual partner sharing (no partner dashboard). */
+export async function generatePartnerReport(
+  productId: string
+): Promise<PartnerReport | null> {
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    include: {
+      courses: {
+        where: { status: "published" },
+        orderBy: { title: "asc" },
+        select: { slug: true, title: true },
+      },
+    },
+  });
+  if (!product) return null;
+
+  const analytics = await getProductAnalytics(productId);
+  if (!analytics) return null;
+
+  const projectUrl = absoluteUrl(productPath(product.slug));
+  const generatedAt = new Date().toISOString().slice(0, 10);
+  const siteNote = getSiteUrl()
+    ? ""
+    : "\n> Set `NEXT_PUBLIC_APP_URL` for absolute referral links in exports.\n";
+
+  const partnerLinks = (Array.isArray(product.links) ? product.links : []).filter(
+    (link): link is { label: string; url: string } =>
+      typeof link === "object" &&
+      link !== null &&
+      "label" in link &&
+      "url" in link &&
+      typeof link.label === "string" &&
+      typeof link.url === "string"
+  );
+  const partnerLinkLines = partnerLinks
+    .map((link) => `- **${link.label}:** ${link.url}`)
+    .join("\n");
+
+  const courseLines = analytics.courses
+    .filter((c) => c.status === "published")
+    .map((c) => {
+      const url = absoluteUrl(coursePath(product.slug, c.slug));
+      const pass =
+        c.quizPassRate === null ? "n/a" : `${c.quizPassRate}%`;
+      return `| ${c.title} | ${c.starts} | ${c.completions} | ${c.badgeAwards} | ${pass} | ${url} |`;
+    });
+
+  const suggestedCopy = [
+    `Learn ${product.name} on Arcademy — the official learning destination for the Arcium ecosystem.`,
+    projectUrl,
+  ].join(" ");
+
+  const markdown = `# Arcademy Partner Report — ${product.name}
+
+Generated: ${generatedAt}
+${siteNote}
+## Ecosystem project
+
+- **Name:** ${product.name}
+- **Partner:** ${product.partnerName ?? "—"}
+- **Arcademy page:** ${projectUrl}
+${partnerLinkLines ? `${partnerLinkLines}\n` : ""}
+
+## Performance summary
+
+| Metric | Value |
+| --- | --- |
+| Published courses | ${analytics.publishedCourses} |
+| Course starts | ${analytics.starts} |
+| Course completions | ${analytics.completions} |
+| Completion rate | ${analytics.completionRate}% of starts |
+| Badge awards | ${analytics.badgeAwards} |
+
+## Published courses
+
+| Course | Starts | Completions | Badges | Quiz pass rate | URL |
+| --- | ---: | ---: | ---: | ---: | --- |
+${courseLines.length > 0 ? courseLines.join("\n") : "| _No published courses yet_ | — | — | — | — | — |"}
+
+## Suggested referral copy
+
+\`\`\`
+${suggestedCopy}
+\`\`\`
+
+## Referral placement ideas
+
+- Product onboarding or docs "Learn" section
+- Welcome email or community announcement
+- Campaign landing pages with UTM parameters
+
+---
+
+_This report was generated by Arcademy staff. V1 does not include a partner login or self-service analytics portal._
+`;
+
+  const slug = product.slug.replace(/[^a-z0-9-]/gi, "-").toLowerCase();
+  return {
+    markdown,
+    filename: `arcademy-partner-report-${slug}-${generatedAt}.md`,
+  };
 }

@@ -39,6 +39,7 @@ Set the following in `.env`:
 | `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name. |
 | `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | Cloudinary credentials (server‑side signing). |
 | `STAFF_ADMIN_WALLETS` | Comma‑separated wallet addresses granted `staff_admin`. |
+| `NEXT_PUBLIC_APP_URL` | Public site URL for referral links and partner report exports (e.g. `https://arcademy.example.com`). |
 
 Generate a secret:
 
@@ -98,7 +99,7 @@ src/
   components/
     ui/             Design-system primitives
     admin/          Admin editor components
-  lib/              prisma, session, solana, cloudinary, courses, completion, analytics
+  lib/              prisma, session, solana, cloudinary, courses, completion, analytics, analytics-events
 prisma/
   schema.prisma     Data model
   seed.ts           Arcium product + launch courses

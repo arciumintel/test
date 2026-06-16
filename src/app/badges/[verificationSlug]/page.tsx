@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Award, CheckCircle2, ExternalLink } from "lucide-react";
 import { BadgeMedallion } from "@/components/badge-medallion";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { TrackView } from "@/components/analytics/track-view";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -43,6 +44,20 @@ export default async function BadgeVerificationPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+      <TrackView
+        eventName="badge_verification_viewed"
+        path={badgeVerificationPath(verificationSlug)}
+        badgeAwardId={award.id}
+        badgeId={award.badgeId}
+        courseId={award.courseId}
+        verificationSlug={verificationSlug}
+        ecosystemProjectId={course.product.id}
+        ecosystemProjectSlug={course.product.slug}
+        metadata={{
+          verificationStatus:
+            coursePublished && projectPublished ? "verified" : "unverified",
+        }}
+      />
       <Breadcrumbs
         items={[
           { label: "Badge verification", href: badgeVerificationPath(verificationSlug) },

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { BookOpen } from "lucide-react";
 import { CourseCard } from "@/components/course-card";
+import { TrackView } from "@/components/analytics/track-view";
 import { getPublishedCourses } from "@/lib/courses";
 
 export const metadata: Metadata = {
@@ -18,6 +19,11 @@ export default async function CoursesPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <TrackView
+        eventName="course_catalog_viewed"
+        path="/courses"
+        metadata={{ visibleCourseCount: courses.length }}
+      />
       <header className="mb-8 max-w-2xl">
         <h1 className="text-3xl font-semibold tracking-tight">Courses</h1>
         <p className="mt-2 text-muted-foreground">

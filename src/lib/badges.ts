@@ -22,10 +22,11 @@ export async function getBadgeAwardByVerificationSlug(slug: string) {
       },
       course: {
         select: {
+          id: true,
           title: true,
           slug: true,
           status: true,
-          product: { select: { name: true, slug: true, status: true } },
+          product: { select: { id: true, name: true, slug: true, status: true } },
         },
       },
     },

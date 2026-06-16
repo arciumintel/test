@@ -5,6 +5,7 @@ import { CheckCircle2, Circle, HelpCircle, ChevronLeft } from "lucide-react";
 import { LessonContent } from "@/components/lesson-content";
 import { LessonActions } from "@/components/lesson-actions";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { TrackView } from "@/components/analytics/track-view";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { getCourseBySlugs, getFinalQuiz } from "@/lib/courses";
@@ -60,8 +61,23 @@ export default async function LessonPage({
     nextLabel = "Finish";
   }
 
+  const lessonPagePath = lessonPath(productSlug, courseSlug, lessonId);
+
   return (
     <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[280px_1fr]">
+      <TrackView
+        eventName="lesson_viewed"
+        path={lessonPagePath}
+        ecosystemProjectId={course.product.id}
+        ecosystemProjectSlug={course.product.slug}
+        courseId={course.id}
+        courseSlug={course.slug}
+        lessonId={lesson.id}
+        metadata={{
+          lessonOrder: lesson.order,
+          isCompleted: completedSet.has(lesson.id),
+        }}
+      />
       <aside className="lg:sticky lg:top-20 lg:h-fit">
         <Link
           href={courseHref}

@@ -141,8 +141,17 @@ export async function getProductPublishReadiness(
   if (!product.partnerName?.trim()) {
     warnings.push("Partner name is not set.");
   }
-  if (!product.referralUrl?.trim()) {
-    warnings.push("Referral URL is not set.");
+  const links = Array.isArray(product.links) ? product.links : [];
+  const hasLinks = links.some(
+    (link) =>
+      link &&
+      typeof link === "object" &&
+      "url" in link &&
+      typeof link.url === "string" &&
+      link.url.trim()
+  );
+  if (!hasLinks) {
+    warnings.push("No ecosystem project links added yet.");
   }
   if (product._count.courses === 0) {
     warnings.push("No courses linked to this ecosystem project yet.");

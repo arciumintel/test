@@ -19,6 +19,7 @@ import { Progress } from "@/components/ui/progress";
 import { LevelBadge } from "@/components/level-badge";
 import { CourseStartPanel } from "@/components/course-start-panel";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { TrackView } from "@/components/analytics/track-view";
 import { formatDuration } from "@/lib/utils";
 import {
   getCourseBySlugs,
@@ -26,7 +27,7 @@ import {
   getLearnerCourseState,
 } from "@/lib/courses";
 import { getCurrentUser } from "@/lib/session";
-import { productPath } from "@/lib/paths";
+import { productPath, coursePath } from "@/lib/paths";
 
 export async function generateMetadata({
   params,
@@ -66,8 +67,25 @@ export default async function CourseDetailPage({
     course.lessons.find((l) => !state?.completedLessonIds.has(l.id)) ??
     course.lessons[0];
 
+  const pagePath = coursePath(productSlug, courseSlug);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <TrackView
+        eventName="course_detail_viewed"
+        path={pagePath}
+        ecosystemProjectId={course.product.id}
+        ecosystemProjectSlug={course.product.slug}
+        courseId={course.id}
+        courseSlug={course.slug}
+        metadata={{
+          courseLevel: course.level,
+          estimatedDuration: course.estimatedDuration,
+          lessonCount: course.lessons.length,
+          hasFinalQuiz: Boolean(finalQuiz),
+          hasBadge: Boolean(course.badge),
+        }}
+      />
       <Breadcrumbs
         items={[
           { label: "Ecosystem Projects", href: "/products" },
@@ -214,6 +232,7 @@ export default async function CourseDetailPage({
                   courseId={course.id}
                   productSlug={course.product.slug}
                   courseSlug={course.slug}
+                  ecosystemProjectId={course.product.id}
                   isAuthed={Boolean(user)}
                   started={Boolean(state?.startedAt)}
                   completed={

@@ -7,7 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getCourseBySlugs, getFinalQuiz } from "@/lib/courses";
 import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { coursePath, productPath } from "@/lib/paths";
+import { coursePath, productPath, quizPath } from "@/lib/paths";
 
 export default async function QuizPage({
   params,
@@ -36,6 +36,11 @@ export default async function QuizPage({
     },
   });
   if (!quiz) notFound();
+
+  const previouslyPassed = await prisma.quizAttempt.findFirst({
+    where: { userId: user.id, quizId: quiz.id, passed: true },
+    select: { id: true },
+  });
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
@@ -80,10 +85,15 @@ export default async function QuizPage({
       ) : (
         <QuizRunner
           quizId={quiz.id}
+          courseId={course.id}
+          courseSlug={courseSlug}
+          ecosystemProjectId={course.product.id}
+          ecosystemProjectSlug={course.product.slug}
           passThreshold={quiz.passThreshold}
           questions={quiz.questions}
           productSlug={productSlug}
-          courseSlug={courseSlug}
+          previouslyPassed={Boolean(previouslyPassed)}
+          quizPath={quizPath(productSlug, courseSlug)}
         />
       )}
     </div>
