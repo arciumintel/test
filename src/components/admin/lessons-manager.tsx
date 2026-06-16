@@ -35,6 +35,8 @@ export type AdminLesson = {
   status: LessonStatus;
   content: string;
   mediaUrl: string | null;
+  required: boolean;
+  estimatedDuration: number | null;
 };
 
 export function LessonsManager({
@@ -129,6 +131,9 @@ export function LessonsManager({
               <Badge variant={lesson.status === "published" ? "success" : "secondary"}>
                 {lesson.status}
               </Badge>
+              {!lesson.required && (
+                <Badge variant="muted">Optional</Badge>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -170,6 +175,10 @@ function LessonForm({
   const [status, setStatus] = React.useState<LessonStatus>(
     lesson?.status ?? "draft"
   );
+  const [required, setRequired] = React.useState(lesson?.required ?? true);
+  const [estimatedDuration, setEstimatedDuration] = React.useState(
+    lesson?.estimatedDuration ? String(lesson.estimatedDuration) : ""
+  );
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -182,6 +191,8 @@ function LessonForm({
       content,
       mediaUrl: mediaUrl || null,
       status,
+      required,
+      estimatedDuration: estimatedDuration ? Number(estimatedDuration) : null,
     };
     const res = lesson
       ? await updateLesson(lesson.id, payload)
@@ -229,18 +240,39 @@ function LessonForm({
         value={mediaUrl}
         onChange={setMediaUrl}
       />
-      <div className="grid gap-2">
-        <Label htmlFor="lesson-status">Status</Label>
-        <Select
-          id="lesson-status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value as LessonStatus)}
-          className="max-w-xs"
-        >
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-        </Select>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-2">
+          <Label htmlFor="lesson-status">Status</Label>
+          <Select
+            id="lesson-status"
+            value={status}
+            onChange={(e) => setStatus(e.target.value as LessonStatus)}
+          >
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </Select>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="lesson-duration">Estimated duration (minutes)</Label>
+          <Input
+            id="lesson-duration"
+            type="number"
+            min={0}
+            value={estimatedDuration}
+            onChange={(e) => setEstimatedDuration(e.target.value)}
+            placeholder="10"
+          />
+        </div>
       </div>
+      <label className="flex cursor-pointer items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={required}
+          onChange={(e) => setRequired(e.target.checked)}
+          className="size-4 rounded border-input"
+        />
+        Required for course completion
+      </label>
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={busy}>
           {busy ? <Loader2 className="animate-spin" /> : <Save />}

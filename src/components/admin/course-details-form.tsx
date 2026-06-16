@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { CloudinaryUpload } from "@/components/cloudinary-upload";
 import { createCourse, updateCourse } from "@/app/actions/admin";
-import type { CourseLevel } from "@prisma/client";
+import type { CourseLevel, CourseType } from "@prisma/client";
 
 type Initial = {
   id?: string;
@@ -19,9 +19,11 @@ type Initial = {
   summary: string;
   description: string | null;
   level: CourseLevel;
+  courseType: CourseType;
   thumbnailUrl: string | null;
   estimatedDuration: number | null;
   learningOutcomes: string[];
+  prerequisiteCourseIds: string[];
 };
 
 type ProductOption = {
@@ -30,12 +32,19 @@ type ProductOption = {
   status: string;
 };
 
+type PrerequisiteOption = {
+  id: string;
+  title: string;
+};
+
 export function CourseDetailsForm({
   initial,
   products,
+  prerequisiteOptions = [],
 }: {
   initial?: Initial;
   products: ProductOption[];
+  prerequisiteOptions?: PrerequisiteOption[];
 }) {
   const router = useRouter();
   const isEdit = Boolean(initial?.id);
@@ -50,6 +59,12 @@ export function CourseDetailsForm({
   );
   const [level, setLevel] = React.useState<CourseLevel>(
     initial?.level ?? "beginner"
+  );
+  const [courseType, setCourseType] = React.useState<CourseType>(
+    initial?.courseType ?? "foundational"
+  );
+  const [prerequisiteCourseIds, setPrerequisiteCourseIds] = React.useState<string[]>(
+    initial?.prerequisiteCourseIds ?? []
   );
   const [thumbnailUrl, setThumbnailUrl] = React.useState(
     initial?.thumbnailUrl ?? ""
@@ -77,9 +92,11 @@ export function CourseDetailsForm({
       summary,
       description: description || null,
       level,
+      courseType,
       thumbnailUrl: thumbnailUrl || null,
       estimatedDuration: estimatedDuration ? Number(estimatedDuration) : null,
       learningOutcomes: outcomes.map((o) => o.trim()).filter(Boolean),
+      prerequisiteCourseIds,
     };
 
     const res =
@@ -148,19 +165,63 @@ export function CourseDetailsForm({
         </div>
       </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="level">Difficulty</Label>
-        <Select
-          id="level"
-          value={level}
-          onChange={(e) => setLevel(e.target.value as CourseLevel)}
-          className="max-w-xs"
-        >
-          <option value="beginner">Beginner</option>
-          <option value="intermediate">Intermediate</option>
-          <option value="advanced">Advanced</option>
-        </Select>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid gap-2">
+          <Label htmlFor="level">Difficulty</Label>
+          <Select
+            id="level"
+            value={level}
+            onChange={(e) => setLevel(e.target.value as CourseLevel)}
+          >
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </Select>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="courseType">Course type</Label>
+          <Select
+            id="courseType"
+            value={courseType}
+            onChange={(e) => setCourseType(e.target.value as CourseType)}
+          >
+            <option value="foundational">Foundational</option>
+            <option value="product_onboarding">Ecosystem project onboarding</option>
+            <option value="builder_intro">Builder intro</option>
+          </Select>
+        </div>
       </div>
+
+      {prerequisiteOptions.length > 0 && (
+        <div className="grid gap-2">
+          <Label>Prerequisite courses</Label>
+          <p className="text-xs text-muted-foreground">
+            Optional. Learners should complete these before starting this course.
+          </p>
+          <div className="space-y-2 rounded-lg border bg-muted/20 p-3">
+            {prerequisiteOptions.map((course) => (
+              <label
+                key={course.id}
+                className="flex cursor-pointer items-center gap-2 text-sm"
+              >
+                <input
+                  type="checkbox"
+                  checked={prerequisiteCourseIds.includes(course.id)}
+                  onChange={(e) => {
+                    setPrerequisiteCourseIds((prev) =>
+                      e.target.checked
+                        ? [...prev, course.id]
+                        : prev.filter((id) => id !== course.id)
+                    );
+                  }}
+                  className="size-4 rounded border-input"
+                />
+                {course.title}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-2">
         <Label htmlFor="summary">Summary</Label>

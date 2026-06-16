@@ -4,9 +4,11 @@ import { ChevronLeft, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CourseStatusControls } from "@/components/admin/course-status-controls";
+import { PublishReadinessPanel } from "@/components/admin/publish-readiness-panel";
 import { CourseEditorTabs } from "@/components/admin/course-editor-tabs";
 import { prisma } from "@/lib/prisma";
 import { getCourseAnalytics } from "@/lib/analytics";
+import { getCoursePublishReadiness } from "@/lib/publish-readiness";
 import { coursePath } from "@/lib/paths";
 import type { CourseStatus } from "@prisma/client";
 
@@ -23,7 +25,7 @@ export default async function CourseEditorPage({
 }) {
   const { id } = await params;
 
-  const [course, products] = await Promise.all([
+  const [course, products, readiness] = await Promise.all([
     prisma.course.findUnique({
       where: { id },
       include: {
@@ -40,12 +42,18 @@ export default async function CourseEditorPage({
       orderBy: { name: "asc" },
       select: { id: true, name: true, status: true },
     }),
+    getCoursePublishReadiness(id),
   ]);
 
   if (!course) notFound();
 
   const analytics = await getCourseAnalytics(course.id);
   const finalQuiz = course.quizzes[0] ?? null;
+  const prerequisiteOptions = await prisma.course.findMany({
+    where: { productId: course.productId, id: { not: course.id } },
+    orderBy: { title: "asc" },
+    select: { id: true, title: true },
+  });
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
@@ -88,6 +96,12 @@ export default async function CourseEditorPage({
         </div>
       </div>
 
+      <PublishReadinessPanel
+        report={readiness}
+        status={course.status}
+        entityLabel="course"
+      />
+
       <CourseEditorTabs
         course={{
           id: course.id,
@@ -96,9 +110,11 @@ export default async function CourseEditorPage({
           summary: course.summary,
           description: course.description,
           level: course.level,
+          courseType: course.courseType,
           thumbnailUrl: course.thumbnailUrl,
           estimatedDuration: course.estimatedDuration,
           learningOutcomes: course.learningOutcomes,
+          prerequisiteCourseIds: course.prerequisiteCourseIds,
         }}
         lessons={course.lessons.map((l) => ({
           id: l.id,
@@ -107,6 +123,8 @@ export default async function CourseEditorPage({
           status: l.status,
           content: l.content,
           mediaUrl: l.mediaUrl,
+          required: l.required,
+          estimatedDuration: l.estimatedDuration,
         }))}
         quiz={
           finalQuiz
@@ -114,6 +132,8 @@ export default async function CourseEditorPage({
                 id: finalQuiz.id,
                 title: finalQuiz.title,
                 passThreshold: finalQuiz.passThreshold,
+                description: finalQuiz.description,
+                status: finalQuiz.status,
                 questions: finalQuiz.questions.map((q) => ({
                   id: q.id,
                   prompt: q.prompt,
@@ -130,11 +150,15 @@ export default async function CourseEditorPage({
                 name: course.badge.name,
                 description: course.badge.description,
                 imageUrl: course.badge.imageUrl,
+                criteria: course.badge.criteria,
+                issuer: course.badge.issuer,
+                status: course.badge.status,
               }
             : null
         }
         analytics={analytics}
         products={products}
+        prerequisiteOptions={prerequisiteOptions}
       />
     </div>
   );

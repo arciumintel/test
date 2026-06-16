@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { coursePath, productPath } from "@/lib/paths";
+import { getCoursePublishReadiness } from "@/lib/publish-readiness";
 import { requireStaff } from "@/lib/session";
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
@@ -54,9 +55,11 @@ const courseSchema = z.object({
   summary: z.string().min(2, "Summary is required").max(400),
   description: z.string().max(8000).optional().nullable(),
   level: z.enum(["beginner", "intermediate", "advanced"]),
+  courseType: z.enum(["foundational", "product_onboarding", "builder_intro"]),
   thumbnailUrl: z.string().optional().nullable(),
   estimatedDuration: z.coerce.number().int().min(0).max(100000).optional().nullable(),
   learningOutcomes: z.array(z.string().max(280)).max(20).optional(),
+  prerequisiteCourseIds: z.array(z.string()).max(10).optional(),
 });
 
 export async function createCourse(
@@ -81,9 +84,11 @@ export async function createCourse(
       summary: data.summary,
       description: data.description || null,
       level: data.level,
+      courseType: data.courseType,
       thumbnailUrl: data.thumbnailUrl || null,
       estimatedDuration: data.estimatedDuration ?? null,
       learningOutcomes: (data.learningOutcomes ?? []).filter(Boolean),
+      prerequisiteCourseIds: (data.prerequisiteCourseIds ?? []).filter(Boolean),
     },
   });
 
@@ -126,9 +131,11 @@ export async function updateCourse(
       summary: data.summary,
       description: data.description || null,
       level: data.level,
+      courseType: data.courseType,
       thumbnailUrl: data.thumbnailUrl || null,
       estimatedDuration: data.estimatedDuration ?? null,
       learningOutcomes: (data.learningOutcomes ?? []).filter(Boolean),
+      prerequisiteCourseIds: (data.prerequisiteCourseIds ?? []).filter(Boolean),
     },
   });
 
@@ -151,20 +158,9 @@ export async function setCourseStatus(
   if (err) return { error: err };
 
   if (status === "published") {
-    const course = await prisma.course.findUnique({
-      where: { id },
-      include: { product: { select: { status: true, slug: true } } },
-    });
-    if (!course) return { error: "Course not found." };
-    if (course.product.status !== "published") {
-      return { error: "Publish the product before publishing this course." };
-    }
-
-    const lessonCount = await prisma.lesson.count({
-      where: { courseId: id, status: "published" },
-    });
-    if (lessonCount === 0) {
-      return { error: "Add at least one published lesson before publishing." };
+    const readiness = await getCoursePublishReadiness(id);
+    if (!readiness.ready) {
+      return { error: readiness.blockers[0] };
     }
   }
 
@@ -189,6 +185,8 @@ const lessonSchema = z.object({
   content: z.string().min(1, "Lesson content is required").max(40000),
   mediaUrl: z.string().optional().nullable(),
   status: z.enum(["draft", "published"]),
+  required: z.boolean(),
+  estimatedDuration: z.coerce.number().int().min(0).max(100000).optional().nullable(),
 });
 
 export async function createLesson(
@@ -213,6 +211,8 @@ export async function createLesson(
       content: parsed.data.content,
       mediaUrl: parsed.data.mediaUrl || null,
       status: parsed.data.status,
+      required: parsed.data.required,
+      estimatedDuration: parsed.data.estimatedDuration ?? null,
       order: (last?.order ?? -1) + 1,
     },
   });
@@ -237,6 +237,8 @@ export async function updateLesson(
       content: parsed.data.content,
       mediaUrl: parsed.data.mediaUrl || null,
       status: parsed.data.status,
+      required: parsed.data.required,
+      estimatedDuration: parsed.data.estimatedDuration ?? null,
     },
     select: { courseId: true },
   });
@@ -287,13 +289,21 @@ export async function reorderLessons(
 
 export async function upsertFinalQuiz(
   courseId: string,
-  title: string,
-  passThreshold: number
+  raw: {
+    title: string;
+    passThreshold: number;
+    description?: string | null;
+    status?: "draft" | "published";
+  }
 ): Promise<Result<{ id: string }>> {
   const err = await guard();
   if (err) return { error: err };
 
-  const threshold = Math.min(100, Math.max(1, Math.round(passThreshold)));
+  const threshold = Math.min(100, Math.max(1, Math.round(raw.passThreshold)));
+  const title = raw.title?.trim() || "Course Quiz";
+  const description = raw.description?.trim() || null;
+  const status = raw.status ?? "published";
+
   const existing = await prisma.quiz.findFirst({
     where: { courseId, lessonId: null },
   });
@@ -301,13 +311,15 @@ export async function upsertFinalQuiz(
   const quiz = existing
     ? await prisma.quiz.update({
         where: { id: existing.id },
-        data: { title: title || "Course Quiz", passThreshold: threshold },
+        data: { title, passThreshold: threshold, description, status },
       })
     : await prisma.quiz.create({
         data: {
           courseId,
-          title: title || "Course Quiz",
+          title,
           passThreshold: threshold,
+          description,
+          status,
         },
       });
 
@@ -408,6 +420,9 @@ const badgeSchema = z.object({
   name: z.string().min(2, "Badge name is required").max(120),
   description: z.string().min(2, "Description is required").max(400),
   imageUrl: z.string().optional().nullable(),
+  criteria: z.string().max(600).optional().nullable(),
+  issuer: z.string().max(120).optional().nullable(),
+  status: z.enum(["draft", "published", "archived"]),
 });
 
 export async function upsertBadge(
@@ -425,13 +440,18 @@ export async function upsertBadge(
       name: parsed.data.name,
       description: parsed.data.description,
       imageUrl: parsed.data.imageUrl || null,
+      criteria: parsed.data.criteria?.trim() || null,
+      issuer: parsed.data.issuer?.trim() || "Arcademy",
+      status: parsed.data.status,
     },
     create: {
       courseId,
       name: parsed.data.name,
       description: parsed.data.description,
       imageUrl: parsed.data.imageUrl || null,
-      issuer: "Arcademy",
+      criteria: parsed.data.criteria?.trim() || null,
+      issuer: parsed.data.issuer?.trim() || "Arcademy",
+      status: parsed.data.status,
     },
   });
 

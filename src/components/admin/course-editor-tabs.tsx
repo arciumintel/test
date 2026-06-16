@@ -7,7 +7,7 @@ import { QuizManager, type AdminQuiz } from "@/components/admin/quiz-manager";
 import { BadgeForm } from "@/components/admin/badge-form";
 import { AnalyticsPanel } from "@/components/admin/analytics-panel";
 import type { CourseAnalytics } from "@/lib/analytics";
-import type { CourseLevel } from "@prisma/client";
+import type { CourseLevel, CourseType, BadgeStatus } from "@prisma/client";
 
 type CourseInitial = {
   id: string;
@@ -16,9 +16,11 @@ type CourseInitial = {
   summary: string;
   description: string | null;
   level: CourseLevel;
+  courseType: CourseType;
   thumbnailUrl: string | null;
   estimatedDuration: number | null;
   learningOutcomes: string[];
+  prerequisiteCourseIds: string[];
 };
 
 type ProductOption = {
@@ -31,7 +33,15 @@ type BadgeInitial = {
   name: string;
   description: string;
   imageUrl: string | null;
+  criteria: string | null;
+  issuer: string | null;
+  status: BadgeStatus;
 } | null;
+
+type PrerequisiteOption = {
+  id: string;
+  title: string;
+};
 
 export function CourseEditorTabs({
   course,
@@ -40,6 +50,7 @@ export function CourseEditorTabs({
   badge,
   analytics,
   products,
+  prerequisiteOptions = [],
 }: {
   course: CourseInitial;
   lessons: AdminLesson[];
@@ -47,6 +58,7 @@ export function CourseEditorTabs({
   badge: BadgeInitial;
   analytics: CourseAnalytics;
   products: ProductOption[];
+  prerequisiteOptions?: PrerequisiteOption[];
 }) {
   return (
     <Tabs defaultValue="details" className="mt-6">
@@ -59,7 +71,11 @@ export function CourseEditorTabs({
       </TabsList>
 
       <TabsContent value="details" className="max-w-3xl">
-        <CourseDetailsForm initial={course} products={products} />
+        <CourseDetailsForm
+          initial={course}
+          products={products}
+          prerequisiteOptions={prerequisiteOptions}
+        />
       </TabsContent>
 
       <TabsContent value="lessons">

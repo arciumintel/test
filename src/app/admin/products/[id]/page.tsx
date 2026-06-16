@@ -5,7 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProductForm } from "@/components/admin/product-form";
 import { ProductStatusControls } from "@/components/admin/product-status-controls";
+import { PublishReadinessPanel } from "@/components/admin/publish-readiness-panel";
 import { prisma } from "@/lib/prisma";
+import { getProductPublishReadiness } from "@/lib/publish-readiness";
 import { productPath } from "@/lib/paths";
 import type { ProductStatus } from "@prisma/client";
 
@@ -39,10 +41,13 @@ export default async function ProductEditorPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const product = await prisma.product.findUnique({
-    where: { id },
-    include: { _count: { select: { courses: true } } },
-  });
+  const [product, readiness] = await Promise.all([
+    prisma.product.findUnique({
+      where: { id },
+      include: { _count: { select: { courses: true } } },
+    }),
+    getProductPublishReadiness(id),
+  ]);
 
   if (!product) notFound();
 
@@ -85,6 +90,12 @@ export default async function ProductEditorPage({
         </div>
       </div>
 
+      <PublishReadinessPanel
+        report={readiness}
+        status={product.status}
+        entityLabel="ecosystem project"
+      />
+
       <div className="mt-8 max-w-3xl">
         <ProductForm
           initial={{
@@ -92,6 +103,9 @@ export default async function ProductEditorPage({
             name: product.name,
             description: product.description,
             logoUrl: product.logoUrl,
+            category: product.category,
+            partnerName: product.partnerName,
+            referralUrl: product.referralUrl,
             links: normalizeLinks(product.links),
           }}
         />

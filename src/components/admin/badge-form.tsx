@@ -7,14 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { CloudinaryUpload } from "@/components/cloudinary-upload";
 import { BadgeMedallion } from "@/components/badge-medallion";
 import { upsertBadge } from "@/app/actions/admin";
+import type { BadgeStatus } from "@prisma/client";
 
 type Initial = {
   name: string;
   description: string;
   imageUrl: string | null;
+  criteria: string | null;
+  issuer: string | null;
+  status: BadgeStatus;
 } | null;
 
 export function BadgeForm({
@@ -28,6 +33,11 @@ export function BadgeForm({
   const [name, setName] = React.useState(initial?.name ?? "");
   const [description, setDescription] = React.useState(
     initial?.description ?? ""
+  );
+  const [criteria, setCriteria] = React.useState(initial?.criteria ?? "");
+  const [issuer, setIssuer] = React.useState(initial?.issuer ?? "Arcademy");
+  const [status, setStatus] = React.useState<BadgeStatus>(
+    initial?.status ?? "published"
   );
   const [imageUrl, setImageUrl] = React.useState(initial?.imageUrl ?? "");
   const [busy, setBusy] = React.useState(false);
@@ -43,6 +53,9 @@ export function BadgeForm({
       name,
       description,
       imageUrl: imageUrl || null,
+      criteria: criteria || null,
+      issuer: issuer || "Arcademy",
+      status,
     });
     setBusy(false);
     if ("error" in res) {
@@ -57,7 +70,8 @@ export function BadgeForm({
     <form onSubmit={submit} className="space-y-5">
       <p className="text-sm text-muted-foreground">
         Learners receive this badge when they complete the course. Badges are
-        stored off-chain and shown in the learner profile.
+        stored off-chain and shown in the learner profile with a public
+        verification page.
       </p>
 
       <div className="flex items-center gap-4 rounded-lg border bg-muted/20 p-4">
@@ -90,6 +104,39 @@ export function BadgeForm({
           rows={2}
           required
         />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="badge-criteria">Completion criteria</Label>
+        <Textarea
+          id="badge-criteria"
+          value={criteria}
+          onChange={(e) => setCriteria(e.target.value)}
+          placeholder="Complete all required lessons and pass the final quiz."
+          rows={2}
+        />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-2">
+          <Label htmlFor="badge-issuer">Issuer</Label>
+          <Input
+            id="badge-issuer"
+            value={issuer}
+            onChange={(e) => setIssuer(e.target.value)}
+            placeholder="Arcademy"
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="badge-status">Status</Label>
+          <Select
+            id="badge-status"
+            value={status}
+            onChange={(e) => setStatus(e.target.value as BadgeStatus)}
+          >
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="archived">Archived</option>
+          </Select>
+        </div>
       </div>
       <CloudinaryUpload
         label="Badge image (optional)"

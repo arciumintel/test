@@ -16,7 +16,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
+import type { QuizStatus } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import {
   upsertFinalQuiz,
@@ -37,6 +39,8 @@ export type AdminQuiz = {
   id: string;
   title: string;
   passThreshold: number;
+  description: string | null;
+  status: QuizStatus;
   questions: AdminQuestion[];
 } | null;
 
@@ -49,6 +53,8 @@ export function QuizManager({
 }) {
   const router = useRouter();
   const [title, setTitle] = React.useState(quiz?.title ?? "Course Quiz");
+  const [description, setDescription] = React.useState(quiz?.description ?? "");
+  const [status, setStatus] = React.useState<QuizStatus>(quiz?.status ?? "published");
   const [threshold, setThreshold] = React.useState(
     String(quiz?.passThreshold ?? 70)
   );
@@ -59,7 +65,12 @@ export function QuizManager({
   async function saveQuiz() {
     setSavingQuiz(true);
     setQuizError(null);
-    const res = await upsertFinalQuiz(courseId, title, Number(threshold));
+    const res = await upsertFinalQuiz(courseId, {
+      title,
+      passThreshold: Number(threshold),
+      description: description || null,
+      status,
+    });
     setSavingQuiz(false);
     if ("error" in res) {
       setQuizError(res.error);
@@ -96,6 +107,30 @@ export function QuizManager({
                 onChange={(e) => setThreshold(e.target.value)}
               />
             </div>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="quiz-description">
+              Description <span className="text-muted-foreground">(optional)</span>
+            </Label>
+            <Textarea
+              id="quiz-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={2}
+              placeholder="Explain what this quiz checks."
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="quiz-status">Status</Label>
+            <Select
+              id="quiz-status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value as QuizStatus)}
+              className="max-w-xs"
+            >
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </Select>
           </div>
           <div className="flex items-center gap-3">
             <Button onClick={saveQuiz} disabled={savingQuiz} size="sm">

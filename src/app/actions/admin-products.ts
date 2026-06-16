@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { productPath } from "@/lib/paths";
+import { getProductPublishReadiness } from "@/lib/publish-readiness";
 import { requireStaff } from "@/lib/session";
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
@@ -49,6 +50,12 @@ const productSchema = z.object({
   name: z.string().min(2, "Name is required").max(120),
   description: z.string().min(2, "Description is required").max(800),
   logoUrl: z.string().optional().nullable(),
+  category: z.string().max(80).optional().nullable(),
+  partnerName: z.string().max(120).optional().nullable(),
+  referralUrl: z
+    .union([z.string().url().max(500), z.literal(""), z.null()])
+    .optional()
+    .transform((v) => (v && String(v).trim() ? String(v).trim() : null)),
   links: z.array(productLinkSchema).max(8).optional(),
 });
 
@@ -67,6 +74,9 @@ export async function createProduct(
       slug: await uniqueSlug(data.name),
       description: data.description,
       logoUrl: data.logoUrl || null,
+      category: data.category?.trim() || null,
+      partnerName: data.partnerName?.trim() || null,
+      referralUrl: data.referralUrl?.trim() || null,
       links: data.links ?? [],
     },
   });
@@ -101,6 +111,9 @@ export async function updateProduct(
       slug: nextSlug,
       description: data.description,
       logoUrl: data.logoUrl || null,
+      category: data.category?.trim() || null,
+      partnerName: data.partnerName?.trim() || null,
+      referralUrl: data.referralUrl?.trim() || null,
       links: data.links ?? [],
     },
   });
@@ -120,6 +133,13 @@ export async function setProductStatus(
 ): Promise<Result> {
   const err = await guard();
   if (err) return { error: err };
+
+  if (status === "published") {
+    const readiness = await getProductPublishReadiness(id);
+    if (!readiness.ready) {
+      return { error: readiness.blockers[0] };
+    }
+  }
 
   const product = await prisma.product.update({
     where: { id },
