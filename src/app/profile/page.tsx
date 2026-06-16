@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Award, BookOpen, GraduationCap, ArrowRight } from "lucide-react";
+import { Award, BookOpen, GraduationCap, ArrowRight, ExternalLink } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -10,7 +10,7 @@ import { BadgeMedallion } from "@/components/badge-medallion";
 import { DisplayNameForm } from "@/components/display-name-form";
 import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { coursePath } from "@/lib/paths";
+import { coursePath, badgeVerificationPath } from "@/lib/paths";
 import { shortWallet, formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "My learning" };
@@ -131,20 +131,31 @@ export default async function ProfilePage() {
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {awards.map((award) => (
               <Card key={award.id}>
-                <CardContent className="flex items-center gap-4 py-5">
-                  <BadgeMedallion
-                    name={award.badge.name}
-                    imageUrl={award.badge.imageUrl}
-                  />
-                  <div className="min-w-0">
-                    <p className="font-medium">{award.badge.name}</p>
-                    <p className="line-clamp-1 text-sm text-muted-foreground">
-                      {award.course.title}
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Earned {formatDate(award.awardedAt)}
-                    </p>
+                <CardContent className="flex flex-col gap-4 py-5">
+                  <div className="flex items-center gap-4">
+                    <BadgeMedallion
+                      name={award.badge.name}
+                      imageUrl={award.badge.imageUrl}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium">{award.badge.name}</p>
+                      <p className="line-clamp-1 text-sm text-muted-foreground">
+                        {award.course.title}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Earned {formatDate(award.awardedAt)}
+                      </p>
+                    </div>
                   </div>
+                  {award.verificationSlug && (
+                    <Link
+                      href={badgeVerificationPath(award.verificationSlug)}
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                    >
+                      View verification
+                      <ExternalLink className="size-3.5" />
+                    </Link>
+                  )}
                 </CardContent>
               </Card>
             ))}

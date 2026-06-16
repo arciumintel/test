@@ -43,7 +43,10 @@ export async function startCourse(
 
 export async function completeLesson(
   lessonId: string
-): Promise<{ ok: true; courseCompleted: boolean; newBadge: boolean } | ActionError> {
+): Promise<
+  | { ok: true; courseCompleted: boolean; newBadge: boolean; verificationSlug?: string }
+  | ActionError
+> {
   let user;
   try {
     user = await requireUser();
@@ -74,10 +77,14 @@ export async function completeLesson(
   revalidatePath(`/courses`);
   revalidatePath(`/products`);
   revalidatePath(`/profile`);
+  if (result.verificationSlug) {
+    revalidatePath(`/badges/${result.verificationSlug}`);
+  }
   return {
     ok: true,
     courseCompleted: result.completed,
     newBadge: result.newlyAwarded,
+    verificationSlug: result.verificationSlug,
   };
 }
 
@@ -92,6 +99,7 @@ export async function submitQuiz(
       results: { questionId: string; correct: boolean; correctAnswer: number; explanation: string | null }[];
       courseCompleted: boolean;
       newBadge: boolean;
+      verificationSlug?: string;
     }
   | ActionError
 > {
@@ -144,14 +152,27 @@ export async function submitQuiz(
 
   let completed = false;
   let newBadge = false;
+  let verificationSlug: string | undefined;
   if (passed) {
     const result = await evaluateCourseCompletion(user.id, quiz.courseId);
     completed = result.completed;
     newBadge = result.newlyAwarded;
+    verificationSlug = result.verificationSlug;
   }
 
   revalidatePath(`/courses`);
   revalidatePath(`/products`);
   revalidatePath(`/profile`);
-  return { ok: true, score, passed, results, courseCompleted: completed, newBadge };
+  if (verificationSlug) {
+    revalidatePath(`/badges/${verificationSlug}`);
+  }
+  return {
+    ok: true,
+    score,
+    passed,
+    results,
+    courseCompleted: completed,
+    newBadge,
+    verificationSlug,
+  };
 }

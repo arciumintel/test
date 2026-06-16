@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
-import { coursePath } from "@/lib/paths";
+import { coursePath, badgeVerificationPath } from "@/lib/paths";
 import { submitQuiz } from "@/app/actions/learn";
 
 type Question = { id: string; prompt: string; answerOptions: string[] };
@@ -32,6 +32,7 @@ type SubmitResult = {
   }[];
   courseCompleted: boolean;
   newBadge: boolean;
+  verificationSlug?: string;
 };
 
 type Props = {
@@ -130,11 +131,23 @@ export function QuizRunner({
               {result.passed ? (
                 result.courseCompleted ? (
                   <>
-                    <Button asChild>
-                      <Link href="/profile">
-                        View my profile
-                        <ArrowRight />
-                      </Link>
+                    {result.newBadge && result.verificationSlug ? (
+                      <Button asChild>
+                        <Link href={badgeVerificationPath(result.verificationSlug)}>
+                          View badge verification
+                          <ArrowRight />
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button asChild>
+                        <Link href="/profile">
+                          View my profile
+                          <ArrowRight />
+                        </Link>
+                      </Button>
+                    )}
+                    <Button variant="outline" asChild>
+                      <Link href="/profile">My profile</Link>
                     </Button>
                     <Button variant="outline" asChild>
                       <Link href={coursePath(productSlug, courseSlug)}>

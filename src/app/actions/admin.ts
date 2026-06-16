@@ -431,6 +431,7 @@ export async function upsertBadge(
       name: parsed.data.name,
       description: parsed.data.description,
       imageUrl: parsed.data.imageUrl || null,
+      issuer: "Arcademy",
     },
   });
 

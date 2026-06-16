@@ -273,11 +273,20 @@ async function seedCourse(productId: string, c: SeedCourse) {
 
   await prisma.badge.upsert({
     where: { courseId: course.id },
-    update: { name: c.badge.name, description: c.badge.description },
+    update: {
+      name: c.badge.name,
+      description: c.badge.description,
+      criteria: "Complete all required lessons and pass the final quiz.",
+      issuer: "Arcademy",
+      status: "published",
+    },
     create: {
       courseId: course.id,
       name: c.badge.name,
       description: c.badge.description,
+      criteria: "Complete all required lessons and pass the final quiz.",
+      issuer: "Arcademy",
+      status: "published",
     },
   });
 

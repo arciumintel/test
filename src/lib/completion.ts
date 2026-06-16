@@ -1,4 +1,14 @@
 import { prisma } from "@/lib/prisma";
+import {
+  backfillBadgeAwardMetadata,
+  generateVerificationSlug,
+} from "@/lib/badges";
+
+export type CompletionResult = {
+  completed: boolean;
+  newlyAwarded: boolean;
+  verificationSlug?: string;
+};
 
 /**
  * Evaluates Arcademy's course completion rule for a learner and awards a
@@ -7,26 +17,30 @@ import { prisma } from "@/lib/prisma";
  *      do not block completion).
  *   2. The course-level final quiz is passed (if one exists).
  *   3. The learner has a connected wallet (guaranteed by having a User row).
- *
- * Returns whether a badge was newly awarded.
  */
 export async function evaluateCourseCompletion(
   userId: string,
   courseId: string
-): Promise<{ completed: boolean; newlyAwarded: boolean }> {
-  const course = await prisma.course.findUnique({
-    where: { id: courseId },
-    include: {
-      lessons: {
-        where: { status: "published", required: true },
-        select: { id: true },
+): Promise<CompletionResult> {
+  const [course, user] = await Promise.all([
+    prisma.course.findUnique({
+      where: { id: courseId },
+      include: {
+        lessons: {
+          where: { status: "published", required: true },
+          select: { id: true },
+        },
+        quizzes: { where: { lessonId: null }, select: { id: true } },
+        badge: true,
       },
-      quizzes: { where: { lessonId: null }, select: { id: true } },
-      badge: true,
-    },
-  });
+    }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { walletAddress: true },
+    }),
+  ]);
 
-  if (!course) return { completed: false, newlyAwarded: false };
+  if (!course || !user) return { completed: false, newlyAwarded: false };
 
   const requiredLessonIds = course.lessons.map((l) => l.id);
   const finalQuiz = course.quizzes[0] ?? null;
@@ -59,16 +73,47 @@ export async function evaluateCourseCompletion(
   if (!completed) return { completed: false, newlyAwarded: false };
 
   // 3. Award the badge (idempotent).
-  if (!course.badge) return { completed: true, newlyAwarded: false };
+  if (!course.badge || course.badge.status !== "published") {
+    return { completed: true, newlyAwarded: false };
+  }
 
   const existing = await prisma.badgeAward.findFirst({
     where: { userId, badgeId: course.badge.id },
   });
-  if (existing) return { completed: true, newlyAwarded: false };
+  if (existing) {
+    const slug = await backfillBadgeAwardMetadata(existing.id, user.walletAddress);
+    return {
+      completed: true,
+      newlyAwarded: false,
+      verificationSlug: slug ?? existing.verificationSlug ?? undefined,
+    };
+  }
 
-  await prisma.badgeAward.create({
-    data: { userId, badgeId: course.badge.id, courseId },
+  const slug = generateVerificationSlug();
+  const created = await prisma.badgeAward.createMany({
+    data: [
+      {
+        userId,
+        badgeId: course.badge.id,
+        courseId,
+        walletAddress: user.walletAddress,
+        verificationSlug: slug,
+      },
+    ],
+    skipDuplicates: true,
   });
 
-  return { completed: true, newlyAwarded: true };
+  if (created.count === 0) {
+    const award = await prisma.badgeAward.findFirst({
+      where: { userId, badgeId: course.badge.id },
+      select: { verificationSlug: true },
+    });
+    return {
+      completed: true,
+      newlyAwarded: false,
+      verificationSlug: award?.verificationSlug ?? undefined,
+    };
+  }
+
+  return { completed: true, newlyAwarded: true, verificationSlug: slug };
 }

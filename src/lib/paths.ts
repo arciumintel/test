@@ -17,3 +17,7 @@ export function lessonPath(
 export function quizPath(productSlug: string, courseSlug: string) {
   return `${coursePath(productSlug, courseSlug)}/quiz`;
 }
+
+export function badgeVerificationPath(verificationSlug: string) {
+  return `/badges/${verificationSlug}`;
+}
