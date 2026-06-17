@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { BadgeMedallion } from "@/components/badge-medallion";
 import { DisplayNameForm } from "@/components/display-name-form";
+import { DiscordProfileSection } from "@/components/discord-profile-section";
 import { TrackView } from "@/components/analytics/track-view";
 import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
@@ -20,7 +21,8 @@ export default async function ProfilePage() {
   const user = await getCurrentUser();
   if (!user) redirect("/courses");
 
-  const [awards, progressRows, passedAttempts] = await Promise.all([
+  const [awards, progressRows, passedAttempts, discordAccount, grantFailures] =
+    await Promise.all([
     prisma.badgeAward.findMany({
       where: { userId: user.id },
       orderBy: { awardedAt: "desc" },
@@ -54,6 +56,33 @@ export default async function ProfilePage() {
     prisma.quizAttempt.findMany({
       where: { userId: user.id, passed: true },
       select: { quizId: true },
+    }),
+    prisma.discordAccount.findUnique({ where: { userId: user.id } }),
+    prisma.discordRoleGrant.findMany({
+      where: {
+        userId: user.id,
+        status: {
+          in: [
+            "failed_user_not_in_server",
+            "failed_missing_bot_permission",
+            "failed_role_hierarchy",
+            "failed_rate_limited",
+            "failed_unknown",
+            "skipped_discord_not_linked",
+          ],
+        },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 5,
+      include: {
+        discordRoleRule: {
+          select: {
+            discordRoleName: true,
+            unlockLabel: true,
+            integration: { select: { guildName: true } },
+          },
+        },
+      },
     }),
   ]);
 
@@ -131,6 +160,28 @@ export default async function ProfilePage() {
           <Stat label="In progress" value={inProgress.length} icon={BookOpen} />
         </div>
       </div>
+
+      <Separator className="my-8" />
+
+      <DiscordProfileSection
+        linked={
+          discordAccount
+            ? {
+                username: discordAccount.username,
+                globalName: discordAccount.globalName,
+                linkedAt: discordAccount.linkedAt.toISOString(),
+              }
+            : null
+        }
+        recentFailures={grantFailures.map((g) => ({
+          id: g.id,
+          status: g.status,
+          lastErrorMessage: g.lastErrorMessage,
+          ruleName:
+            g.discordRoleRule.unlockLabel || g.discordRoleRule.discordRoleName,
+          guildName: g.discordRoleRule.integration.guildName,
+        }))}
+      />
 
       <Separator className="my-8" />
 

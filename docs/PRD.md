@@ -2,7 +2,7 @@
 
 ### TL;DR
 
-Arcademy V1 is the official learning foundation for the Arcium ecosystem: a curated platform where users can discover ecosystem products, complete structured learning paths, pass lightweight assessments, and earn trustworthy wallet-linked recognition. This release moves beyond a minimal MVP by launching a more complete product, course, badge, admin, analytics, and partner representation foundation while still avoiding full partner self-service.
+Arcademy V1 is the official learning foundation for the Arcium ecosystem: a curated platform where users can discover ecosystem products, complete structured learning paths, pass lightweight assessments, and earn trustworthy wallet-linked recognition. This release moves beyond a minimal MVP by launching a more complete product, course, badge, admin, analytics, partner representation, and limited partner self-service foundation.
 
 The core product bet is that ecosystem products will refer users to Arcademy if Arcademy helps them educate users faster, reduce onboarding friction, present their product in a credible official context, and provide meaningful completion signals. V1 should make Arcademy valuable to learners, useful to Arcium ecosystem partners, and operationally manageable for Arcademy staff.
 
@@ -12,7 +12,7 @@ The core product bet is that ecosystem products will refer users to Arcademy if 
 
 Arcademy exists to make Arcium ecosystem learning more approachable, structured, measurable, and trustworthy. Users who encounter Arcium or ecosystem products may face fragmented documentation, technical terminology, and unclear onboarding paths. Ecosystem products, in turn, need a credible place to send users who require education before they can meaningfully adopt or understand the product.
 
-Arcademy V1 should launch as an ecosystem learning foundation, not a bare MVP and not a full partner-operated LMS. It should provide enough depth to feel like the official education layer for the ecosystem while preserving delivery discipline through staff-managed content, curated partner/product representation, wallet-linked progress, final course assessments, and off-chain credentials.
+Arcademy V1 should launch as an ecosystem learning foundation, not a bare MVP and not a full partner-operated LMS. It should provide enough depth to feel like the official education layer for the ecosystem while preserving delivery discipline through staff-approved publishing, curated partner/product representation, limited partner self-service, wallet-linked progress, final course assessments, and off-chain credentials.
 
 V1 should support:
 
@@ -22,7 +22,7 @@ V1 should support:
 * Wallet-linked learner progress and profiles.
 * Off-chain badges with public verification pages.
 * Staff admin workflows for products, courses, lessons, quizzes, badges, media, and analytics.
-* Basic partner/product performance reporting managed by Arcademy staff.
+* Limited partner self-service for source submission, draft collaboration, factual review, and basic partner/product performance reporting.
 
 Arcademy should make a clear case to ecosystem partners: referring users to Arcademy improves onboarding quality, reduces education burden, provides official learning experiences, generates measurable completion data, and creates a repeatable path for user activation without requiring partners to build their own education infrastructure.
 
@@ -32,7 +32,7 @@ Arcademy should make a clear case to ecosystem partners: referring users to Arca
 
 Arcium’s ecosystem will become easier to adopt if users can learn key concepts and project workflows through a trusted, guided experience. For many users, ecosystem education is not a separate activity from onboarding; it is a prerequisite for adoption.
 
-**Terminology note:** Throughout this document, “ecosystem project” refers to any Arcium-related protocol, application, integration, tool, infrastructure component, service, or product represented through Arcademy learning pages or courses. “Partner” refers to the team, organization, protocol team, project team, or contributor responsible for or associated with an ecosystem project. V1 is partner-assisted and staff-managed: partners provide source material and factual review, while Arcademy staff owns publishing and learner-facing quality.
+**Terminology note:** Throughout this document, “ecosystem project” refers to any Arcium-related protocol, application, integration, tool, infrastructure component, service, or product represented through Arcademy learning pages or courses. “Partner” refers to the team, organization, protocol team, project team, or contributor responsible for or associated with an ecosystem project. V1 is partner-assisted with limited partner self-service: partners can submit source material, draft or review assigned content, and view basic reporting, while Arcademy staff owns final publishing and learner-facing quality.
 
 Arcademy should serve three strategic functions:
 
@@ -40,7 +40,7 @@ Arcademy should serve three strategic functions:
 * Partner enablement: give ecosystem products a trusted destination for educating and onboarding users.
 * Ecosystem intelligence: produce data on what users start, complete, misunderstand, and value.
 
-V1 should establish Arcademy as the official learning layer rather than simply proving a narrow course-completion loop. However, V1 should still avoid the complexity of full partner self-service, on-chain credentialing, paid courses, developer sandboxes, and advanced LMS features.
+V1 should establish Arcademy as the official learning layer rather than simply proving a narrow course-completion loop. However, V1 should still avoid the complexity of partner direct publishing, on-chain credentialing, paid courses, developer sandboxes, and advanced LMS features.
 
 ---
 
@@ -64,7 +64,7 @@ For Arcium, Arcademy creates a scalable foundation for ecosystem education, cont
 * Drive at least 250 course starts and 75 course completions within the first 90 days after launch, assuming reasonable ecosystem distribution.
 * Secure at least 2 ecosystem product or partner referrals into Arcademy from product websites, documentation, onboarding flows, Discord, newsletters, or launch campaigns.
 * Enable Arcademy staff to publish and update product/course content without engineering support for routine content changes.
-* Establish a reusable partner-assisted content workflow that allows ecosystem teams to provide source material while Arcademy maintains learner-facing quality.
+* Establish a reusable partner self-service workflow that allows ecosystem teams to submit source material, collaborate on drafts, complete factual reviews, and access basic reporting while Arcademy maintains learner-facing quality.
 
 ### User Goals
 
@@ -84,8 +84,8 @@ For Arcium, Arcademy creates a scalable foundation for ecosystem education, cont
 
 ### Non-Goals
 
-* Build a full LMS, marketplace, partner-operated publishing platform, or social learning network.
-* Launch partner self-service authoring, partner login, partner roles, or public partner dashboards in V1.
+* Build a full LMS, marketplace, partner-direct publishing platform, or social learning network.
+* Allow partners to publish directly, manage unrelated projects, or bypass Arcademy staff approval in V1.
 * Mint on-chain credentials or soulbound NFTs in V1.
 * Support paid courses, advanced developer sandboxes, AI-generated lessons, mobile apps, multilingual content, or high-stakes certification exams in V1.
 
@@ -96,7 +96,7 @@ For Arcium, Arcademy creates a scalable foundation for ecosystem education, cont
 * If Arcademy provides official structured learning paths, users will be more likely to complete ecosystem education than if they rely on fragmented documentation alone.
 * If learners can browse course value before connecting a wallet, wallet friction will decrease and connection quality will improve.
 * If badges include clear criteria, wallet association, and public verification pages, off-chain recognition will be credible enough for V1.
-* If ecosystem products receive high-quality staff-curated product pages and courses, they will be willing to refer users to Arcademy even without partner self-service tooling.
+* If ecosystem products receive high-quality staff-approved product pages and courses with limited partner self-service tooling, they will be more willing to refer users to Arcademy.
 * If Arcademy provides basic partner/product analytics, ecosystem teams will see Arcademy as an onboarding service, not just a content repository.
 
 ---
@@ -282,7 +282,7 @@ Needs:
 * Ecosystem Project Analytics: Course starts, completions, and badge awards grouped by ecosystem project.
 * Learner Funnel: Track course view, start click, wallet connection, course start, lesson completion, quiz submission, course completion, and badge award.
 * Partner Reporting Export: Staff can manually produce or export a basic partner-facing summary if feasible.
-* Advanced Dashboards Deferred: Public partner dashboards and partner self-serve analytics are deferred.
+* Advanced Dashboards Deferred: Advanced partner dashboards and self-serve analytics beyond basic assigned-project reporting are deferred.
 
 ---
 
@@ -761,7 +761,7 @@ Integrity rule:
 
 ### PartnerIntake
 
-Tracks partner-provided source material and review state without exposing partner self-service.
+Tracks partner-provided source material and review state for limited partner self-service.
 
 Fields:
 
@@ -812,9 +812,9 @@ Operational rules:
 
 ## Governance and Publishing Workflow
 
-### Staff-Owned Publishing
+### Staff-Approved Publishing
 
-Arcademy staff owns final publishing quality in V1.
+Arcademy staff owns final publishing quality and approval in V1.
 
 Staff responsibilities:
 
@@ -824,9 +824,9 @@ Staff responsibilities:
 * Review quiz quality and answer explanations.
 * Publish only when readiness checks pass.
 
-### Partner Review
+### Partner Self-Service and Review
 
-Partners may review factual product details before publication.
+Partners may submit source material, create or update drafts within assigned project scope, and review factual product details before publication.
 
 Partner review should focus on:
 
@@ -835,7 +835,7 @@ Partner review should focus on:
 * Correct description of product use cases.
 * Recommended next steps.
 
-Partners should not directly publish, edit, or manage course content in V1.
+Partners should not directly publish content, bypass staff approval, or manage content outside their assigned ecosystem projects in V1.
 
 ### Publish Readiness Checklist
 
@@ -861,7 +861,7 @@ A more complete V1 increases scope and coordination compared with an MVP.
 Mitigation:
 
 * Treat modules, optional knowledge checks, exports, and advanced analytics as should-have.
-* Keep partner self-service, on-chain credentials, and full LMS functionality deferred.
+* Keep partner direct publishing, on-chain credentials, and full LMS functionality deferred.
 * Launch with 3 high-quality courses if 5 would delay the release.
 
 ### Risk: Partner content production slows execution
@@ -880,8 +880,8 @@ Partners may expect dashboards, direct editing, or deep analytics.
 
 Mitigation:
 
-* Clearly position V1 as partner-assisted, not partner self-service.
-* Offer stable links, staff-managed content, and basic reporting instead of dashboards.
+* Clearly position V1 as limited partner self-service with staff-approved publishing.
+* Offer stable links, assigned-project workspaces, and basic reporting instead of advanced dashboards.
 
 ### Risk: Off-chain badges may feel insufficient
 
@@ -1051,15 +1051,15 @@ Launch guidance:
 * New learners will connect a wallet once course value and recognition are clear.
 * Off-chain badges with public verification are sufficient for V1 credibility.
 * Arcademy staff can own editorial quality and publishing operations in V1.
-* Partner self-service is not required to prove partner value in the first full foundation release.
+* Limited partner self-service is required for V1 partner value, but direct publishing remains out of scope.
 * Three high-quality launch courses can make Arcademy feel credible if paired with strong ecosystem project pages and partner referral flows.
 
 Fixed V1 decisions:
 
 * Wallet-linked progress is required for course starts, quiz submissions, badge awards, and profiles.
-* Partner self-service is deferred.
+* Limited partner self-service is in scope.
 * On-chain credentials are deferred.
-* Staff-managed publishing is the operating model for V1.
+* Staff-approved publishing is the operating model for V1.
 * Vercel, Neon Postgres, and Cloudinary are the preferred infrastructure choices.
 
 ---
@@ -1070,7 +1070,7 @@ Fixed V1 decisions:
 
 Foundation V1: 5–7 weeks for a fast-moving lean team, assuming content and partner source material are available early.
 
-This is larger than the original MVP scope but still intentionally avoids full partner self-service, on-chain credentials, and advanced LMS complexity.
+This is larger than the original MVP scope but still intentionally avoids partner direct publishing, on-chain credentials, and advanced LMS complexity.
 
 ### Team Size and Composition
 
@@ -1185,9 +1185,9 @@ Dependencies:
 
 ## Future Roadmap
 
-* Partner login and limited review workflow.
-* Partner analytics portal.
-* Partner self-service course drafting with staff approval.
+* Expanded partner role and permission management.
+* Advanced partner analytics portal.
+* Expanded partner self-service course drafting with staff approval.
 * On-chain badge minting or soulbound credentials.
 * Advanced certification paths.
 * Developer-focused courses and sandbox experiences.
@@ -1198,7 +1198,7 @@ Dependencies:
 
 ### Strategic Sequencing Recommendation
 
-* Prove partner referral value before building partner self-service.
+* Prove limited partner self-service and partner referral value before expanding partner permissions.
 * Prove off-chain badge credibility before adding on-chain credentials.
 * Prove project onboarding course completion before expanding into advanced developer education.
-* Prove staff publishing workflow before adding complex multi-tenant permissions.
+* Prove staff-approved publishing workflow before adding complex multi-tenant permissions.

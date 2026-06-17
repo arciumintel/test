@@ -552,7 +552,7 @@ Track the following learner events (connect to course and ecosystem project repo
 * badge_awarded
 * badge_verification_viewed
 
-Event guidance should remain compatible with the Engineering Implementation Brief and include context linking quiz analytics to course_completed, badge_awarded, badge_verification_viewed, and ecosystem project-level reporting where implemented. Do not introduce partner self-service analytics in V1; staff analytics may be used to support manual partner reporting.
+Event guidance should remain compatible with the Engineering Implementation Brief and include context linking quiz analytics to course_completed, badge_awarded, badge_verification_viewed, and ecosystem project-level reporting where implemented. V1 may expose basic assigned-project quiz and course analytics through partner self-service; advanced partner analytics remain out of scope.
 
 Track the following admin events:
 

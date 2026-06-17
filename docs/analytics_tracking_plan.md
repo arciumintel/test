@@ -1,6 +1,6 @@
 # Arcademy V1 Analytics Tracking Plan
 
-This plan defines the minimum analytics needed to measure the Arcademy V1 learner funnel, course completion loop, quiz quality, badge verification, and partner-assisted reporting. It uses the PRD terminology for learner-facing concepts while preserving the current implementation reality: existing schema and routes use `Product` and `productId`, which should be treated as the current implementation of `EcosystemProject` and `ecosystemProjectId`.
+This plan defines the minimum analytics needed to measure the Arcademy V1 learner funnel, course completion loop, quiz quality, badge verification, and limited partner self-service reporting. It uses the PRD terminology for learner-facing concepts while preserving the current implementation reality: existing schema and routes use `Product` and `productId`, which should be treated as the current implementation of `EcosystemProject` and `ecosystemProjectId`.
 
 ## Tracking Principles
 
@@ -281,7 +281,7 @@ Do not emit public profile events in V1 because public social profiles are defer
 
 ## Admin Events
 
-Admin events should be emitted from server actions after writes succeed. They support staff auditability and launch operations, not partner self-service.
+Admin events should be emitted from server actions after writes succeed. They support staff auditability, launch operations, and staff approval of partner self-service activity.
 
 ### `admin_ecosystem_project_created`
 

@@ -40,6 +40,10 @@ Set the following in `.env`:
 | `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | Cloudinary credentials (server‑side signing). |
 | `STAFF_ADMIN_WALLETS` | Comma‑separated wallet addresses granted `staff_admin`. |
 | `NEXT_PUBLIC_APP_URL` | Public site URL for referral links and partner report exports (e.g. `https://arcademy.example.com`). |
+| `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET` | Discord OAuth app credentials (learner account linking). |
+| `DISCORD_BOT_TOKEN` | Arcademy bot token for role grants. |
+| `DISCORD_REDIRECT_URI` | OAuth callback URL (e.g. `https://arcademy.example.com/api/discord/callback`). |
+| `CRON_SECRET` | Bearer token for Vercel Cron (`/api/cron/discord-role-grants`). |
 
 Generate a secret:
 

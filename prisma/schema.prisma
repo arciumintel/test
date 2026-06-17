@@ -68,6 +68,34 @@ enum PartnerIntakeReviewStatus {
   published
 }
 
+enum ProjectAdminRole {
+  owner
+  manager
+}
+
+enum ProjectDiscordIntegrationStatus {
+  draft
+  active
+  paused
+}
+
+enum DiscordRoleRuleStatus {
+  draft
+  active
+  paused
+}
+
+enum DiscordRoleGrantStatus {
+  pending
+  granted
+  skipped_discord_not_linked
+  failed_user_not_in_server
+  failed_missing_bot_permission
+  failed_role_hierarchy
+  failed_rate_limited
+  failed_unknown
+}
+
 model Product {
   id          String        @id @default(cuid())
   name        String
@@ -82,8 +110,10 @@ model Product {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  courses        Course[]
-  partnerIntakes PartnerIntake[]
+  courses                 Course[]
+  partnerIntakes          PartnerIntake[]
+  projectAdmins           ProjectAdmin[]
+  projectDiscordIntegration ProjectDiscordIntegration?
 
   @@index([status])
 }
@@ -100,6 +130,11 @@ model User {
   progress     Progress[]
   quizAttempts QuizAttempt[]
   badgeAwards  BadgeAward[]
+  discordAccount DiscordAccount?
+  projectAdmins  ProjectAdmin[] @relation("ProjectAdminUser")
+  invitedProjectAdmins ProjectAdmin[] @relation("ProjectAdminInviter")
+  createdDiscordIntegrations ProjectDiscordIntegration[]
+  discordRoleGrants DiscordRoleGrant[]
 }
 
 /// One-time challenge used to verify wallet ownership during sign-in.
@@ -255,6 +290,7 @@ model Badge {
 
   course Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
   awards BadgeAward[]
+  discordRoleRules DiscordRoleRule[]
 }
 
 /// A badge granted to a learner (off-chain in V1).
@@ -270,8 +306,114 @@ model BadgeAward {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   badge  Badge  @relation(fields: [badgeId], references: [id], onDelete: Cascade)
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  discordRoleGrants DiscordRoleGrant[]
 
   @@unique([userId, badgeId])
+  @@index([userId])
+}
+
+/// Learner-linked Discord identity (OAuth profile only; no token retention).
+model DiscordAccount {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  discordUserId String   @unique
+  username      String
+  globalName    String?
+  avatar        String?
+  linkedAt      DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  grants DiscordRoleGrant[]
+
+  @@index([discordUserId])
+}
+
+/// Wallet-based project admin assignment (owner or manager).
+model ProjectAdmin {
+  id              String           @id @default(cuid())
+  productId       String
+  userId          String
+  role            ProjectAdminRole @default(manager)
+  invitedByUserId String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User    @relation("ProjectAdminUser", fields: [userId], references: [id], onDelete: Cascade)
+  invitedBy User?   @relation("ProjectAdminInviter", fields: [invitedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([productId, userId])
+  @@index([userId])
+}
+
+/// One Discord guild integration per ecosystem product.
+model ProjectDiscordIntegration {
+  id                        String                          @id @default(cuid())
+  productId                 String                          @unique
+  guildId                   String
+  guildName                 String
+  status                    ProjectDiscordIntegrationStatus @default(draft)
+  botInstalled              Boolean                         @default(false)
+  lastPermissionCheckStatus String?
+  lastPermissionCheckAt     DateTime?
+  createdByUserId           String?
+  createdAt                 DateTime                        @default(now())
+  updatedAt                 DateTime                        @updatedAt
+
+  product   Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdBy User?             @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  roleRules DiscordRoleRule[]
+
+  @@index([guildId])
+}
+
+/// Maps one published badge to one Discord role in a project server.
+model DiscordRoleRule {
+  id                          String                @id @default(cuid())
+  productDiscordIntegrationId String
+  badgeId                     String
+  discordRoleId               String
+  discordRoleName             String
+  unlockLabel                 String?
+  status                      DiscordRoleRuleStatus @default(draft)
+  createdAt                   DateTime              @default(now())
+  updatedAt                   DateTime              @updatedAt
+
+  integration ProjectDiscordIntegration @relation(fields: [productDiscordIntegrationId], references: [id], onDelete: Cascade)
+  badge       Badge                     @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  grants      DiscordRoleGrant[]
+
+  @@unique([productDiscordIntegrationId, badgeId])
+  @@unique([productDiscordIntegrationId, discordRoleId])
+  @@index([badgeId])
+}
+
+/// Async job to grant a Discord role after a badge award.
+model DiscordRoleGrant {
+  id                String                 @id @default(cuid())
+  userId            String
+  discordAccountId  String?
+  badgeAwardId      String
+  discordRoleRuleId String
+  guildId           String
+  roleId            String
+  status            DiscordRoleGrantStatus @default(pending)
+  attemptCount      Int                    @default(0)
+  lastAttemptAt     DateTime?
+  grantedAt         DateTime?
+  lastErrorCode     String?
+  lastErrorMessage  String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  discordAccount  DiscordAccount? @relation(fields: [discordAccountId], references: [id], onDelete: SetNull)
+  badgeAward      BadgeAward      @relation(fields: [badgeAwardId], references: [id], onDelete: Cascade)
+  discordRoleRule DiscordRoleRule @relation(fields: [discordRoleRuleId], references: [id], onDelete: Cascade)
+
+  @@unique([badgeAwardId, discordRoleRuleId])
+  @@index([status])
   @@index([userId])
 }
 

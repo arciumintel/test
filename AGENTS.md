@@ -15,12 +15,12 @@ Arcademy V1: a curated learning platform for Arcium ecosystem products. Prove th
 ## Hard constraints
 
 - **Audience:** New users first, not developers.
-- **Publishing:** Staff-curated only. No partner self-service in V1.
+- **Publishing:** Partner self-service is in V1 for partner-submitted drafts, source material, review, and basic reporting. Staff retains final publish approval.
 - **Auth:** Solana wallet signature. User anchored to `walletAddress`, not email/password.
 - **Credentials:** Off-chain badges in Postgres. No NFT minting in V1.
 - **Browsing:** Public catalog without wallet. Wallet required for progress, quizzes, badges, profile.
 - **Stack:** Next.js App Router · Vercel · Neon Postgres · Prisma · Cloudinary · shadcn/ui · Tailwind.
-- **Roles:** `learner` and `staff_admin` only.
+- **Roles:** `learner`, `staff_admin`, and limited partner roles for partner self-service.
 
 ## Data model (minimum entities)
 
@@ -34,7 +34,7 @@ Course complete when: all required lessons done + final quiz passed + wallet con
 
 ## Do not build (V1)
 
-Partner dashboards, soulbound NFTs, on-chain verification, paid courses, leaderboards, social features, comments, AI lessons, multi-language, mobile app, code sandboxes, full LMS grading.
+Soulbound NFTs, on-chain verification, paid courses, leaderboards, social features, comments, AI lessons, multi-language, mobile app, code sandboxes, full LMS grading, partner direct publishing without staff approval.
 
 ## Acceptance checklist
 
@@ -43,6 +43,7 @@ Partner dashboards, soulbound NFTs, on-chain verification, paid courses, leaderb
 - [ ] Start course, persist lesson progress
 - [ ] Pass quiz, receive badge, see badge in profile
 - [ ] Staff: CRUD courses/lessons/quizzes, publish, preview, analytics
+- [ ] Partners: self-service draft/source submission, review workflow, basic reporting
 - [ ] Cloudinary media uploads
 - [ ] Production on Vercel + Neon
 

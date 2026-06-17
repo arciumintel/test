@@ -1,12 +1,29 @@
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
 import { getCurrentUser } from "@/lib/session";
+import { getManagedProducts } from "@/lib/project-admin";
+import { prisma } from "@/lib/prisma";
+import { isDiscordConfigured } from "@/lib/discord";
 import { WalletAuth } from "@/components/auth/wallet-auth";
+import { DiscordAuth } from "@/components/auth/discord-auth";
 import { Button } from "@/components/ui/button";
 
 export async function SiteHeader() {
   const user = await getCurrentUser();
   const isStaff = user?.role === "staff_admin";
+
+  const discordAccount = user
+    ? await prisma.discordAccount.findUnique({
+        where: { userId: user.id },
+        select: { username: true, globalName: true },
+      })
+    : null;
+
+  const managedProjects =
+    user && !isStaff ? await getManagedProducts(user.id, false) : [];
+  const showProjectConsole = isStaff || managedProjects.length > 0;
+
+  const discordEnabled = isDiscordConfigured();
 
   return (
     <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur-md">
@@ -30,6 +47,11 @@ export async function SiteHeader() {
                 <Link href="/profile">My learning</Link>
               </Button>
             )}
+            {showProjectConsole && (
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/project-console">Project console</Link>
+              </Button>
+            )}
             {isStaff && (
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/admin">Admin</Link>
@@ -37,7 +59,14 @@ export async function SiteHeader() {
             )}
           </nav>
         </div>
-        <WalletAuth authedWallet={user?.walletAddress ?? null} />
+        <div className="flex items-center gap-2">
+          <DiscordAuth
+            linked={discordAccount}
+            walletConnected={Boolean(user)}
+            discordEnabled={discordEnabled}
+          />
+          <WalletAuth authedWallet={user?.walletAddress ?? null} />
+        </div>
       </div>
     </header>
   );

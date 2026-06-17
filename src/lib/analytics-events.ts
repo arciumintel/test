@@ -28,6 +28,16 @@ export const ANALYTICS_EVENT_NAMES = [
   "admin_course_published",
   "admin_quiz_created",
   "admin_badge_created",
+  "discord_connect_started",
+  "discord_connected",
+  "discord_connect_failed",
+  "discord_disconnected",
+  "discord_role_rule_created",
+  "discord_role_rule_activated",
+  "discord_role_grant_queued",
+  "discord_role_granted",
+  "discord_role_grant_failed",
+  "discord_role_grant_retried",
 ] as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENT_NAMES)[number];

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Eye } from "lucide-react";
+import { ChevronLeft, Eye, MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProductForm } from "@/components/admin/product-form";
@@ -8,6 +8,7 @@ import { ProductStatusControls } from "@/components/admin/product-status-control
 import { PublishReadinessPanel } from "@/components/admin/publish-readiness-panel";
 import { PartnerReferralToolkit } from "@/components/admin/partner-referral-toolkit";
 import { ProductAnalyticsPanel } from "@/components/admin/product-analytics-panel";
+import { ProjectAdminPanel } from "@/components/admin/project-admin-panel";
 import { prisma } from "@/lib/prisma";
 import { getProductPublishReadiness } from "@/lib/publish-readiness";
 import { getProductAnalytics } from "@/lib/analytics";
@@ -44,7 +45,7 @@ export default async function ProductEditorPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [product, readiness, analytics] = await Promise.all([
+  const [product, readiness, analytics, projectAdmins] = await Promise.all([
     prisma.product.findUnique({
       where: { id },
       include: {
@@ -58,6 +59,13 @@ export default async function ProductEditorPage({
     }),
     getProductPublishReadiness(id),
     getProductAnalytics(id),
+    prisma.projectAdmin.findMany({
+      where: { productId: id },
+      include: {
+        user: { select: { walletAddress: true, displayName: true } },
+      },
+      orderBy: { createdAt: "asc" },
+    }),
   ]);
 
   if (!product) notFound();
@@ -92,6 +100,12 @@ export default async function ProductEditorPage({
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/project-console/${product.id}/discord`}>
+              <MessageCircle />
+              Discord console
+            </Link>
+          </Button>
           <Button variant="outline" size="sm" asChild>
             <Link href={productPath(product.slug)} target="_blank">
               <Eye />
@@ -143,6 +157,15 @@ export default async function ProductEditorPage({
           </div>
         </section>
       )}
+
+      <ProjectAdminPanel
+        productId={product.id}
+        admins={projectAdmins.map((a) => ({
+          id: a.id,
+          role: a.role,
+          user: a.user,
+        }))}
+      />
     </div>
   );
 }

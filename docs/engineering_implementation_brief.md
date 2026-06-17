@@ -15,7 +15,7 @@ Use the following documents as implementation references:
 1. Arcademy V1 PRD: Ecosystem Learning Foundation
 
   * Canonical product source of truth.
-  * Defines V1 scope, terminology, personas, partner-assisted model, ecosystem project model, learner experience, badges, analytics, and acceptance criteria.
+  * Defines V1 scope, terminology, personas, partner self-service model, ecosystem project model, learner experience, badges, analytics, and acceptance criteria.
 
 2. Arcademy V1 Quiz & Assessment Spec
 
@@ -49,9 +49,9 @@ Agents should not make major architectural, schema, or terminology changes based
 * Extend existing schema and functionality instead of replacing it.
 * Avoid destructive migrations.
 * Avoid wholesale refactors unless explicitly requested.
-* Keep V1 staff-managed and partner-assisted.
-* Do not build partner self-service in V1.
-* Do not build partner login, partner dashboards, partner roles, or partner publishing permissions in V1.
+* Keep V1 staff-approved and partner-assisted.
+* Build limited partner self-service in V1 for assigned-project source submission, draft collaboration, factual review, and basic reporting.
+* Do not build partner direct publishing permissions, unrelated-project access, or advanced partner dashboards in V1.
 * Do not build on-chain credentials, soulbound NFTs, paid courses, leaderboards, social profiles, or advanced LMS features in V1.
 * Use ecosystem project as the canonical learner-facing concept going forward.
 * Treat partner as the team, organization, protocol team, project team, or contributor behind an ecosystem project.
@@ -99,7 +99,7 @@ Agents should not do any of the following without explicit approval:
 * Remove or reset existing seeded content.
 * Change wallet identity semantics.
 * Convert off-chain badges into on-chain credentials.
-* Add partner-facing authentication or self-service tooling.
+* Add partner direct publishing or broad partner permissions outside the approved V1 partner self-service scope.
 
 ### Safe Change Pattern
 
@@ -499,12 +499,13 @@ Acceptance focus:
 
 Goal:
 
-* Support partner representation without self-service.
+* Support partner representation with limited self-service.
 
 Tasks:
 
 * Add partnerName and relevant partner metadata to ecosystem project records if missing.
 * Add PartnerIntake tracking only if feasible and useful.
+* Add limited partner workspace support for assigned-project source submission, draft collaboration, factual review, and basic reporting where feasible.
 * Add referral URL/copy support where appropriate.
 * Add basic ecosystem project analytics.
 * Add manual partner reporting support or export if feasible.
@@ -512,9 +513,10 @@ Tasks:
 Acceptance focus:
 
 * Staff can represent an ecosystem project clearly.
-* Staff can track partner intake or review state internally if implemented.
+* Partners can access only assigned project/course workflows.
+* Partner-submitted changes require staff approval before publication.
+* Staff can track partner intake or review state if implemented.
 * Staff can provide partners stable URLs and basic performance insights.
-* No partner-facing login or dashboard is created.
 
 ### Phase 8: Analytics and Launch Hardening
 
@@ -584,7 +586,7 @@ A phase is done when:
 * It avoids destructive schema changes.
 * It includes basic error handling.
 * It respects draft/published/archive visibility rules where applicable.
-* It preserves staff-managed, partner-assisted scope.
+* It preserves staff-approved, limited partner self-service scope.
 * It does not introduce deferred features.
 * It has been manually tested against key happy paths and edge cases.
 
@@ -599,7 +601,7 @@ The full V1 implementation is done when:
 * Learner profile shows progress and badges.
 * Staff can manage ecosystem projects, courses, lessons, quizzes, badges, media, and publishing states.
 * Staff can view basic course and ecosystem project analytics.
-* Partner representation is supported without partner self-service.
+* Partner representation and limited partner self-service are supported.
 * No duplicate badge awards are created.
 * Production deployment is stable.
 
@@ -619,7 +621,7 @@ Important terminology:
 - Partner means the team or organization behind an ecosystem project.
 - Product should not be used as the main platform concept unless referring to a partner’s own product/app/site/tool.
 
-Do not build partner login, partner dashboards, partner self-service authoring, on-chain credentials, paid courses, social features, leaderboards, or full LMS features.
+Do not build partner direct publishing, advanced partner dashboards, on-chain credentials, paid courses, social features, leaderboards, or full LMS features.
 
 For this task:
 1. Identify relevant existing files and schema.

@@ -163,5 +163,12 @@ export async function evaluateCourseCompletion(
     ecosystemProjectSlug: course.product.slug,
   });
 
+  if (award?.id) {
+    const { queueDiscordRoleGrantsForBadgeAward } = await import(
+      "@/lib/discord-role-grants"
+    );
+    void queueDiscordRoleGrantsForBadgeAward(award.id);
+  }
+
   return { completed: true, newlyAwarded: true, verificationSlug: slug };
 }

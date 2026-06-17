@@ -1,14 +1,15 @@
 # Arcademy — Domain Context
 
-Arcademy is the official learning platform for Arcium ecosystem products. V1 is a curated learner MVP: staff publish courses, learners browse publicly, connect a Solana wallet to track progress, pass quizzes, and earn off-chain badges.
+Arcademy is the official learning platform for Arcium ecosystem products. V1 is a curated learner MVP with limited partner self-service: staff publish courses, partners submit and review materials, learners browse publicly, connect a Solana wallet to track progress, pass quizzes, and earn off-chain badges.
 
 Full product requirements: [docs/PRD.md](docs/PRD.md)
 
 ## Audience
 
 - **Primary (V1):** New users learning Arcium ecosystem concepts — not developers first.
-- **Staff:** Arcademy team curating and publishing courses, viewing analytics.
-- **Deferred:** Partner self-service authoring, developer sandboxes, social features.
+- **Staff:** Arcademy team curating and publishing courses, approving partner-submitted content, viewing analytics.
+- **Partners:** Ecosystem teams using limited self-service to submit source material, draft course content, review factual accuracy, and view basic reporting.
+- **Deferred:** Developer sandboxes, social features, advanced LMS functionality.
 
 ## Core Concepts
 
@@ -16,6 +17,7 @@ Full product requirements: [docs/PRD.md](docs/PRD.md)
 |------|---------|
 | **Learner** | A user with role `learner` who browses courses, completes lessons, takes quizzes, and earns badges. |
 | **Staff admin** | A user with role `staff_admin` who creates, edits, publishes products/courses and views analytics. |
+| **Partner admin** | A limited partner user who can submit source material, draft or review assigned ecosystem project content, and view basic reporting without direct publish authority. |
 | **Product** | A staff-managed Arcium ecosystem product page with metadata (name, slug, description, logo, links). Status: draft, published, or archived. |
 | **Course** | A structured learning path owned by a product, with metadata (title, slug, level, duration, thumbnail). Status: draft, published, or archived. Public course URLs are product-scoped. |
 | **Lesson** | An ordered unit within a course. Contains content and optional media. |
@@ -62,8 +64,9 @@ On completion → create a `BadgeAward`.
 
 - `learner` — default role for wallet-connected users.
 - `staff_admin` — access to admin dashboard.
+- Limited partner role — access to assigned partner self-service workspace.
 
-No partner roles in V1. Products are staff-managed; future partner organizations can be added later without exposing partner self-service.
+Partner self-service is in V1, but publishing remains staff-approved. Products are staff-governed and may be partner-assisted through assigned partner workspaces.
 
 ## Infrastructure (Fixed for V1)
 
@@ -78,7 +81,7 @@ No partner roles in V1. Products are staff-managed; future partner organizations
 
 ## Explicit Non-Goals (V1)
 
-Soulbound NFTs, on-chain credentials, partner self-service publishing, paid courses, leaderboards, social profiles, comments, AI-generated lessons, multi-language, mobile app, code execution sandboxes, full LMS grading.
+Soulbound NFTs, on-chain credentials, partner direct publishing without staff approval, paid courses, leaderboards, social profiles, comments, AI-generated lessons, multi-language, mobile app, code execution sandboxes, full LMS grading.
 
 ## Success Metrics
 

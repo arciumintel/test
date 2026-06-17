@@ -379,7 +379,7 @@ Arcademy staff should complete this before publication.
 
 ## Manual Partner Reporting Notes
 
-Partner reporting remains staff-generated in V1. Do not create partner login, partner dashboards, partner roles, partner publishing permissions, or public partner analytics portals.
+Partner reporting may be exposed through limited partner self-service for assigned ecosystem projects. Do not create partner direct publishing permissions, unrelated-project access, advanced partner dashboards, or public partner analytics portals in V1.
 
 Recommended first report fields:
 
