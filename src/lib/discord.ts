@@ -38,10 +38,64 @@ export type DiscordGrantError = {
   retryable: boolean;
 };
 
+import { createDiscordBotInstallState } from "@/lib/discord-oauth-state";
+
 function requireEnv(name: string): string {
   const value = process.env[name]?.trim();
   if (!value) throw new Error(`${name} is not configured`);
   return value;
+}
+
+function getAppBaseUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
+  ).replace(/\/$/, "");
+}
+
+function getBotInstallRedirectUri(): string {
+  const configured = process.env.DISCORD_BOT_INSTALL_REDIRECT_URI?.trim();
+  if (configured) return configured;
+  return `${getAppBaseUrl()}/api/discord/bot-install/callback`;
+}
+
+/** Resolve guild from Discord bot-install redirect (guild_id param and/or OAuth code). */
+export async function resolveGuildFromBotInstallCallback(
+  guildId: string | null,
+  code: string | null
+): Promise<{ id: string; name: string } | null> {
+  if (guildId) {
+    const guild = await getGuild(guildId);
+    return guild;
+  }
+
+  if (!code) return null;
+
+  const { clientId, clientSecret } = getDiscordConfig();
+  const body = new URLSearchParams({
+    client_id: clientId,
+    client_secret: clientSecret,
+    grant_type: "authorization_code",
+    code,
+    redirect_uri: getBotInstallRedirectUri(),
+  });
+
+  const tokenRes = await fetch(`${DISCORD_API}/oauth2/token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+
+  if (!tokenRes.ok) return null;
+
+  const tokenJson = (await tokenRes.json()) as {
+    guild?: { id: string; name: string };
+  };
+  if (tokenJson.guild?.id && tokenJson.guild?.name) {
+    return { id: tokenJson.guild.id, name: tokenJson.guild.name };
+  }
+
+  return null;
 }
 
 export function getDiscordConfig() {
@@ -85,19 +139,44 @@ export function getDiscordBotInviteUrl(): string {
   return `https://discord.com/api/oauth2/authorize?${params}`;
 }
 
+/** Bot invite that redirects back to Arcademy with guild_id after install. */
+export async function getDiscordBotInviteUrlForProduct(
+  productId: string,
+  userId: string
+): Promise<string> {
+  const { clientId } = getDiscordConfig();
+  const state = await createDiscordBotInstallState(productId, userId);
+  const params = new URLSearchParams({
+    client_id: clientId,
+    permissions: "268435456", // MANAGE_ROLES
+    scope: "bot",
+    redirect_uri: getBotInstallRedirectUri(),
+    response_type: "code",
+    state,
+  });
+  return `https://discord.com/api/oauth2/authorize?${params}`;
+}
+
+type DiscordAuthScheme = "Bearer" | "Bot";
+
 async function discordFetch(
   path: string,
-  init: RequestInit & { token: string }
+  init: RequestInit & { token: string; authScheme?: DiscordAuthScheme }
 ): Promise<Response> {
-  const { token, ...rest } = init;
+  const { token, authScheme = "Bearer", ...rest } = init;
   return fetch(`${DISCORD_API}${path}`, {
     ...rest,
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `${authScheme} ${token}`,
       "Content-Type": "application/json",
       ...(rest.headers ?? {}),
     },
   });
+}
+
+function botFetch(path: string, init: Omit<RequestInit, "headers"> = {}): Promise<Response> {
+  const { botToken } = getDiscordConfig();
+  return discordFetch(path, { ...init, token: botToken, authScheme: "Bot" });
 }
 
 export async function exchangeDiscordCode(code: string): Promise<DiscordUserProfile> {
@@ -138,8 +217,7 @@ let cachedBotUserId: string | null = null;
 
 export async function getBotUserId(): Promise<string> {
   if (cachedBotUserId) return cachedBotUserId;
-  const { botToken } = getDiscordConfig();
-  const res = await discordFetch("/users/@me", { token: botToken });
+  const res = await botFetch("/users/@me");
   if (!res.ok) throw new Error("Could not fetch bot user");
   const data = (await res.json()) as { id: string };
   cachedBotUserId = data.id;
@@ -147,28 +225,44 @@ export async function getBotUserId(): Promise<string> {
 }
 
 export async function getGuild(guildId: string): Promise<{ id: string; name: string } | null> {
-  const { botToken } = getDiscordConfig();
-  const res = await discordFetch(`/guilds/${guildId}`, { token: botToken });
+  const res = await botFetch(`/guilds/${guildId}`);
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Discord guild lookup failed (${res.status})`);
   return (await res.json()) as { id: string; name: string };
 }
 
 export async function getGuildRoles(guildId: string): Promise<DiscordGuildRole[]> {
-  const { botToken } = getDiscordConfig();
-  const res = await discordFetch(`/guilds/${guildId}/roles`, { token: botToken });
+  const res = await botFetch(`/guilds/${guildId}/roles`);
   if (!res.ok) throw new Error(`Discord roles lookup failed (${res.status})`);
   return (await res.json()) as DiscordGuildRole[];
+}
+
+export type AssignableGuildRole = {
+  id: string;
+  name: string;
+  position: number;
+};
+
+/** Roles the bot can assign (excludes @everyone and managed/integration roles). */
+export async function listAssignableGuildRoles(
+  guildId: string
+): Promise<AssignableGuildRole[]> {
+  const roles = await getGuildRoles(guildId);
+  return roles
+    .filter((role) => role.id !== guildId && !role.managed)
+    .sort((a, b) => b.position - a.position)
+    .map((role) => ({
+      id: role.id,
+      name: role.name,
+      position: role.position,
+    }));
 }
 
 export async function getGuildMember(
   guildId: string,
   userId: string
 ): Promise<DiscordGuildMember | null> {
-  const { botToken } = getDiscordConfig();
-  const res = await discordFetch(`/guilds/${guildId}/members/${userId}`, {
-    token: botToken,
-  });
+  const res = await botFetch(`/guilds/${guildId}/members/${userId}`);
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Discord member lookup failed (${res.status})`);
   return (await res.json()) as DiscordGuildMember;
@@ -179,11 +273,9 @@ export async function addGuildMemberRole(
   userId: string,
   roleId: string
 ): Promise<{ ok: true } | DiscordGrantError> {
-  const { botToken } = getDiscordConfig();
-  const res = await discordFetch(
-    `/guilds/${guildId}/members/${userId}/roles/${roleId}`,
-    { method: "PUT", token: botToken }
-  );
+  const res = await botFetch(`/guilds/${guildId}/members/${userId}/roles/${roleId}`, {
+    method: "PUT",
+  });
 
   if (res.ok || res.status === 204) return { ok: true };
   return mapDiscordError(res);
@@ -263,9 +355,13 @@ export async function checkBotCanGrantRole(
 }
 
 export async function verifyBotManageRoles(guildId: string): Promise<boolean> {
-  const botUserId = await getBotUserId();
-  const botMember = await getGuildMember(guildId, botUserId);
-  return Boolean(botMember);
+  try {
+    const botUserId = await getBotUserId();
+    const botMember = await getGuildMember(guildId, botUserId);
+    return Boolean(botMember);
+  } catch {
+    return false;
+  }
 }
 
 async function mapDiscordError(res: Response): Promise<DiscordGrantError> {

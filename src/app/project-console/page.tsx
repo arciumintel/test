@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { MessageCircle } from "lucide-react";
+import { BookOpen, ClipboardList, MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,7 +19,7 @@ export default async function ProjectConsolePage() {
   if (!isStaff && products.length === 0) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-16 text-center sm:px-6">
-        <MessageCircle className="mx-auto size-10 text-muted-foreground" />
+        <ClipboardList className="mx-auto size-10 text-muted-foreground" />
         <h1 className="mt-4 text-xl font-semibold">Project console</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           You do not manage any ecosystem projects yet. Ask Arcademy staff to assign
@@ -33,7 +33,8 @@ export default async function ProjectConsolePage() {
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
       <h1 className="text-2xl font-semibold tracking-tight">Project console</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Manage Discord role grants for projects you administer.
+        Manage course drafts, partner self-service, materials, and Discord role
+        grants for projects you administer.
       </p>
 
       <div className="mt-8 grid gap-4">
@@ -53,12 +54,26 @@ export default async function ProjectConsolePage() {
                     : "Discord not configured"}
                 </p>
               </div>
-              <Button asChild variant="outline">
-                <Link href={`/project-console/${product.id}/discord`}>
-                  <MessageCircle className="size-4" />
-                  Discord setup
-                </Link>
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button asChild>
+                  <Link href={`/project-console/${product.id}/courses`}>
+                    <BookOpen className="size-4" />
+                    Course drafts
+                  </Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href={`/project-console/${product.id}/self-service`}>
+                    <ClipboardList className="size-4" />
+                    Self-service
+                  </Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href={`/project-console/${product.id}/discord`}>
+                    <MessageCircle className="size-4" />
+                    Discord setup
+                  </Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}

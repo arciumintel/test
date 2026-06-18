@@ -8,9 +8,10 @@ import { requireStaff } from "@/lib/session";
 import { requireProjectAdmin } from "@/lib/project-admin";
 import {
   checkBotCanGrantRole,
-  getDiscordBotInviteUrl,
+  getDiscordBotInviteUrlForProduct,
   getGuild,
   isDiscordConfigured,
+  listAssignableGuildRoles,
   verifyBotManageRoles,
 } from "@/lib/discord";
 import { trackEventFireAndForget } from "@/lib/analytics-events";
@@ -32,11 +33,84 @@ const roleRuleSchema = z.object({
   status: z.enum(["draft", "active", "paused"]),
 });
 
-export async function getDiscordBotInviteLink(): Promise<Result<{ url: string }>> {
+export async function getDiscordBotInviteLink(
+  productId: string
+): Promise<Result<{ url: string }>> {
   if (!isDiscordConfigured()) {
     return { error: "Discord is not configured on this deployment." };
   }
-  return { ok: true, url: getDiscordBotInviteUrl() };
+  try {
+    const user = await requireProjectAdmin(productId);
+    const url = await getDiscordBotInviteUrlForProduct(productId, user.id);
+    return { ok: true, url };
+  } catch {
+    return { error: "You do not have access to manage this project." };
+  }
+}
+
+export async function getProjectDiscordRoles(
+  productId: string
+): Promise<Result<{ roles: { id: string; name: string; position: number }[] }>> {
+  try {
+    await requireProjectAdmin(productId);
+    if (!isDiscordConfigured()) {
+      return { error: "Discord is not configured on this deployment." };
+    }
+
+    const integration = await prisma.projectDiscordIntegration.findUnique({
+      where: { productId },
+    });
+    if (!integration?.guildId) {
+      return { error: "Save your Discord server settings first." };
+    }
+    if (!integration.botInstalled) {
+      return {
+        error:
+          "Arcademy bot is not in this server yet. Invite the bot and save server settings.",
+      };
+    }
+
+    const roles = await listAssignableGuildRoles(integration.guildId);
+    return { ok: true, roles };
+  } catch {
+    return { error: "Could not load Discord roles. Check bot permissions and try again." };
+  }
+}
+
+export async function setDiscordRoleRuleStatus(
+  productId: string,
+  ruleId: string,
+  status: "draft" | "active" | "paused"
+): Promise<Result> {
+  try {
+    await requireProjectAdmin(productId);
+    const integration = await prisma.projectDiscordIntegration.findUnique({
+      where: { productId },
+    });
+    if (!integration) {
+      return { error: "Configure the Discord server integration first." };
+    }
+
+    const updated = await prisma.discordRoleRule.update({
+      where: { id: ruleId, productDiscordIntegrationId: integration.id },
+      data: { status: status as DiscordRoleRuleStatus },
+    });
+
+    if (status === "active") {
+      trackEventFireAndForget({
+        eventName: "discord_role_rule_activated",
+        source: "admin",
+        ecosystemProjectId: productId,
+        badgeId: updated.badgeId,
+        metadata: { discordRoleRuleId: updated.id },
+      });
+    }
+
+    revalidatePath(`/project-console/${productId}/discord`);
+    return { ok: true };
+  } catch {
+    return { error: "You do not have access to manage this project." };
+  }
 }
 
 export async function saveProjectDiscordIntegration(

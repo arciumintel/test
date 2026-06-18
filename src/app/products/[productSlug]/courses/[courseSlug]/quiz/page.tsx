@@ -5,6 +5,8 @@ import { QuizRunner } from "@/components/quiz-runner";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getCourseBySlugs, getFinalQuiz } from "@/lib/courses";
+import { hasActiveDiscordRoleUnlockForBadge } from "@/lib/discord-role-grants";
+import { isDiscordConfigured } from "@/lib/discord";
 import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { coursePath, productPath, quizPath } from "@/lib/paths";
@@ -41,6 +43,22 @@ export default async function QuizPage({
     where: { userId: user.id, quizId: quiz.id, passed: true },
     select: { id: true },
   });
+
+  const discordEnabled = isDiscordConfigured();
+  const discordLinked = Boolean(
+    await prisma.discordAccount.findUnique({
+      where: { userId: user.id },
+      select: { id: true },
+    })
+  );
+  const courseBadgeId = course.badge?.status === "published" ? course.badge.id : null;
+  const discordRoleUnlockAvailable =
+    discordEnabled &&
+    Boolean(courseBadgeId) &&
+    (await hasActiveDiscordRoleUnlockForBadge(
+      courseBadgeId!,
+      course.product.id
+    ));
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
@@ -94,6 +112,8 @@ export default async function QuizPage({
           productSlug={productSlug}
           previouslyPassed={Boolean(previouslyPassed)}
           quizPath={quizPath(productSlug, courseSlug)}
+          discordRoleUnlockAvailable={discordRoleUnlockAvailable}
+          discordLinked={discordLinked}
         />
       )}
     </div>

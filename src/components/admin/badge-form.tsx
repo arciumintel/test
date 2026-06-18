@@ -11,6 +11,7 @@ import { Select } from "@/components/ui/select";
 import { CloudinaryUpload } from "@/components/cloudinary-upload";
 import { BadgeMedallion } from "@/components/badge-medallion";
 import { upsertBadge } from "@/app/actions/admin";
+import { upsertPartnerBadge } from "@/app/actions/project-courses";
 import type { BadgeStatus } from "@prisma/client";
 
 type Initial = {
@@ -25,9 +26,15 @@ type Initial = {
 export function BadgeForm({
   courseId,
   initial,
+  variant = "admin",
+  partnerProductId,
+  readOnly = false,
 }: {
   courseId: string;
   initial: Initial;
+  variant?: "admin" | "partner";
+  partnerProductId?: string;
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const [name, setName] = React.useState(initial?.name ?? "");
@@ -49,14 +56,24 @@ export function BadgeForm({
     setBusy(true);
     setError(null);
     setSaved(false);
-    const res = await upsertBadge(courseId, {
-      name,
-      description,
-      imageUrl: imageUrl || null,
-      criteria: criteria || null,
-      issuer: issuer || "Arcademy",
-      status,
-    });
+    const res =
+      variant === "partner" && partnerProductId
+        ? await upsertPartnerBadge(partnerProductId, courseId, {
+            name,
+            description,
+            imageUrl: imageUrl || null,
+            criteria: criteria || null,
+            issuer: issuer || "Arcademy",
+            status,
+          })
+        : await upsertBadge(courseId, {
+            name,
+            description,
+            imageUrl: imageUrl || null,
+            criteria: criteria || null,
+            issuer: issuer || "Arcademy",
+            status,
+          });
     setBusy(false);
     if ("error" in res) {
       setError(res.error);
@@ -142,13 +159,16 @@ export function BadgeForm({
         label="Badge image (optional)"
         value={imageUrl}
         onChange={setImageUrl}
+        productId={variant === "partner" ? partnerProductId : undefined}
       />
 
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={busy}>
-          {busy ? <Loader2 className="animate-spin" /> : <Save />}
-          {initial ? "Save badge" : "Create badge"}
-        </Button>
+        {!readOnly && (
+          <Button type="submit" disabled={busy}>
+            {busy ? <Loader2 className="animate-spin" /> : <Save />}
+            {initial ? "Save badge" : "Create badge"}
+          </Button>
+        )}
         {saved && (
           <span className="flex items-center gap-1 text-sm text-success">
             <Check className="size-4" />

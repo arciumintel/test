@@ -60,6 +60,19 @@ async function findActiveRulesForBadge(badgeId: string, productId: string) {
   }));
 }
 
+/** Whether an active integration has an active rule for this badge. */
+export async function hasActiveDiscordRoleUnlockForBadge(
+  badgeId: string,
+  productId: string
+): Promise<boolean> {
+  const rules = await findActiveRulesForBadge(badgeId, productId);
+  return rules.length > 0;
+}
+
+function triggerGrantProcessor(): void {
+  void processPendingDiscordRoleGrants().catch(() => {});
+}
+
 /**
  * Queues Discord role grants for a badge award. Idempotent per badge award + rule.
  */
@@ -118,6 +131,10 @@ export async function queueDiscordRoleGrantsForBadgeAward(
     }
   }
 
+  if (queued > 0) {
+    triggerGrantProcessor();
+  }
+
   return queued;
 }
 
@@ -151,6 +168,10 @@ export async function backfillDiscordRoleGrantsForUser(userId: string): Promise<
   let newlyQueued = 0;
   for (const award of awards) {
     newlyQueued += await queueDiscordRoleGrantsForBadgeAward(award.id);
+  }
+
+  if (reopened.count > 0 || newlyQueued > 0) {
+    triggerGrantProcessor();
   }
 
   return reopened.count + newlyQueued;
@@ -360,6 +381,8 @@ export async function retryDiscordRoleGrant(grantId: string, userId: string): Pr
       roleId: grant.roleId,
     },
   });
+
+  triggerGrantProcessor();
 
   return true;
 }

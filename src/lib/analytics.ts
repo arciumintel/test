@@ -211,6 +211,46 @@ export async function getProductAnalytics(
   };
 }
 
+export type PartnerSafeAnalytics = {
+  publishedCourses: number;
+  starts: number;
+  completions: number;
+  badgeAwards: number;
+  completionRate: number;
+  courses: {
+    title: string;
+    starts: number;
+    completions: number;
+    badgeAwards: number;
+    quizPassRate: number | null;
+  }[];
+};
+
+/** Partner-visible metrics only — published courses, no internal IDs or draft data. */
+export async function getPartnerSafeAnalytics(
+  productId: string
+): Promise<PartnerSafeAnalytics | null> {
+  const full = await getProductAnalytics(productId);
+  if (!full) return null;
+
+  return {
+    publishedCourses: full.publishedCourses,
+    starts: full.starts,
+    completions: full.completions,
+    badgeAwards: full.badgeAwards,
+    completionRate: full.completionRate,
+    courses: full.courses
+      .filter((c) => c.status === "published")
+      .map(({ title, starts, completions, badgeAwards, quizPassRate }) => ({
+        title,
+        starts,
+        completions,
+        badgeAwards,
+        quizPassRate,
+      })),
+  };
+}
+
 export type PartnerReport = {
   markdown: string;
   filename: string;

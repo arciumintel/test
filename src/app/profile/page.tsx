@@ -17,9 +17,15 @@ import { shortWallet, formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "My learning" };
 
-export default async function ProfilePage() {
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ discord?: string }>;
+}) {
   const user = await getCurrentUser();
   if (!user) redirect("/courses");
+
+  const { discord: discordStatus } = await searchParams;
 
   const [awards, progressRows, passedAttempts, discordAccount, grantFailures] =
     await Promise.all([
@@ -164,6 +170,7 @@ export default async function ProfilePage() {
       <Separator className="my-8" />
 
       <DiscordProfileSection
+        discordStatus={discordStatus ?? null}
         linked={
           discordAccount
             ? {

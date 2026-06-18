@@ -53,6 +53,8 @@ type Props = {
   productSlug: string;
   previouslyPassed: boolean;
   quizPath: string;
+  discordRoleUnlockAvailable?: boolean;
+  discordLinked?: boolean;
 };
 
 export function QuizRunner({
@@ -66,6 +68,8 @@ export function QuizRunner({
   productSlug,
   previouslyPassed,
   quizPath,
+  discordRoleUnlockAvailable = false,
+  discordLinked = false,
 }: Props) {
   const router = useRouter();
   const [answers, setAnswers] = React.useState<(number | null)[]>(
@@ -165,6 +169,23 @@ export function QuizRunner({
                 </AlertDescription>
               </Alert>
             )}
+            {result.newBadge &&
+              discordRoleUnlockAvailable &&
+              !discordLinked && (
+                <Alert variant="info" className="mt-2 text-left">
+                  <Award />
+                  <AlertTitle>Unlock your Discord role</AlertTitle>
+                  <AlertDescription className="space-y-3">
+                    <p>
+                      Connect Discord to receive your server role for this badge.
+                      Optional — your Arcademy badge is already saved.
+                    </p>
+                    <Button asChild size="sm">
+                      <a href="/api/discord/connect">Connect Discord</a>
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              )}
             {result.passed && !result.courseCompleted && (
               <Alert variant="info" className="mt-2 text-left">
                 <CheckCircle2 />

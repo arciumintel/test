@@ -1,17 +1,14 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ChevronLeft, Eye } from "lucide-react";
+import { notFound, redirect } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { CourseStatusControls } from "@/components/admin/course-status-controls";
-import { StaffPartnerReviewControls } from "@/components/admin/staff-partner-review-controls";
-import { PublishReadinessPanel } from "@/components/admin/publish-readiness-panel";
 import { CourseEditorTabs } from "@/components/admin/course-editor-tabs";
-import { prisma } from "@/lib/prisma";
+import { PartnerCourseStatusControls } from "@/components/project-console/partner-course-status-controls";
 import { getCourseAnalytics } from "@/lib/analytics";
-import { getCoursePublishReadiness } from "@/lib/publish-readiness";
-import { coursePath } from "@/lib/paths";
 import { formatCourseStatus } from "@/lib/course-status";
+import { getProjectAdminAccess } from "@/lib/project-admin";
+import { prisma } from "@/lib/prisma";
 import type { CourseStatus } from "@prisma/client";
 
 const STATUS_VARIANT: Record<CourseStatus, "success" | "muted" | "secondary" | "default"> = {
@@ -24,40 +21,47 @@ const STATUS_VARIANT: Record<CourseStatus, "success" | "muted" | "secondary" | "
   archived: "muted",
 };
 
-export default async function CourseEditorPage({
+export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ productId: string; courseId: string }>;
 }) {
-  const { id } = await params;
+  const { courseId } = await params;
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: { title: true },
+  });
+  return { title: course ? `Edit — ${course.title}` : "Edit course draft" };
+}
 
-  const [course, products, readiness] = await Promise.all([
-    prisma.course.findUnique({
-      where: { id },
-      include: {
-        product: true,
-        lessons: { orderBy: { order: "asc" } },
-        badge: true,
-        quizzes: {
-          where: { lessonId: null },
-          include: { questions: { orderBy: { order: "asc" } } },
-        },
-        reviewRequestedBy: { select: { walletAddress: true } },
+export default async function PartnerCourseEditorPage({
+  params,
+}: {
+  params: Promise<{ productId: string; courseId: string }>;
+}) {
+  const { productId, courseId } = await params;
+  const access = await getProjectAdminAccess(productId);
+  if (!access.user) redirect("/courses");
+  if (!access.canManage) redirect("/project-console");
+
+  const course = await prisma.course.findUnique({
+    where: { id: courseId, productId },
+    include: {
+      product: true,
+      lessons: { orderBy: { order: "asc" } },
+      badge: true,
+      quizzes: {
+        where: { lessonId: null },
+        include: { questions: { orderBy: { order: "asc" } } },
       },
-    }),
-    prisma.product.findMany({
-      orderBy: { name: "asc" },
-      select: { id: true, name: true, status: true },
-    }),
-    getCoursePublishReadiness(id),
-  ]);
-
+    },
+  });
   if (!course) notFound();
 
   const analytics = await getCourseAnalytics(course.id);
   const finalQuiz = course.quizzes[0] ?? null;
   const prerequisiteOptions = await prisma.course.findMany({
-    where: { productId: course.productId, id: { not: course.id } },
+    where: { productId, id: { not: course.id } },
     orderBy: { title: "asc" },
     select: { id: true, title: true },
   });
@@ -65,11 +69,11 @@ export default async function CourseEditorPage({
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <Link
-        href="/admin"
+        href={`/project-console/${productId}/courses`}
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        Dashboard
+        Course drafts
       </Link>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -78,57 +82,38 @@ export default async function CourseEditorPage({
             <h1 className="text-2xl font-semibold tracking-tight">
               {course.title}
             </h1>
-            <Badge
-              variant={STATUS_VARIANT[course.status]}
-            >
+            <Badge variant={STATUS_VARIANT[course.status]}>
               {formatCourseStatus(course.status)}
             </Badge>
           </div>
-          <p className="mt-1 font-mono text-xs text-muted-foreground">
-            /products/{course.product.slug}/courses/{course.slug}
+          <p className="mt-1 text-sm text-muted-foreground">
+            Partner course draft for {course.product.name}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" asChild>
-            <Link
-              href={coursePath(course.product.slug, course.slug)}
-              target="_blank"
-            >
-              <Eye />
-              Preview
-            </Link>
-          </Button>
-          <StaffPartnerReviewControls
-            courseId={course.id}
-            status={course.status}
-          />
-          <CourseStatusControls courseId={course.id} status={course.status} />
-        </div>
+        <PartnerCourseStatusControls
+          productId={productId}
+          courseId={course.id}
+          status={course.status}
+        />
       </div>
 
       {course.staffReviewNotes && (
-        <p className="mt-4 rounded-lg border border-border bg-muted/30 p-3 text-sm">
-          <span className="font-medium">Staff review notes:</span>{" "}
-          {course.staffReviewNotes}
-        </p>
+        <Alert className="mt-4" variant="warning">
+          <AlertDescription>
+            <span className="font-medium">Staff feedback:</span>{" "}
+            {course.staffReviewNotes}
+          </AlertDescription>
+        </Alert>
       )}
 
-      {course.status === "submitted_for_review" && course.submittedForReviewAt && (
-        <p className="mt-2 text-sm text-muted-foreground">
-          Submitted for review on{" "}
-          {new Date(course.submittedForReviewAt).toLocaleString()}
-          {course.reviewRequestedBy
-            ? ` by ${course.reviewRequestedBy.walletAddress.slice(0, 4)}…${course.reviewRequestedBy.walletAddress.slice(-4)}`
-            : ""}
-          .
-        </p>
+      {course.status === "submitted_for_review" && (
+        <Alert className="mt-4">
+          <AlertDescription>
+            This course is with Arcademy staff for review. You cannot edit it until
+            staff requests changes or publishes it.
+          </AlertDescription>
+        </Alert>
       )}
-
-      <PublishReadinessPanel
-        report={readiness}
-        status={course.status}
-        entityLabel="course"
-      />
 
       <CourseEditorTabs
         course={{
@@ -185,8 +170,17 @@ export default async function CourseEditorPage({
             : null
         }
         analytics={analytics}
-        products={products}
+        products={[
+          {
+            id: course.product.id,
+            name: course.product.name,
+            status: course.product.status,
+          },
+        ]}
         prerequisiteOptions={prerequisiteOptions}
+        variant="partner"
+        partnerProductId={productId}
+        courseStatus={course.status}
       />
     </div>
   );

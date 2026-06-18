@@ -12,13 +12,14 @@ type Props = {
   onChange: (url: string) => void;
   label?: string;
   className?: string;
+  productId?: string;
 };
 
 /**
  * Signed, direct-to-Cloudinary upload. We only ever keep the returned
  * secure_url; the file never passes through our own server.
  */
-export function CloudinaryUpload({ value, onChange, label, className }: Props) {
+export function CloudinaryUpload({ value, onChange, label, className, productId }: Props) {
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -27,7 +28,11 @@ export function CloudinaryUpload({ value, onChange, label, className }: Props) {
     setBusy(true);
     setError(null);
     try {
-      const signRes = await fetch("/api/cloudinary/sign", { method: "POST" });
+      const signRes = await fetch("/api/cloudinary/sign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(productId ? { productId } : {}),
+      });
       if (!signRes.ok) {
         const body = await signRes.json().catch(() => ({}));
         throw new Error(body.error ?? "Could not start upload.");

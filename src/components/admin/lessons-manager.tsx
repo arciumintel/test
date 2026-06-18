@@ -26,6 +26,12 @@ import {
   deleteLesson,
   reorderLessons,
 } from "@/app/actions/admin";
+import {
+  createPartnerLesson,
+  updatePartnerLesson,
+  deletePartnerLesson,
+  reorderPartnerLessons,
+} from "@/app/actions/project-courses";
 import type { LessonStatus } from "@prisma/client";
 
 export type AdminLesson = {
@@ -42,9 +48,15 @@ export type AdminLesson = {
 export function LessonsManager({
   courseId,
   lessons,
+  variant = "admin",
+  partnerProductId,
+  readOnly = false,
 }: {
   courseId: string;
   lessons: AdminLesson[];
+  variant?: "admin" | "partner";
+  partnerProductId?: string;
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const [editing, setEditing] = React.useState<string | "new" | null>(null);
@@ -56,7 +68,11 @@ export function LessonsManager({
     const ids = lessons.map((l) => l.id);
     [ids[index], ids[target]] = [ids[target], ids[index]];
     setReordering(true);
-    await reorderLessons(courseId, ids);
+    if (variant === "partner" && partnerProductId) {
+      await reorderPartnerLessons(partnerProductId, courseId, ids);
+    } else {
+      await reorderLessons(courseId, ids);
+    }
     setReordering(false);
     router.refresh();
   }
@@ -68,7 +84,7 @@ export function LessonsManager({
           {lessons.length} lesson{lessons.length === 1 ? "" : "s"}. Learners
           progress through these in order.
         </p>
-        {editing !== "new" && (
+        {!readOnly && editing !== "new" && (
           <Button size="sm" onClick={() => setEditing("new")}>
             <Plus />
             Add lesson
@@ -76,9 +92,11 @@ export function LessonsManager({
         )}
       </div>
 
-      {editing === "new" && (
+      {!readOnly && editing === "new" && (
         <LessonForm
           courseId={courseId}
+          variant={variant}
+          partnerProductId={partnerProductId}
           onDone={() => {
             setEditing(null);
             router.refresh();
@@ -94,6 +112,8 @@ export function LessonsManager({
               key={lesson.id}
               courseId={courseId}
               lesson={lesson}
+              variant={variant}
+              partnerProductId={partnerProductId}
               onDone={() => {
                 setEditing(null);
                 router.refresh();
@@ -105,25 +125,29 @@ export function LessonsManager({
               key={lesson.id}
               className="flex items-center gap-3 rounded-lg border bg-card px-3 py-2.5"
             >
-              <GripVertical className="size-4 text-muted-foreground/50" />
-              <div className="flex flex-col">
-                <button
-                  onClick={() => move(i, -1)}
-                  disabled={i === 0 || reordering}
-                  className="text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
-                  aria-label="Move up"
-                >
-                  <ChevronUp className="size-4" />
-                </button>
-                <button
-                  onClick={() => move(i, 1)}
-                  disabled={i === lessons.length - 1 || reordering}
-                  className="text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
-                  aria-label="Move down"
-                >
-                  <ChevronDown className="size-4" />
-                </button>
-              </div>
+              {!readOnly && (
+                <>
+                  <GripVertical className="size-4 text-muted-foreground/50" />
+                  <div className="flex flex-col">
+                    <button
+                      onClick={() => move(i, -1)}
+                      disabled={i === 0 || reordering}
+                      className="text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                      aria-label="Move up"
+                    >
+                      <ChevronUp className="size-4" />
+                    </button>
+                    <button
+                      onClick={() => move(i, 1)}
+                      disabled={i === lessons.length - 1 || reordering}
+                      className="text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
+                      aria-label="Move down"
+                    >
+                      <ChevronDown className="size-4" />
+                    </button>
+                  </div>
+                </>
+              )}
               <span className="w-6 text-sm text-muted-foreground">{i + 1}</span>
               <span className="flex-1 truncate text-sm font-medium">
                 {lesson.title}
@@ -134,17 +158,23 @@ export function LessonsManager({
               {!lesson.required && (
                 <Badge variant="muted">Optional</Badge>
               )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setEditing(lesson.id)}
-              >
-                <Pencil />
-              </Button>
-              <DeleteLessonButton
-                lessonId={lesson.id}
-                onDeleted={() => router.refresh()}
-              />
+              {!readOnly && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setEditing(lesson.id)}
+                  >
+                    <Pencil />
+                  </Button>
+                  <DeleteLessonButton
+                    lessonId={lesson.id}
+                    variant={variant}
+                    partnerProductId={partnerProductId}
+                    onDeleted={() => router.refresh()}
+                  />
+                </>
+              )}
             </div>
           )
         )}
@@ -161,11 +191,15 @@ export function LessonsManager({
 function LessonForm({
   courseId,
   lesson,
+  variant = "admin",
+  partnerProductId,
   onDone,
   onCancel,
 }: {
   courseId: string;
   lesson?: AdminLesson;
+  variant?: "admin" | "partner";
+  partnerProductId?: string;
   onDone: () => void;
   onCancel: () => void;
 }) {
@@ -194,9 +228,14 @@ function LessonForm({
       required,
       estimatedDuration: estimatedDuration ? Number(estimatedDuration) : null,
     };
-    const res = lesson
-      ? await updateLesson(lesson.id, payload)
-      : await createLesson(courseId, payload);
+    const res =
+      lesson && variant === "partner" && partnerProductId
+        ? await updatePartnerLesson(partnerProductId, lesson.id, payload)
+        : lesson
+          ? await updateLesson(lesson.id, payload)
+          : variant === "partner" && partnerProductId
+            ? await createPartnerLesson(partnerProductId, courseId, payload)
+            : await createLesson(courseId, payload);
     setBusy(false);
     if ("error" in res) {
       setError(res.error);
@@ -239,6 +278,7 @@ function LessonForm({
         label="Lesson media (optional)"
         value={mediaUrl}
         onChange={setMediaUrl}
+        productId={variant === "partner" ? partnerProductId : undefined}
       />
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
@@ -290,9 +330,13 @@ function LessonForm({
 
 function DeleteLessonButton({
   lessonId,
+  variant = "admin",
+  partnerProductId,
   onDeleted,
 }: {
   lessonId: string;
+  variant?: "admin" | "partner";
+  partnerProductId?: string;
   onDeleted: () => void;
 }) {
   const [confirming, setConfirming] = React.useState(false);
@@ -300,7 +344,11 @@ function DeleteLessonButton({
 
   async function handleDelete() {
     setBusy(true);
-    await deleteLesson(lessonId);
+    if (variant === "partner" && partnerProductId) {
+      await deletePartnerLesson(partnerProductId, lessonId);
+    } else {
+      await deleteLesson(lessonId);
+    }
     setBusy(false);
     onDeleted();
   }

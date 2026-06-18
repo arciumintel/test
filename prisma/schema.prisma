@@ -23,6 +23,10 @@ enum CourseLevel {
 
 enum CourseStatus {
   draft
+  partner_draft
+  submitted_for_review
+  staff_changes_requested
+  approved
   published
   archived
 }
@@ -135,6 +139,8 @@ model User {
   invitedProjectAdmins ProjectAdmin[] @relation("ProjectAdminInviter")
   createdDiscordIntegrations ProjectDiscordIntegration[]
   discordRoleGrants DiscordRoleGrant[]
+  coursesSubmittedForReview Course[] @relation("CourseReviewRequestedBy")
+  coursesReviewed           Course[] @relation("CourseReviewedBy")
 }
 
 /// One-time challenge used to verify wallet ownership during sign-in.
@@ -163,10 +169,17 @@ model Course {
   learningOutcomes      String[] // bullet list of "what you'll learn"
   courseType            CourseType   @default(foundational)
   prerequisiteCourseIds String[]     @default([])
+  submittedForReviewAt  DateTime?
+  reviewedAt            DateTime?
+  staffReviewNotes      String?
+  reviewRequestedByUserId String?
+  reviewedByUserId      String?
   createdAt             DateTime     @default(now())
   updatedAt             DateTime     @updatedAt
 
-  product     Product      @relation(fields: [productId], references: [id])
+  product             Product @relation(fields: [productId], references: [id])
+  reviewRequestedBy   User?   @relation("CourseReviewRequestedBy", fields: [reviewRequestedByUserId], references: [id], onDelete: SetNull)
+  reviewedBy          User?   @relation("CourseReviewedBy", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
   lessons     Lesson[]
   quizzes     Quiz[]
   progress    Progress[]

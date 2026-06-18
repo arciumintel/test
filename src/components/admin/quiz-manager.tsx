@@ -26,6 +26,12 @@ import {
   updateQuestion,
   deleteQuestion,
 } from "@/app/actions/admin";
+import {
+  upsertPartnerFinalQuiz,
+  createPartnerQuestion,
+  updatePartnerQuestion,
+  deletePartnerQuestion,
+} from "@/app/actions/project-courses";
 
 export type AdminQuestion = {
   id: string;
@@ -47,14 +53,22 @@ export type AdminQuiz = {
 export function QuizManager({
   courseId,
   quiz,
+  variant = "admin",
+  partnerProductId,
+  readOnly = false,
 }: {
   courseId: string;
   quiz: AdminQuiz;
+  variant?: "admin" | "partner";
+  partnerProductId?: string;
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const [title, setTitle] = React.useState(quiz?.title ?? "Course Quiz");
   const [description, setDescription] = React.useState(quiz?.description ?? "");
-  const [status, setStatus] = React.useState<QuizStatus>(quiz?.status ?? "published");
+  const [status, setStatus] = React.useState<QuizStatus>(
+    quiz?.status ?? (variant === "partner" ? "draft" : "published")
+  );
   const [threshold, setThreshold] = React.useState(
     String(quiz?.passThreshold ?? 70)
   );
@@ -65,12 +79,20 @@ export function QuizManager({
   async function saveQuiz() {
     setSavingQuiz(true);
     setQuizError(null);
-    const res = await upsertFinalQuiz(courseId, {
-      title,
-      passThreshold: Number(threshold),
-      description: description || null,
-      status,
-    });
+    const res =
+      variant === "partner" && partnerProductId
+        ? await upsertPartnerFinalQuiz(partnerProductId, courseId, {
+            title,
+            passThreshold: Number(threshold),
+            description: description || null,
+            status,
+          })
+        : await upsertFinalQuiz(courseId, {
+            title,
+            passThreshold: Number(threshold),
+            description: description || null,
+            status,
+          });
     setSavingQuiz(false);
     if ("error" in res) {
       setQuizError(res.error);
@@ -133,10 +155,12 @@ export function QuizManager({
             </Select>
           </div>
           <div className="flex items-center gap-3">
-            <Button onClick={saveQuiz} disabled={savingQuiz} size="sm">
-              {savingQuiz ? <Loader2 className="animate-spin" /> : <Save />}
-              {quiz ? "Save quiz settings" : "Create quiz"}
-            </Button>
+            {!readOnly && (
+              <Button onClick={saveQuiz} disabled={savingQuiz} size="sm">
+                {savingQuiz ? <Loader2 className="animate-spin" /> : <Save />}
+                {quiz ? "Save quiz settings" : "Create quiz"}
+              </Button>
+            )}
             {quizError && (
               <span className="text-sm text-destructive">{quizError}</span>
             )}
@@ -153,7 +177,7 @@ export function QuizManager({
                 ({quiz.questions.length})
               </span>
             </h3>
-            {editing !== "new" && (
+            {editing !== "new" && !readOnly && (
               <Button size="sm" variant="outline" onClick={() => setEditing("new")}>
                 <Plus />
                 Add question
@@ -164,6 +188,8 @@ export function QuizManager({
           {editing === "new" && (
             <QuestionForm
               quizId={quiz.id}
+              variant={variant}
+              partnerProductId={partnerProductId}
               onDone={() => {
                 setEditing(null);
                 router.refresh();
@@ -178,6 +204,8 @@ export function QuizManager({
                 key={q.id}
                 quizId={quiz.id}
                 question={q}
+                variant={variant}
+                partnerProductId={partnerProductId}
                 onDone={() => {
                   setEditing(null);
                   router.refresh();
@@ -193,17 +221,23 @@ export function QuizManager({
                       {q.prompt}
                     </p>
                     <div className="flex shrink-0 items-center">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setEditing(q.id)}
-                      >
-                        <Pencil />
-                      </Button>
-                      <DeleteQuestionButton
-                        questionId={q.id}
-                        onDeleted={() => router.refresh()}
-                      />
+                      {!readOnly && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setEditing(q.id)}
+                          >
+                            <Pencil />
+                          </Button>
+                          <DeleteQuestionButton
+                            questionId={q.id}
+                            variant={variant}
+                            partnerProductId={partnerProductId}
+                            onDeleted={() => router.refresh()}
+                          />
+                        </>
+                      )}
                     </div>
                   </div>
                   <ul className="mt-2 space-y-1 pl-5 text-sm">
@@ -248,11 +282,15 @@ export function QuizManager({
 function QuestionForm({
   quizId,
   question,
+  variant = "admin",
+  partnerProductId,
   onDone,
   onCancel,
 }: {
   quizId: string;
   question?: AdminQuestion;
+  variant?: "admin" | "partner";
+  partnerProductId?: string;
   onDone: () => void;
   onCancel: () => void;
 }) {
@@ -279,8 +317,12 @@ function QuestionForm({
       explanation: explanation || null,
     };
     const res = question
-      ? await updateQuestion(question.id, payload)
-      : await createQuestion(quizId, payload);
+      ? variant === "partner" && partnerProductId
+        ? await updatePartnerQuestion(partnerProductId, question.id, payload)
+        : await updateQuestion(question.id, payload)
+      : variant === "partner" && partnerProductId
+        ? await createPartnerQuestion(partnerProductId, quizId, payload)
+        : await createQuestion(quizId, payload);
     setBusy(false);
     if ("error" in res) {
       setError(res.error);
@@ -389,9 +431,13 @@ function QuestionForm({
 
 function DeleteQuestionButton({
   questionId,
+  variant = "admin",
+  partnerProductId,
   onDeleted,
 }: {
   questionId: string;
+  variant?: "admin" | "partner";
+  partnerProductId?: string;
   onDeleted: () => void;
 }) {
   const [busy, setBusy] = React.useState(false);
@@ -402,7 +448,11 @@ function DeleteQuestionButton({
       disabled={busy}
       onClick={async () => {
         setBusy(true);
-        await deleteQuestion(questionId);
+        if (variant === "partner" && partnerProductId) {
+          await deletePartnerQuestion(partnerProductId, questionId);
+        } else {
+          await deleteQuestion(questionId);
+        }
         setBusy(false);
         onDeleted();
       }}

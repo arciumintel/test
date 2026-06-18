@@ -22,12 +22,15 @@ function isStaleDevClient(client: PrismaClient): boolean {
   const c = client as {
     partnerIntake?: { create?: unknown };
     analyticsEvent?: { create?: unknown };
+    projectDiscordIntegration?: { upsert?: unknown };
   };
   return (
     !c.partnerIntake ||
     typeof c.partnerIntake.create !== "function" ||
     !c.analyticsEvent ||
-    typeof c.analyticsEvent.create !== "function"
+    typeof c.analyticsEvent.create !== "function" ||
+    !c.projectDiscordIntegration ||
+    typeof c.projectDiscordIntegration.upsert !== "function"
   );
 }
 

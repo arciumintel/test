@@ -209,8 +209,12 @@ export async function setCourseStatus(
     const staff = await requireStaff().catch(() => null);
     const finalQuiz = course.quizzes[0];
     if (staff) {
+      const eventName =
+        current.status === "approved"
+          ? "staff_partner_course_published"
+          : "admin_course_published";
       trackEventFireAndForget({
-        eventName: "admin_course_published",
+        eventName,
         source: "admin",
         path: `/admin/courses/${id}`,
         userId: staff.id,
@@ -551,15 +555,127 @@ export async function upsertBadge(
         userId: staff.id,
         courseId,
         badgeId: badge.id,
-        metadata: {
-          adminUserId: staff.id,
-          hasImage: Boolean(badge.imageUrl),
-          hasCriteria: Boolean(badge.criteria),
-        },
       });
     }
   }
 
   revalidatePath(`/admin/courses/${courseId}`);
   return { ok: true };
+}
+
+// ── Partner course staff review ─────────────────────────────────────────────
+
+export async function requestPartnerChanges(
+  courseId: string,
+  notes: string
+): Promise<Result> {
+  const err = await guard();
+  if (err) return { error: err };
+
+  const trimmed = notes.trim();
+  if (!trimmed) return { error: "Add notes explaining what the partner should change." };
+
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    include: { product: { select: { id: true, slug: true } } },
+  });
+  if (!course) return { error: "Course not found." };
+  if (course.status !== "submitted_for_review") {
+    return { error: "Only submitted courses can be sent back for changes." };
+  }
+
+  const staff = await requireStaff().catch(() => null);
+
+  await prisma.course.update({
+    where: { id: courseId },
+    data: {
+      status: "staff_changes_requested",
+      staffReviewNotes: trimmed,
+      reviewedAt: new Date(),
+      reviewedByUserId: staff?.id ?? null,
+    },
+  });
+
+  if (staff) {
+    trackEventFireAndForget({
+      eventName: "staff_partner_course_changes_requested",
+      source: "admin",
+      path: `/admin/courses/${courseId}`,
+      userId: staff.id,
+      courseId,
+      courseSlug: course.slug,
+      ecosystemProjectId: course.product.id,
+      ecosystemProjectSlug: course.product.slug,
+      metadata: { adminUserId: staff.id },
+    });
+  }
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin/courses/${courseId}`);
+  revalidatePath(`/project-console/${course.product.id}/courses/${courseId}`);
+  return { ok: true };
+}
+
+export async function approvePartnerCourse(courseId: string): Promise<Result> {
+  const err = await guard();
+  if (err) return { error: err };
+
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    include: { product: { select: { id: true, slug: true } } },
+  });
+  if (!course) return { error: "Course not found." };
+  if (course.status !== "submitted_for_review") {
+    return { error: "Only submitted courses can be approved." };
+  }
+
+  const staff = await requireStaff().catch(() => null);
+
+  await prisma.course.update({
+    where: { id: courseId },
+    data: {
+      status: "approved",
+      reviewedAt: new Date(),
+      reviewedByUserId: staff?.id ?? null,
+      staffReviewNotes: null,
+    },
+  });
+
+  if (staff) {
+    trackEventFireAndForget({
+      eventName: "staff_partner_course_approved",
+      source: "admin",
+      path: `/admin/courses/${courseId}`,
+      userId: staff.id,
+      courseId,
+      courseSlug: course.slug,
+      ecosystemProjectId: course.product.id,
+      ecosystemProjectSlug: course.product.slug,
+      metadata: { adminUserId: staff.id },
+    });
+  }
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin/courses/${courseId}`);
+  revalidatePath(`/project-console/${course.product.id}/courses/${courseId}`);
+  return { ok: true };
+}
+
+export async function publishApprovedCourse(courseId: string): Promise<Result> {
+  const err = await guard();
+  if (err) return { error: err };
+
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: { status: true },
+  });
+  if (!course) return { error: "Course not found." };
+  if (course.status !== "approved" && course.status !== "draft") {
+    return {
+      error:
+        "Only approved partner courses or staff drafts can be published from this action.",
+    };
+  }
+
+  return setCourseStatus(courseId, "published");
 }

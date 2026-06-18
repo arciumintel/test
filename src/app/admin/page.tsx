@@ -18,16 +18,21 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CourseStatusControls } from "@/components/admin/course-status-controls";
 import { prisma } from "@/lib/prisma";
 import { getPlatformSummary } from "@/lib/analytics";
+import { formatCourseStatus } from "@/lib/course-status";
 import type { CourseStatus } from "@prisma/client";
 
 export const metadata: Metadata = { title: "Admin" };
 
 const STATUS_VARIANT: Record<
   CourseStatus,
-  "success" | "muted" | "secondary"
+  "success" | "muted" | "secondary" | "default"
 > = {
   published: "success",
   draft: "secondary",
+  partner_draft: "secondary",
+  submitted_for_review: "default",
+  staff_changes_requested: "default",
+  approved: "secondary",
   archived: "muted",
 };
 
@@ -144,8 +149,8 @@ export default async function AdminDashboard() {
                   >
                     {course.title}
                   </Link>
-                  <Badge variant={STATUS_VARIANT[course.status]} className="capitalize">
-                    {course.status}
+                  <Badge variant={STATUS_VARIANT[course.status]}>
+                    {formatCourseStatus(course.status)}
                   </Badge>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">

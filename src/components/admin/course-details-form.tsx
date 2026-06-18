@@ -10,7 +10,13 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { CloudinaryUpload } from "@/components/cloudinary-upload";
 import { createCourse, updateCourse } from "@/app/actions/admin";
+import {
+  createPartnerCourse,
+  updatePartnerCourse,
+} from "@/app/actions/project-courses";
 import type { CourseLevel, CourseType } from "@prisma/client";
+
+type EditorVariant = "admin" | "partner";
 
 type Initial = {
   id?: string;
@@ -41,17 +47,25 @@ export function CourseDetailsForm({
   initial,
   products,
   prerequisiteOptions = [],
+  variant = "admin",
+  partnerProductId,
+  coursePathPrefix,
+  readOnly = false,
 }: {
   initial?: Initial;
   products: ProductOption[];
   prerequisiteOptions?: PrerequisiteOption[];
+  variant?: EditorVariant;
+  partnerProductId?: string;
+  coursePathPrefix?: string;
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const isEdit = Boolean(initial?.id);
 
   const [title, setTitle] = React.useState(initial?.title ?? "");
   const [productId, setProductId] = React.useState(
-    initial?.productId ?? products[0]?.id ?? ""
+    initial?.productId ?? partnerProductId ?? products[0]?.id ?? ""
   );
   const [summary, setSummary] = React.useState(initial?.summary ?? "");
   const [description, setDescription] = React.useState(
@@ -101,8 +115,12 @@ export function CourseDetailsForm({
 
     const res =
       isEdit && initial?.id
-        ? await updateCourse(initial.id, payload)
-        : await createCourse(payload);
+        ? variant === "partner" && partnerProductId
+          ? await updatePartnerCourse(partnerProductId, initial.id, payload)
+          : await updateCourse(initial.id, payload)
+        : variant === "partner" && partnerProductId
+          ? await createPartnerCourse(partnerProductId, payload)
+          : await createCourse(payload);
 
     setBusy(false);
     if ("error" in res) {
@@ -110,7 +128,12 @@ export function CourseDetailsForm({
       return;
     }
     if (!isEdit && "id" in res) {
-      router.push(`/admin/courses/${res.id}`);
+      const base =
+        coursePathPrefix ??
+        (variant === "partner" && partnerProductId
+          ? `/project-console/${partnerProductId}/courses`
+          : "/admin/courses");
+      router.push(`${base}/${res.id}`);
       return;
     }
     setSaved(true);
@@ -138,6 +161,7 @@ export function CourseDetailsForm({
             value={productId}
             onChange={(e) => setProductId(e.target.value)}
             required
+            disabled={variant === "partner"}
           >
             {products.map((product) => (
               <option key={product.id} value={product.id}>
@@ -291,13 +315,16 @@ export function CourseDetailsForm({
         label="Course thumbnail"
         value={thumbnailUrl}
         onChange={setThumbnailUrl}
+        productId={variant === "partner" ? partnerProductId : undefined}
       />
 
       <div className="flex items-center gap-3">
-        <Button type="submit" disabled={busy || products.length === 0}>
-          {busy ? <Loader2 className="animate-spin" /> : <Save />}
-          {isEdit ? "Save changes" : "Create course"}
-        </Button>
+        {!readOnly && (
+          <Button type="submit" disabled={busy || products.length === 0}>
+            {busy ? <Loader2 className="animate-spin" /> : <Save />}
+            {isEdit ? "Save changes" : "Create course"}
+          </Button>
+        )}
         {saved && (
           <span className="flex items-center gap-1 text-sm text-success">
             <Check className="size-4" />

@@ -32,3 +32,29 @@ export async function verifyDiscordOAuthState(
     return null;
   }
 }
+
+export async function createDiscordBotInstallState(
+  productId: string,
+  userId: string
+): Promise<string> {
+  return new SignJWT({ userId, productId, purpose: "discord_bot_install" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime(`${MAX_AGE}s`)
+    .sign(getSecret());
+}
+
+export async function verifyDiscordBotInstallState(
+  state: string
+): Promise<{ userId: string; productId: string } | null> {
+  try {
+    const { payload } = await jwtVerify(state, getSecret());
+    if (payload.purpose !== "discord_bot_install") return null;
+    const userId = payload.userId;
+    const productId = payload.productId;
+    if (typeof userId !== "string" || typeof productId !== "string") return null;
+    return { userId, productId };
+  } catch {
+    return null;
+  }
+}

@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, ClipboardList } from "lucide-react";
 import { ProjectDiscordConsole } from "@/components/project-console/project-discord-console";
+import { Button } from "@/components/ui/button";
 import { getProjectAdminAccess } from "@/lib/project-admin";
-import { getDiscordBotInviteUrl, isDiscordConfigured } from "@/lib/discord";
+import { getDiscordBotInviteUrlForProduct, isDiscordConfigured, listAssignableGuildRoles } from "@/lib/discord";
 import { prisma } from "@/lib/prisma";
 import { shortWallet } from "@/lib/utils";
 
@@ -22,10 +23,13 @@ export async function generateMetadata({
 
 export default async function ProjectDiscordPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ productId: string }>;
+  searchParams: Promise<{ discord?: string }>;
 }) {
   const { productId } = await params;
+  const { discord: discordStatus } = await searchParams;
   const access = await getProjectAdminAccess(productId);
   if (!access.user) redirect("/courses");
   if (!access.canManage) redirect("/project-console");
@@ -67,6 +71,31 @@ export default async function ProjectDiscordPage({
       })
     : [];
 
+  let botInviteUrl: string | null = null;
+  let botInviteConfigError: string | null = null;
+  if (isDiscordConfigured() && access.user) {
+    try {
+      botInviteUrl = await getDiscordBotInviteUrlForProduct(productId, access.user.id);
+    } catch {
+      botInviteConfigError =
+        "Bot install redirects are not configured. Set NEXT_PUBLIC_APP_URL in .env and register the bot-install callback URL in the Discord Developer Portal.";
+    }
+  }
+
+  let initialGuildRoles: { id: string; name: string; position: number }[] = [];
+  let initialGuildRolesError: string | null = null;
+  if (integration?.guildId && integration.botInstalled && isDiscordConfigured()) {
+    try {
+      initialGuildRoles = await listAssignableGuildRoles(integration.guildId);
+      if (initialGuildRoles.length === 0) {
+        initialGuildRolesError = "No assignable roles found — check bot permissions.";
+      }
+    } catch {
+      initialGuildRolesError =
+        "Could not load Discord roles. Check bot permissions and try again.";
+    }
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
       <Link
@@ -77,10 +106,22 @@ export default async function ProjectDiscordPage({
         Project console
       </Link>
 
+      <div className="mb-6">
+        <Button asChild variant="outline" size="sm">
+          <Link href={`/project-console/${productId}/self-service`}>
+            <ClipboardList className="size-4" />
+            Partner self-service
+          </Link>
+        </Button>
+      </div>
+
       <ProjectDiscordConsole
+        key={`${integration?.guildId ?? "none"}:${integration?.status ?? "draft"}:${initialGuildRoles.length}`}
         productId={product.id}
         productName={product.name}
-        botInviteUrl={isDiscordConfigured() ? getDiscordBotInviteUrl() : null}
+        botInviteUrl={botInviteUrl}
+        botInviteConfigError={botInviteConfigError}
+        discordStatus={discordStatus ?? null}
         integration={
           integration
             ? {
@@ -108,6 +149,8 @@ export default async function ProjectDiscordPage({
           unlockLabel: r.unlockLabel,
           status: r.status,
         }))}
+        initialGuildRoles={initialGuildRoles}
+        initialGuildRolesError={initialGuildRolesError}
         recentGrants={recentGrants.map((g) => ({
           id: g.id,
           status: g.status,
