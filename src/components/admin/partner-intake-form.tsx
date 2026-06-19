@@ -22,6 +22,8 @@ type Initial = {
   partnerName: string;
   contactName: string | null;
   contactEmail: string | null;
+  projectName: string | null;
+  projectDescription: string | null;
   sourceMaterialUrl: string | null;
   requestedCourseTopic: string | null;
   reviewStatus: PartnerIntakeReviewStatus;
@@ -35,6 +37,7 @@ const STATUS_LABELS: Record<PartnerIntakeReviewStatus, string> = {
   partner_review: "Partner review",
   approved: "Approved",
   published: "Published",
+  rejected: "Rejected",
 };
 
 export function PartnerIntakeForm({
@@ -51,6 +54,10 @@ export function PartnerIntakeForm({
   const [partnerName, setPartnerName] = React.useState(initial?.partnerName ?? "");
   const [contactName, setContactName] = React.useState(initial?.contactName ?? "");
   const [contactEmail, setContactEmail] = React.useState(initial?.contactEmail ?? "");
+  const [projectName, setProjectName] = React.useState(initial?.projectName ?? "");
+  const [projectDescription, setProjectDescription] = React.useState(
+    initial?.projectDescription ?? ""
+  );
   const [sourceMaterialUrl, setSourceMaterialUrl] = React.useState(
     initial?.sourceMaterialUrl ?? ""
   );
@@ -76,6 +83,8 @@ export function PartnerIntakeForm({
       partnerName,
       contactName: contactName || null,
       contactEmail: contactEmail || null,
+      projectName: projectName || null,
+      projectDescription: projectDescription || null,
       sourceMaterialUrl: sourceMaterialUrl || null,
       requestedCourseTopic: requestedCourseTopic || null,
       reviewStatus,
@@ -134,6 +143,29 @@ export function PartnerIntakeForm({
               )
             )}
           </Select>
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-2">
+          <Label htmlFor="intake-project-name">
+            Ecosystem project name{" "}
+            <span className="text-muted-foreground">(applications)</span>
+          </Label>
+          <Input
+            id="intake-project-name"
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+          />
+        </div>
+        <div className="grid gap-2 sm:col-span-2">
+          <Label htmlFor="intake-project-desc">Project description</Label>
+          <Textarea
+            id="intake-project-desc"
+            value={projectDescription}
+            onChange={(e) => setProjectDescription(e.target.value)}
+            rows={3}
+          />
         </div>
       </div>
 

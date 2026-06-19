@@ -30,7 +30,7 @@ export default async function PartnerCoursesPage({
   const { productId } = await params;
   const access = await getProjectAdminAccess(productId);
   if (!access.user) redirect("/courses");
-  if (!access.canManage) redirect("/project-console");
+  if (!access.canManage) redirect("/partner-console");
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
@@ -45,11 +45,11 @@ export default async function PartnerCoursesPage({
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
       <Link
-        href="/project-console"
+        href="/partner-console"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        Project console
+        Partner console
       </Link>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -60,7 +60,7 @@ export default async function PartnerCoursesPage({
           </p>
         </div>
         <Button asChild>
-          <Link href={`/project-console/${productId}/courses/new`}>
+          <Link href={`/partner-console/${productId}/courses/new`}>
             <Plus className="size-4" />
             Create course draft
           </Link>
@@ -81,7 +81,7 @@ export default async function PartnerCoursesPage({
                 <div>
                   <div className="flex items-center gap-2">
                     <Link
-                      href={`/project-console/${productId}/courses/${course.id}`}
+                      href={`/partner-console/${productId}/courses/${course.id}`}
                       className="font-medium hover:text-primary"
                     >
                       {course.title}
@@ -96,7 +96,7 @@ export default async function PartnerCoursesPage({
                   </p>
                 </div>
                 <Button asChild variant="outline" size="sm">
-                  <Link href={`/project-console/${productId}/courses/${course.id}`}>
+                  <Link href={`/partner-console/${productId}/courses/${course.id}`}>
                     Edit draft
                   </Link>
                 </Button>

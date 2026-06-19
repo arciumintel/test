@@ -26,7 +26,7 @@ const PARTNER_STATUS_TRANSITIONS: Partial<
 };
 
 function selfServicePath(productId: string) {
-  return `/project-console/${productId}/self-service`;
+  return `/partner-console/${productId}/self-service`;
 }
 
 async function guardProduct(productId: string) {

@@ -131,7 +131,7 @@ export function CourseDetailsForm({
       const base =
         coursePathPrefix ??
         (variant === "partner" && partnerProductId
-          ? `/project-console/${partnerProductId}/courses`
+          ? `/partner-console/${partnerProductId}/courses`
           : "/admin/courses");
       router.push(`${base}/${res.id}`);
       return;

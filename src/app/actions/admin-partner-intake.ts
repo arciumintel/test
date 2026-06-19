@@ -27,6 +27,8 @@ const intakeSchema = z.object({
     .union([z.string().email().max(200), z.literal(""), z.null()])
     .optional()
     .transform((v) => (v && String(v).trim() ? String(v).trim() : null)),
+  projectName: z.string().max(120).optional().nullable(),
+  projectDescription: z.string().max(800).optional().nullable(),
   sourceMaterialUrl: z
     .union([z.string().url().max(500), z.literal(""), z.null()])
     .optional()
@@ -39,6 +41,7 @@ const intakeSchema = z.object({
     "partner_review",
     "approved",
     "published",
+    "rejected",
   ]),
   notes: z.string().max(8000).optional().nullable(),
 });
@@ -73,6 +76,8 @@ export async function createPartnerIntake(
         partnerName: parsed.data.partnerName,
         contactName: parsed.data.contactName?.trim() || null,
         contactEmail: parsed.data.contactEmail,
+        projectName: parsed.data.projectName?.trim() || null,
+        projectDescription: parsed.data.projectDescription?.trim() || null,
         sourceMaterialUrl: parsed.data.sourceMaterialUrl,
         requestedCourseTopic: parsed.data.requestedCourseTopic?.trim() || null,
         reviewStatus: parsed.data.reviewStatus,
@@ -140,6 +145,8 @@ export async function updatePartnerIntake(
       partnerName: parsed.data.partnerName,
       contactName: parsed.data.contactName?.trim() || null,
       contactEmail: parsed.data.contactEmail,
+      projectName: parsed.data.projectName?.trim() || null,
+      projectDescription: parsed.data.projectDescription?.trim() || null,
       sourceMaterialUrl: parsed.data.sourceMaterialUrl,
       requestedCourseTopic: parsed.data.requestedCourseTopic?.trim() || null,
       reviewStatus: parsed.data.reviewStatus,

@@ -141,7 +141,7 @@ export function ProjectDiscordConsole({
   React.useEffect(() => {
     if (discordStatus !== "bot_installed") return;
     router.refresh();
-    router.replace(`/project-console/${productId}/discord`, { scroll: false });
+    router.replace(`/partner-console/${productId}/discord`, { scroll: false });
   }, [discordStatus, productId, router]);
 
   React.useEffect(() => {

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ChevronLeft, ClipboardList } from "lucide-react";
-import { ProjectDiscordConsole } from "@/components/project-console/project-discord-console";
+import { ProjectDiscordConsole } from "@/components/partner-console/project-discord-console";
 import { Button } from "@/components/ui/button";
 import { getProjectAdminAccess } from "@/lib/project-admin";
 import { getDiscordBotInviteUrlForProduct, isDiscordConfigured, listAssignableGuildRoles } from "@/lib/discord";
@@ -32,7 +32,7 @@ export default async function ProjectDiscordPage({
   const { discord: discordStatus } = await searchParams;
   const access = await getProjectAdminAccess(productId);
   if (!access.user) redirect("/courses");
-  if (!access.canManage) redirect("/project-console");
+  if (!access.canManage) redirect("/partner-console");
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
@@ -99,16 +99,16 @@ export default async function ProjectDiscordPage({
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
       <Link
-        href="/project-console"
+        href="/partner-console"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        Project console
+        Partner console
       </Link>
 
       <div className="mb-6">
         <Button asChild variant="outline" size="sm">
-          <Link href={`/project-console/${productId}/self-service`}>
+          <Link href={`/partner-console/${productId}/self-service`}>
             <ClipboardList className="size-4" />
             Partner self-service
           </Link>

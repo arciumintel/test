@@ -4,7 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { CourseEditorTabs } from "@/components/admin/course-editor-tabs";
-import { PartnerCourseStatusControls } from "@/components/project-console/partner-course-status-controls";
+import { PartnerCourseStatusControls } from "@/components/partner-console/partner-course-status-controls";
 import { getCourseAnalytics } from "@/lib/analytics";
 import { formatCourseStatus } from "@/lib/course-status";
 import { getProjectAdminAccess } from "@/lib/project-admin";
@@ -42,7 +42,7 @@ export default async function PartnerCourseEditorPage({
   const { productId, courseId } = await params;
   const access = await getProjectAdminAccess(productId);
   if (!access.user) redirect("/courses");
-  if (!access.canManage) redirect("/project-console");
+  if (!access.canManage) redirect("/partner-console");
 
   const course = await prisma.course.findUnique({
     where: { id: courseId, productId },
@@ -69,7 +69,7 @@ export default async function PartnerCourseEditorPage({
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       <Link
-        href={`/project-console/${productId}/courses`}
+        href={`/partner-console/${productId}/courses`}
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />

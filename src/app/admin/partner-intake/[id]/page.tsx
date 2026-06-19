@@ -3,13 +3,14 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { PartnerIntakeForm } from "@/components/admin/partner-intake-form";
+import { PartnerApplicationApprovalPanel } from "@/components/admin/partner-application-approval-panel";
 import { prisma } from "@/lib/prisma";
 import { productPath } from "@/lib/paths";
 import type { PartnerIntakeReviewStatus } from "@prisma/client";
 
 const STATUS_VARIANT: Record<
   PartnerIntakeReviewStatus,
-  "success" | "muted" | "secondary" | "default"
+  "success" | "muted" | "secondary" | "default" | "destructive"
 > = {
   received: "secondary",
   in_review: "default",
@@ -17,6 +18,7 @@ const STATUS_VARIANT: Record<
   partner_review: "default",
   approved: "muted",
   published: "success",
+  rejected: "destructive",
 };
 
 export default async function PartnerIntakeDetailPage({
@@ -28,7 +30,10 @@ export default async function PartnerIntakeDetailPage({
   const [intake, products] = await Promise.all([
     prisma.partnerIntake.findUnique({
       where: { id },
-      include: { product: { select: { id: true, name: true, slug: true } } },
+      include: {
+        product: { select: { id: true, name: true, slug: true } },
+        applicant: { select: { id: true, walletAddress: true } },
+      },
     }),
     prisma.product.findMany({
       orderBy: { name: "asc" },
@@ -37,6 +42,11 @@ export default async function PartnerIntakeDetailPage({
   ]);
 
   if (!intake) notFound();
+
+  const isPendingApplication =
+    Boolean(intake.applicantUserId) &&
+    !intake.productId &&
+    (intake.reviewStatus === "received" || intake.reviewStatus === "in_review");
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
@@ -52,6 +62,9 @@ export default async function PartnerIntakeDetailPage({
         <h1 className="text-2xl font-semibold tracking-tight">
           {intake.partnerName}
         </h1>
+        {intake.applicantUserId && !intake.productId && (
+          <Badge variant="default">Partner application</Badge>
+        )}
         <Badge
           variant={STATUS_VARIANT[intake.reviewStatus]}
           className="capitalize"
@@ -76,7 +89,43 @@ export default async function PartnerIntakeDetailPage({
           >
             Public page
           </Link>
+          {" · "}
+          <Link
+            href={`/partner-console/${intake.product.id}/courses`}
+            className="text-primary hover:underline"
+          >
+            Partner console
+          </Link>
         </p>
+      )}
+
+      {intake.applicant && (
+        <div className="mt-6 rounded-lg border bg-muted/20 p-4 text-sm">
+          <p className="font-medium">Applicant wallet</p>
+          <p className="mt-1 font-mono text-muted-foreground">
+            {intake.applicant.walletAddress}
+          </p>
+          {intake.projectName && (
+            <p className="mt-3">
+              <span className="font-medium">Requested project: </span>
+              {intake.projectName}
+            </p>
+          )}
+          {intake.projectDescription && (
+            <p className="mt-2 text-muted-foreground">
+              {intake.projectDescription}
+            </p>
+          )}
+        </div>
+      )}
+
+      {isPendingApplication && (
+        <div className="mt-6">
+          <PartnerApplicationApprovalPanel
+            intakeId={intake.id}
+            canApprove={isPendingApplication}
+          />
+        </div>
       )}
 
       <div className="mt-8">
@@ -88,6 +137,8 @@ export default async function PartnerIntakeDetailPage({
             partnerName: intake.partnerName,
             contactName: intake.contactName,
             contactEmail: intake.contactEmail,
+            projectName: intake.projectName,
+            projectDescription: intake.projectDescription,
             sourceMaterialUrl: intake.sourceMaterialUrl,
             requestedCourseTopic: intake.requestedCourseTopic,
             reviewStatus: intake.reviewStatus,

@@ -19,7 +19,7 @@ import { trackEventFireAndForget } from "@/lib/analytics-events";
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
 
 function projectCoursesPath(productId: string) {
-  return `/project-console/${productId}/courses`;
+  return `/partner-console/${productId}/courses`;
 }
 
 function projectCoursePath(productId: string, courseId: string) {

@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Partner intake" };
 
 const STATUS_VARIANT: Record<
   PartnerIntakeReviewStatus,
-  "success" | "muted" | "secondary" | "default"
+  "success" | "muted" | "secondary" | "default" | "destructive"
 > = {
   received: "secondary",
   in_review: "default",
@@ -19,17 +19,30 @@ const STATUS_VARIANT: Record<
   partner_review: "default",
   approved: "muted",
   published: "success",
+  rejected: "destructive",
 };
 
 type IntakeRow = {
   id: string;
   partnerName: string;
+  projectName: string | null;
   requestedCourseTopic: string | null;
   reviewStatus: PartnerIntakeReviewStatus;
   updatedAt: Date;
   contactName: string | null;
+  applicantUserId: string | null;
+  productId: string | null;
   product: { name: string; slug: string } | null;
+  applicant: { walletAddress: string } | null;
 };
+
+function isPendingApplication(intake: IntakeRow) {
+  return (
+    Boolean(intake.applicantUserId) &&
+    !intake.productId &&
+    (intake.reviewStatus === "received" || intake.reviewStatus === "in_review")
+  );
+}
 
 export default async function PartnerIntakeListPage() {
   let intakes: IntakeRow[] = [];
@@ -39,6 +52,7 @@ export default async function PartnerIntakeListPage() {
       orderBy: { updatedAt: "desc" },
       include: {
         product: { select: { name: true, slug: true } },
+        applicant: { select: { walletAddress: true } },
       },
     });
   } catch {
@@ -52,8 +66,8 @@ export default async function PartnerIntakeListPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Partner intake</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Track partner source material and review status internally. No
-            partner login in V1.
+            Review partner applications and track source material intake for
+            staff-managed publishing.
           </p>
         </div>
         <Button asChild>
@@ -78,8 +92,8 @@ export default async function PartnerIntakeListPage() {
             <ClipboardList className="mx-auto size-8 text-muted-foreground" />
             <p className="mt-3 font-medium">No partner intakes yet</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Create an intake when a partner submits source material for a new
-              or updated course.
+              Create an intake when a partner submits source material, or review
+              a partner application from the public apply form.
             </p>
           </div>
         )}
@@ -94,6 +108,9 @@ export default async function PartnerIntakeListPage() {
                   >
                     {intake.partnerName}
                   </Link>
+                  {isPendingApplication(intake) && (
+                    <Badge variant="default">Partner application</Badge>
+                  )}
                   <Badge
                     variant={STATUS_VARIANT[intake.reviewStatus]}
                     className="capitalize"
@@ -102,13 +119,17 @@ export default async function PartnerIntakeListPage() {
                   </Badge>
                 </div>
                 <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
-                  {intake.requestedCourseTopic ||
+                  {intake.projectName ||
+                    intake.requestedCourseTopic ||
                     intake.product?.name ||
                     "No topic linked"}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Updated {intake.updatedAt.toLocaleDateString()}
                   {intake.contactName ? ` · ${intake.contactName}` : ""}
+                  {intake.applicant?.walletAddress
+                    ? ` · ${intake.applicant.walletAddress.slice(0, 4)}…${intake.applicant.walletAddress.slice(-4)}`
+                    : ""}
                 </p>
               </div>
               <Button variant="outline" size="sm" asChild>

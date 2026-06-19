@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   const oauthError = searchParams.get("error");
 
   const parsedState = state ? await verifyDiscordBotInstallState(state) : null;
-  const fallbackConsole = new URL("/project-console", appUrl);
+  const fallbackConsole = new URL("/partner-console", appUrl);
 
   if (!parsedState) {
     fallbackConsole.searchParams.set("discord", "invalid_state");
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
   }
 
   const consoleUrl = new URL(
-    `/project-console/${parsedState.productId}/discord`,
+    `/partner-console/${parsedState.productId}/discord`,
     appUrl
   );
 

@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { CloudinaryUpload } from "@/components/cloudinary-upload";
 import { createProduct, updateProduct } from "@/app/actions/admin-products";
+import { updatePartnerProduct } from "@/app/actions/partner-products";
 
 type ProductLink = {
   label: string;
@@ -25,7 +26,15 @@ type Initial = {
   links: ProductLink[];
 };
 
-export function ProductForm({ initial }: { initial?: Initial }) {
+export function ProductForm({
+  initial,
+  variant = "admin",
+  partnerProductId,
+}: {
+  initial?: Initial;
+  variant?: "admin" | "partner";
+  partnerProductId?: string;
+}) {
   const router = useRouter();
   const isEdit = Boolean(initial?.id);
 
@@ -59,9 +68,11 @@ export function ProductForm({ initial }: { initial?: Initial }) {
     };
 
     const res =
-      isEdit && initial?.id
-        ? await updateProduct(initial.id, payload)
-        : await createProduct(payload);
+      variant === "partner" && initial?.id && partnerProductId
+        ? await updatePartnerProduct(partnerProductId, payload)
+        : isEdit && initial?.id
+          ? await updateProduct(initial.id, payload)
+          : await createProduct(payload);
 
     setBusy(false);
     if ("error" in res) {
@@ -78,6 +89,12 @@ export function ProductForm({ initial }: { initial?: Initial }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {variant === "partner" && (
+        <p className="text-sm text-muted-foreground">
+          Update your ecosystem project page details. Publishing and visibility
+          changes are handled by Arcademy staff.
+        </p>
+      )}
       <div className="grid gap-2">
         <Label htmlFor="name">Name</Label>
         <Input
@@ -105,6 +122,7 @@ export function ProductForm({ initial }: { initial?: Initial }) {
         label="Ecosystem project logo"
         value={logoUrl}
         onChange={setLogoUrl}
+        productId={variant === "partner" ? partnerProductId : undefined}
       />
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -183,7 +201,11 @@ export function ProductForm({ initial }: { initial?: Initial }) {
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={busy}>
           {busy ? <Loader2 className="animate-spin" /> : <Save />}
-          {isEdit ? "Save changes" : "Create ecosystem project"}
+          {variant === "partner"
+            ? "Save project settings"
+            : isEdit
+              ? "Save changes"
+              : "Create ecosystem project"}
         </Button>
         {saved && (
           <span className="flex items-center gap-1 text-sm text-success">

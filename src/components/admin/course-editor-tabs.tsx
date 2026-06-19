@@ -95,7 +95,7 @@ export function CourseEditorTabs({
           partnerProductId={partnerProductId}
           coursePathPrefix={
             variant === "partner" && partnerProductId
-              ? `/project-console/${partnerProductId}/courses`
+              ? `/partner-console/${partnerProductId}/courses`
               : undefined
           }
           readOnly={readOnly}

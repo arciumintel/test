@@ -106,7 +106,7 @@ export async function setDiscordRoleRuleStatus(
       });
     }
 
-    revalidatePath(`/project-console/${productId}/discord`);
+    revalidatePath(`/partner-console/${productId}/discord`);
     return { ok: true };
   } catch {
     return { error: "You do not have access to manage this project." };
@@ -145,7 +145,7 @@ export async function saveProjectDiscordIntegration(
       },
     });
 
-    revalidatePath(`/project-console/${productId}/discord`);
+    revalidatePath(`/partner-console/${productId}/discord`);
     revalidatePath(`/admin/products/${productId}`);
     return { ok: true };
   } catch {
@@ -199,7 +199,7 @@ export async function saveDiscordRoleRule(
           metadata: { discordRoleRuleId: updated.id },
         });
       }
-      revalidatePath(`/project-console/${productId}/discord`);
+      revalidatePath(`/partner-console/${productId}/discord`);
       return { ok: true, id: updated.id };
     }
 
@@ -231,7 +231,7 @@ export async function saveDiscordRoleRule(
       });
     }
 
-    revalidatePath(`/project-console/${productId}/discord`);
+    revalidatePath(`/partner-console/${productId}/discord`);
     return { ok: true, id: created.id };
   } catch {
     return { error: "You do not have access to manage this project." };
@@ -259,7 +259,7 @@ export async function runDiscordPermissionCheck(
       },
     });
 
-    revalidatePath(`/project-console/${productId}/discord`);
+    revalidatePath(`/partner-console/${productId}/discord`);
     return { ok: true, message: check.message, passed: check.ok };
   } catch {
     return { error: "You do not have access to manage this project." };
@@ -311,7 +311,7 @@ export async function assignProjectAdmin(
     });
 
     revalidatePath(`/admin/products/${productId}`);
-    revalidatePath("/project-console");
+    revalidatePath("/partner-console");
     return { ok: true };
   } catch {
     return { error: "You must be signed in as staff to do this." };
@@ -328,7 +328,7 @@ export async function removeProjectAdmin(
       where: { id: adminId, productId },
     });
     revalidatePath(`/admin/products/${productId}`);
-    revalidatePath("/project-console");
+    revalidatePath("/partner-console");
     return { ok: true };
   } catch {
     return { error: "You must be signed in as staff to do this." };

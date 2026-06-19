@@ -101,7 +101,7 @@ export default async function ProductEditorPage({
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" asChild>
-            <Link href={`/project-console/${product.id}/discord`}>
+            <Link href={`/partner-console/${product.id}/discord`}>
               <MessageCircle />
               Discord console
             </Link>

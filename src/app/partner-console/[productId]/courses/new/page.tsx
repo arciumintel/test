@@ -26,7 +26,7 @@ export default async function NewPartnerCoursePage({
   const { productId } = await params;
   const access = await getProjectAdminAccess(productId);
   if (!access.user) redirect("/courses");
-  if (!access.canManage) redirect("/project-console");
+  if (!access.canManage) redirect("/partner-console");
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
@@ -37,7 +37,7 @@ export default async function NewPartnerCoursePage({
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <Link
-        href={`/project-console/${productId}/courses`}
+        href={`/partner-console/${productId}/courses`}
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
@@ -53,7 +53,7 @@ export default async function NewPartnerCoursePage({
           products={[{ id: product.id, name: product.name, status: product.status }]}
           variant="partner"
           partnerProductId={productId}
-          coursePathPrefix={`/project-console/${productId}/courses`}
+          coursePathPrefix={`/partner-console/${productId}/courses`}
         />
       </div>
     </div>

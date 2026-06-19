@@ -70,6 +70,7 @@ enum PartnerIntakeReviewStatus {
   partner_review
   approved
   published
+  rejected
 }
 
 enum ProjectAdminRole {
@@ -141,6 +142,7 @@ model User {
   discordRoleGrants DiscordRoleGrant[]
   coursesSubmittedForReview Course[] @relation("CourseReviewRequestedBy")
   coursesReviewed           Course[] @relation("CourseReviewedBy")
+  partnerIntakeApplications PartnerIntake[] @relation("PartnerIntakeApplicant")
 }
 
 /// One-time challenge used to verify wallet ownership during sign-in.
@@ -430,13 +432,16 @@ model DiscordRoleGrant {
   @@index([userId])
 }
 
-/// Internal partner intake tracking (staff-managed; no partner login).
+/// Internal partner intake tracking and self-serve partner applications.
 model PartnerIntake {
   id                   String                    @id @default(cuid())
   productId            String?
+  applicantUserId      String?
   partnerName          String
   contactName          String?
   contactEmail         String?
+  projectName          String?
+  projectDescription   String?
   sourceMaterialUrl    String?
   requestedCourseTopic String?
   reviewStatus         PartnerIntakeReviewStatus @default(received)
@@ -444,10 +449,12 @@ model PartnerIntake {
   createdAt            DateTime                  @default(now())
   updatedAt            DateTime                  @updatedAt
 
-  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  applicant User?    @relation("PartnerIntakeApplicant", fields: [applicantUserId], references: [id], onDelete: SetNull)
 
   @@index([productId])
   @@index([reviewStatus])
+  @@index([applicantUserId])
 }
 
 /// Append-only funnel and audit events (additive instrumentation).

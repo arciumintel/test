@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
+import { getMyPartnerApplicationStatus } from "@/app/actions/partner-application";
 import { getCurrentUser } from "@/lib/session";
 import { getManagedProducts } from "@/lib/project-admin";
 import { prisma } from "@/lib/prisma";
@@ -21,7 +22,17 @@ export async function SiteHeader() {
 
   const managedProjects =
     user && !isStaff ? await getManagedProducts(user.id, false) : [];
-  const showProjectConsole = isStaff || managedProjects.length > 0;
+  const showPartnerConsole = isStaff || managedProjects.length > 0;
+
+  const partnerStatus =
+    user && !isStaff && !showPartnerConsole
+      ? await getMyPartnerApplicationStatus()
+      : null;
+  const showBecomePartner =
+    Boolean(user) &&
+    !isStaff &&
+    !showPartnerConsole &&
+    !partnerStatus?.pendingApplication;
 
   const discordEnabled = isDiscordConfigured();
 
@@ -47,9 +58,14 @@ export async function SiteHeader() {
                 <Link href="/profile">My learning</Link>
               </Button>
             )}
-            {showProjectConsole && (
+            {showPartnerConsole && (
               <Button variant="ghost" size="sm" asChild>
-                <Link href="/project-console">Project console</Link>
+                <Link href="/partner-console">Partner console</Link>
+              </Button>
+            )}
+            {showBecomePartner && (
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/partners/apply">Become a partner</Link>
               </Button>
             )}
             {isStaff && (

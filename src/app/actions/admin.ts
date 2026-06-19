@@ -612,7 +612,7 @@ export async function requestPartnerChanges(
 
   revalidatePath("/admin");
   revalidatePath(`/admin/courses/${courseId}`);
-  revalidatePath(`/project-console/${course.product.id}/courses/${courseId}`);
+  revalidatePath(`/partner-console/${course.product.id}/courses/${courseId}`);
   return { ok: true };
 }
 
@@ -657,7 +657,7 @@ export async function approvePartnerCourse(courseId: string): Promise<Result> {
 
   revalidatePath("/admin");
   revalidatePath(`/admin/courses/${courseId}`);
-  revalidatePath(`/project-console/${course.product.id}/courses/${courseId}`);
+  revalidatePath(`/partner-console/${course.product.id}/courses/${courseId}`);
   return { ok: true };
 }
 
