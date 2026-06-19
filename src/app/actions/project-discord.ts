@@ -14,6 +14,7 @@ import {
   listAssignableGuildRoles,
   verifyBotManageRoles,
 } from "@/lib/discord";
+import { backfillDiscordRoleGrantsForProduct } from "@/lib/discord-role-grants";
 import { trackEventFireAndForget } from "@/lib/analytics-events";
 import type { DiscordRoleRuleStatus, ProjectAdminRole, ProjectDiscordIntegrationStatus } from "@prisma/client";
 
@@ -104,6 +105,7 @@ export async function setDiscordRoleRuleStatus(
         badgeId: updated.badgeId,
         metadata: { discordRoleRuleId: updated.id },
       });
+      void backfillDiscordRoleGrantsForProduct(productId).catch(() => {});
     }
 
     revalidatePath(`/partner-console/${productId}/discord`);
@@ -144,6 +146,10 @@ export async function saveProjectDiscordIntegration(
         botInstalled,
       },
     });
+
+    if (parsed.data.status === "active") {
+      void backfillDiscordRoleGrantsForProduct(productId).catch(() => {});
+    }
 
     revalidatePath(`/partner-console/${productId}/discord`);
     revalidatePath(`/admin/products/${productId}`);
@@ -198,6 +204,7 @@ export async function saveDiscordRoleRule(
           badgeId: parsed.data.badgeId,
           metadata: { discordRoleRuleId: updated.id },
         });
+        void backfillDiscordRoleGrantsForProduct(productId).catch(() => {});
       }
       revalidatePath(`/partner-console/${productId}/discord`);
       return { ok: true, id: updated.id };
@@ -229,6 +236,7 @@ export async function saveDiscordRoleRule(
         badgeId: parsed.data.badgeId,
         metadata: { discordRoleRuleId: created.id },
       });
+      void backfillDiscordRoleGrantsForProduct(productId).catch(() => {});
     }
 
     revalidatePath(`/partner-console/${productId}/discord`);

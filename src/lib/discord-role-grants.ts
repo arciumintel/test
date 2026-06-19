@@ -139,6 +139,39 @@ export async function queueDiscordRoleGrantsForBadgeAward(
 }
 
 /**
+ * Queues missing grants for all badge awards that match active rules on an active integration.
+ * Use after activating an integration or rule so learners who earned badges earlier still sync.
+ */
+export async function backfillDiscordRoleGrantsForProduct(
+  productId: string
+): Promise<number> {
+  const integration = await prisma.projectDiscordIntegration.findFirst({
+    where: { productId, status: "active" },
+    include: {
+      roleRules: { where: { status: "active" }, select: { badgeId: true } },
+    },
+  });
+  if (!integration || integration.roleRules.length === 0) return 0;
+
+  const activeBadgeIds = [
+    ...new Set(integration.roleRules.map((rule) => rule.badgeId)),
+  ];
+  const awards = await prisma.badgeAward.findMany({
+    where: {
+      badgeId: { in: activeBadgeIds },
+      course: { productId },
+    },
+    select: { id: true },
+  });
+
+  let queued = 0;
+  for (const award of awards) {
+    queued += await queueDiscordRoleGrantsForBadgeAward(award.id);
+  }
+  return queued;
+}
+
+/**
  * Reopens skipped grants and queues missing grants after Discord is linked.
  */
 export async function backfillDiscordRoleGrantsForUser(userId: string): Promise<number> {

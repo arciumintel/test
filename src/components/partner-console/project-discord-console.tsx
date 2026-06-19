@@ -320,6 +320,11 @@ export function ProjectDiscordConsole({
           Discord, you&apos;ll return here with server ID and name filled in
           automatically.
         </p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          The bot may show as <strong>offline</strong> in your member list — that is
+          normal. Arcademy assigns roles through Discord&apos;s API and does not keep a
+          live chat connection.
+        </p>
         {botInviteConfigError && (
           <p className="mt-4 text-sm text-destructive">{botInviteConfigError}</p>
         )}
@@ -408,6 +413,10 @@ export function ProjectDiscordConsole({
                 {activeRuleCount > 0 ? ` ✓ (${activeRuleCount})` : " — required for grants"}
               </li>
               <li>Learners must connect Discord and join your server</li>
+              <li>
+                Drag the <strong>Arcademy</strong> bot role above any roles it should
+                assign in Discord server settings
+              </li>
             </ul>
           </AlertDescription>
         </Alert>
