@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -7,11 +7,13 @@ import { CourseEditorTabs } from "@/components/admin/course-editor-tabs";
 import { PartnerCourseStatusControls } from "@/components/partner-console/partner-course-status-controls";
 import { getCourseAnalytics } from "@/lib/analytics";
 import { formatCourseStatus } from "@/lib/course-status";
-import { getProjectAdminAccess } from "@/lib/project-admin";
 import { prisma } from "@/lib/prisma";
 import type { CourseStatus } from "@prisma/client";
 
-const STATUS_VARIANT: Record<CourseStatus, "success" | "muted" | "secondary" | "default"> = {
+const STATUS_VARIANT: Record<
+  CourseStatus,
+  "success" | "muted" | "secondary" | "default"
+> = {
   published: "success",
   draft: "secondary",
   partner_draft: "secondary",
@@ -31,7 +33,7 @@ export async function generateMetadata({
     where: { id: courseId },
     select: { title: true },
   });
-  return { title: course ? `Edit — ${course.title}` : "Edit course draft" };
+  return { title: course ? `Edit: ${course.title}` : "Edit course draft" };
 }
 
 export default async function PartnerCourseEditorPage({
@@ -40,9 +42,6 @@ export default async function PartnerCourseEditorPage({
   params: Promise<{ productId: string; courseId: string }>;
 }) {
   const { productId, courseId } = await params;
-  const access = await getProjectAdminAccess(productId);
-  if (!access.user) redirect("/courses");
-  if (!access.canManage) redirect("/partner-console");
 
   const course = await prisma.course.findUnique({
     where: { id: courseId, productId },
@@ -67,18 +66,18 @@ export default async function PartnerCourseEditorPage({
   });
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+    <>
       <Link
         href={`/partner-console/${productId}/courses`}
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        className="mb-4 inline-flex items-center gap-1 rounded-sm text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
       >
-        <ChevronLeft className="size-4" />
+        <ChevronLeft className="size-4" aria-hidden />
         Course drafts
       </Link>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-semibold tracking-tight">
               {course.title}
             </h1>
@@ -86,7 +85,7 @@ export default async function PartnerCourseEditorPage({
               {formatCourseStatus(course.status)}
             </Badge>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-pretty text-sm text-muted-foreground">
             Partner course draft for {course.product.name}
           </p>
         </div>
@@ -109,8 +108,8 @@ export default async function PartnerCourseEditorPage({
       {course.status === "submitted_for_review" && (
         <Alert className="mt-4">
           <AlertDescription>
-            This course is with Arcademy staff for review. You cannot edit it until
-            staff requests changes or publishes it.
+            This course is with Arcademy staff for review. You cannot edit it
+            until staff requests changes or publishes it.
           </AlertDescription>
         </Alert>
       )}
@@ -182,6 +181,6 @@ export default async function PartnerCourseEditorPage({
         partnerProductId={productId}
         courseStatus={course.status}
       />
-    </div>
+    </>
   );
 }

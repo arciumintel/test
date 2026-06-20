@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { PartnerIntakeForm } from "@/components/admin/partner-intake-form";
 import { PartnerApplicationApprovalPanel } from "@/components/admin/partner-application-approval-panel";
 import { prisma } from "@/lib/prisma";
@@ -27,19 +28,41 @@ export default async function PartnerIntakeDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [intake, products] = await Promise.all([
-    prisma.partnerIntake.findUnique({
-      where: { id },
-      include: {
-        product: { select: { id: true, name: true, slug: true } },
-        applicant: { select: { id: true, walletAddress: true } },
-      },
-    }),
-    prisma.product.findMany({
-      orderBy: { name: "asc" },
-      select: { id: true, name: true },
-    }),
-  ]);
+
+  let intake;
+  let products;
+
+  try {
+    [intake, products] = await Promise.all([
+      prisma.partnerIntake.findUnique({
+        where: { id },
+        include: {
+          product: { select: { id: true, name: true, slug: true } },
+          applicant: { select: { id: true, walletAddress: true } },
+        },
+      }),
+      prisma.product.findMany({
+        orderBy: { name: "asc" },
+        select: { id: true, name: true },
+      }),
+    ]);
+  } catch {
+    return (
+      <>
+        <Link
+          href="/admin/partner-intake"
+          className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft className="size-4" />
+          Partner intake
+        </Link>
+        <HomeSectionLoadError
+          title="Partner intake did not load"
+          description="This intake record is unavailable right now. Refresh the page, or return to the intake list and try again."
+        />
+      </>
+    );
+  }
 
   if (!intake) notFound();
 
@@ -49,7 +72,7 @@ export default async function PartnerIntakeDetailPage({
     (intake.reviewStatus === "received" || intake.reviewStatus === "in_review");
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+    <>
       <Link
         href="/admin/partner-intake"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -59,7 +82,7 @@ export default async function PartnerIntakeDetailPage({
       </Link>
 
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="text-balance text-2xl font-semibold tracking-tight">
           {intake.partnerName}
         </h1>
         {intake.applicantUserId && !intake.productId && (
@@ -73,7 +96,7 @@ export default async function PartnerIntakeDetailPage({
         </Badge>
       </div>
       {intake.product && (
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-pretty text-sm text-muted-foreground">
           Linked to{" "}
           <Link
             href={`/admin/products/${intake.product.id}`}
@@ -112,7 +135,7 @@ export default async function PartnerIntakeDetailPage({
             </p>
           )}
           {intake.projectDescription && (
-            <p className="mt-2 text-muted-foreground">
+            <p className="mt-2 text-pretty text-muted-foreground">
               {intake.projectDescription}
             </p>
           )}
@@ -128,7 +151,7 @@ export default async function PartnerIntakeDetailPage({
         </div>
       )}
 
-      <div className="mt-8">
+      <div className="mx-auto mt-8 max-w-3xl">
         <PartnerIntakeForm
           products={products}
           initial={{
@@ -146,6 +169,6 @@ export default async function PartnerIntakeDetailPage({
           }}
         />
       </div>
-    </div>
+    </>
   );
 }

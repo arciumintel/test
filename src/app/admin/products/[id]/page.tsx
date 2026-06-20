@@ -3,11 +3,13 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, Eye, MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { ProductForm } from "@/components/admin/product-form";
 import { ProductStatusControls } from "@/components/admin/product-status-controls";
 import { PublishReadinessPanel } from "@/components/admin/publish-readiness-panel";
 import { PartnerReferralToolkit } from "@/components/admin/partner-referral-toolkit";
 import { ProductAnalyticsPanel } from "@/components/admin/product-analytics-panel";
+import { PartnerAnalyticsNotesForm } from "@/components/admin/partner-analytics-notes-form";
 import { ProjectAdminPanel } from "@/components/admin/project-admin-panel";
 import { prisma } from "@/lib/prisma";
 import { getProductPublishReadiness } from "@/lib/publish-readiness";
@@ -15,11 +17,12 @@ import { getProductAnalytics } from "@/lib/analytics";
 import { productPath } from "@/lib/paths";
 import type { ProductStatus } from "@prisma/client";
 
-const STATUS_VARIANT: Record<ProductStatus, "success" | "muted" | "secondary"> = {
-  published: "success",
-  draft: "secondary",
-  archived: "muted",
-};
+const STATUS_VARIANT: Record<ProductStatus, "success" | "muted" | "secondary"> =
+  {
+    published: "success",
+    draft: "secondary",
+    archived: "muted",
+  };
 
 type ProductLink = {
   label: string;
@@ -45,45 +48,69 @@ export default async function ProductEditorPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [product, readiness, analytics, projectAdmins] = await Promise.all([
-    prisma.product.findUnique({
-      where: { id },
-      include: {
-        _count: { select: { courses: true } },
-        courses: {
-          where: { status: "published" },
-          orderBy: { title: "asc" },
-          select: { title: true, slug: true },
+
+  let product;
+  let readiness;
+  let analytics;
+  let projectAdmins;
+
+  try {
+    [product, readiness, analytics, projectAdmins] = await Promise.all([
+      prisma.product.findUnique({
+        where: { id },
+        include: {
+          _count: { select: { courses: true } },
+          courses: {
+            where: { status: "published" },
+            orderBy: { title: "asc" },
+            select: { title: true, slug: true },
+          },
         },
-      },
-    }),
-    getProductPublishReadiness(id),
-    getProductAnalytics(id),
-    prisma.projectAdmin.findMany({
-      where: { productId: id },
-      include: {
-        user: { select: { walletAddress: true, displayName: true } },
-      },
-      orderBy: { createdAt: "asc" },
-    }),
-  ]);
+      }),
+      getProductPublishReadiness(id),
+      getProductAnalytics(id),
+      prisma.projectAdmin.findMany({
+        where: { productId: id },
+        include: {
+          user: { select: { walletAddress: true, displayName: true } },
+        },
+        orderBy: { createdAt: "asc" },
+      }),
+    ]);
+  } catch {
+    return (
+      <>
+        <Link
+          href="/admin/products"
+          className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft className="size-4" />
+          Projects
+        </Link>
+        <HomeSectionLoadError
+          title="Project editor did not load"
+          description="Project data is unavailable right now. Refresh the page, or return to the project list and try again."
+        />
+      </>
+    );
+  }
 
   if (!product) notFound();
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+    <>
       <Link
         href="/admin/products"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="size-4" />
-        Ecosystem Projects
+        Projects
       </Link>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="text-balance text-2xl font-semibold tracking-tight">
               {product.name}
             </h1>
             <Badge
@@ -101,6 +128,11 @@ export default async function ProductEditorPage({
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" asChild>
+            <Link href={`/partner-console/${product.id}/analytics`}>
+              Partner analytics
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
             <Link href={`/partner-console/${product.id}/discord`}>
               <MessageCircle />
               Discord console
@@ -112,14 +144,17 @@ export default async function ProductEditorPage({
               Preview
             </Link>
           </Button>
-          <ProductStatusControls productId={product.id} status={product.status} />
+          <ProductStatusControls
+            productId={product.id}
+            status={product.status}
+          />
         </div>
       </div>
 
       <PublishReadinessPanel
         report={readiness}
         status={product.status}
-        entityLabel="ecosystem project"
+        entityLabel="project"
       />
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
@@ -152,7 +187,11 @@ export default async function ProductEditorPage({
       {analytics && (
         <section className="mt-12">
           <h2 className="text-lg font-semibold">Partner reporting</h2>
-          <div className="mt-4">
+          <div className="mt-4 space-y-8">
+            <PartnerAnalyticsNotesForm
+              productId={product.id}
+              initialNotes={product.partnerAnalyticsNotes}
+            />
             <ProductAnalyticsPanel data={analytics} productId={product.id} />
           </div>
         </section>
@@ -166,6 +205,6 @@ export default async function ProductEditorPage({
           user: a.user,
         }))}
       />
-    </div>
+    </>
   );
 }

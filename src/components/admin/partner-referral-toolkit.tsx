@@ -47,7 +47,7 @@ export function PartnerReferralToolkit({
   courses,
 }: Props) {
   const projectUrl = absoluteUrl(productPath(productSlug));
-  const suggestedCopy = `Learn ${productName} on Arcademy — the official learning destination for the Arcium ecosystem. Start here: ${projectUrl}`;
+  const suggestedCopy = `Learn ${productName} on Arcademy, the official learning destination for the Arcium ecosystem. Start here: ${projectUrl}`;
   const partnerLine = partnerName
     ? `Official Arcademy learning for ${productName}, maintained in partnership with ${partnerName}.`
     : `Official Arcademy learning for ${productName}.`;
@@ -61,12 +61,12 @@ export function PartnerReferralToolkit({
         </div>
         <p className="text-sm text-muted-foreground">
           Stable URLs and copy for partners to link from docs, onboarding, or
-          campaigns. Share manually — there is no partner dashboard in V1.
+          campaigns. Share manually. There is no partner dashboard in V1.
         </p>
 
         <div className="space-y-2">
           <p className="text-xs font-medium text-muted-foreground">
-            Ecosystem project page
+            Project page
           </p>
           <p className="break-all rounded-md border bg-muted/30 px-3 py-2 font-mono text-xs">
             {projectUrl}

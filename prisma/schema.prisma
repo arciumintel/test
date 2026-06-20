@@ -109,9 +109,10 @@ model Product {
   logoUrl     String?
   category    String?
   links       Json          @default("[]")
-  partnerName String?
-  referralUrl String?
-  status      ProductStatus @default(draft)
+  partnerName             String?
+  referralUrl             String?
+  partnerAnalyticsNotes   String?
+  status                  ProductStatus @default(draft)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -490,4 +491,5 @@ model AnalyticsEvent {
   @@index([userId])
   @@index([courseId])
   @@index([ecosystemProjectId])
+  @@index([ecosystemProjectId, eventName, occurredAt])
 }

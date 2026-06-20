@@ -83,7 +83,7 @@ export function PartnerCourseStatusControls({
           {status === "submitted_for_review"
             ? "Awaiting Arcademy staff review."
             : status === "approved"
-              ? "Approved — staff will publish when ready."
+              ? "Approved. Staff will publish when ready."
               : "This course is live."}
         </p>
       )}

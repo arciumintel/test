@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { PartnerIntakeReviewStatus } from "@prisma/client";
-import { getPartnerSafeAnalytics } from "@/lib/analytics";
 import { isPartnerIntakeAvailable, prisma } from "@/lib/prisma";
 import { requireProjectAdmin } from "@/lib/project-admin";
 
@@ -56,7 +55,6 @@ export type PartnerSelfServicePayload = {
     updatedAt: string;
     canSubmitForReview: boolean;
   } | null;
-  analytics: Awaited<ReturnType<typeof getPartnerSafeAnalytics>>;
 };
 
 export async function getPartnerSelfServiceData(
@@ -105,14 +103,11 @@ export async function getPartnerSelfServiceData(
     }
   }
 
-  const analytics = await getPartnerSafeAnalytics(productId);
-
   return {
     ok: true,
     data: {
       product,
       intake,
-      analytics,
     },
   };
 }

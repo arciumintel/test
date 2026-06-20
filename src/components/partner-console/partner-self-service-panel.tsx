@@ -4,14 +4,12 @@ import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Award,
   Check,
   ExternalLink,
-  GraduationCap,
   Loader2,
-  PlayCircle,
   Save,
   Send,
+  BarChart3,
 } from "lucide-react";
 import type { PartnerIntakeReviewStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
@@ -19,7 +17,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   submitPartnerReview,
@@ -56,7 +53,7 @@ const WORKFLOW_STEPS: {
   {
     status: "approved",
     label: "Approved",
-    description: "Content approved — awaiting publish.",
+    description: "Content approved. Awaiting publish.",
   },
   {
     status: "published",
@@ -76,7 +73,7 @@ type Props = {
 
 export function PartnerSelfServicePanel({ productId, initial }: Props) {
   const router = useRouter();
-  const { product, intake, analytics } = initial;
+  const { product, intake } = initial;
 
   const [sourceMaterialUrl, setSourceMaterialUrl] = React.useState(
     intake?.sourceMaterialUrl ?? ""
@@ -134,38 +131,15 @@ export function PartnerSelfServicePanel({ productId, initial }: Props) {
     router.refresh();
   }
 
-  const metrics = analytics
-    ? [
-        {
-          label: "Published courses",
-          value: analytics.publishedCourses,
-          icon: GraduationCap,
-        },
-        { label: "Course starts", value: analytics.starts, icon: PlayCircle },
-        {
-          label: "Completions",
-          value: analytics.completions,
-          hint: `${analytics.completionRate}% of starts`,
-          icon: GraduationCap,
-        },
-        { label: "Badge awards", value: analytics.badgeAwards, icon: Award },
-      ]
-    : [];
-
   return (
     <div className="space-y-8">
       <div>
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {product.name}
-          </h1>
-          <Badge variant="secondary" className="capitalize">
-            {product.status}
-          </Badge>
-        </div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Partner self-service — submit materials, track review progress, and
-          view basic course performance.
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Partner self-service
+        </h1>
+        <p className="mt-1 text-pretty text-sm text-muted-foreground">
+          Submit materials, track review progress, and view basic course
+          performance.
         </p>
         {product.partnerName && (
           <p className="mt-2 text-sm">
@@ -193,7 +167,7 @@ export function PartnerSelfServicePanel({ productId, initial }: Props) {
       <Alert>
         <AlertDescription>
           Arcademy staff retains final publish approval. You can update source
-          materials and submit factual review when a draft is ready — you cannot
+          materials and submit factual review when a draft is ready. You cannot
           approve or publish courses directly.
         </AlertDescription>
       </Alert>
@@ -341,7 +315,7 @@ export function PartnerSelfServicePanel({ productId, initial }: Props) {
             {reviewSubmitted && (
               <p className="mt-2 flex items-center gap-1 text-sm text-success">
                 <Check className="size-4" />
-                Review submitted — staff will follow up.
+                Review submitted. Staff will follow up.
               </p>
             )}
           </div>
@@ -350,93 +324,19 @@ export function PartnerSelfServicePanel({ productId, initial }: Props) {
         {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
       </section>
 
-      {analytics && (
-        <section>
-          <h2 className="text-lg font-semibold">Performance snapshot</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Basic metrics for published courses on your ecosystem project.
-          </p>
-
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {metrics.map((m) => (
-              <Card key={m.label}>
-                <CardContent className="py-5">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <m.icon className="size-4" />
-                    {m.label}
-                  </div>
-                  <p className="mt-2 text-2xl font-semibold">{m.value}</p>
-                  {"hint" in m && m.hint && (
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {m.hint}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {analytics.courses.length > 0 ? (
-            <Card className="mt-4">
-              <CardContent className="py-5">
-                <h3 className="text-sm font-semibold">Published courses</h3>
-                <div className="mt-4 overflow-x-auto">
-                  <table className="w-full min-w-[400px] text-left text-sm">
-                    <thead>
-                      <tr className="border-b text-xs text-muted-foreground">
-                        <th className="pb-2 pr-4 font-medium">Course</th>
-                        <th className="pb-2 pr-4 text-right font-medium">
-                          Starts
-                        </th>
-                        <th className="pb-2 pr-4 text-right font-medium">
-                          Done
-                        </th>
-                        <th className="pb-2 pr-4 text-right font-medium">
-                          Badges
-                        </th>
-                        <th className="pb-2 text-right font-medium">
-                          Quiz pass
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {analytics.courses.map((c) => (
-                        <tr
-                          key={c.title}
-                          className="border-b border-border/50"
-                        >
-                          <td className="py-2.5 pr-4 font-medium">
-                            {c.title}
-                          </td>
-                          <td className="py-2.5 pr-4 text-right">
-                            {c.starts}
-                          </td>
-                          <td className="py-2.5 pr-4 text-right">
-                            {c.completions}
-                          </td>
-                          <td className="py-2.5 pr-4 text-right">
-                            {c.badgeAwards}
-                          </td>
-                          <td className="py-2.5 text-right">
-                            {c.quizPassRate === null
-                              ? "—"
-                              : `${c.quizPassRate}%`}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <p className="mt-4 text-sm text-muted-foreground">
-              No published courses yet — metrics will appear after your first
-              course goes live.
-            </p>
-          )}
-        </section>
-      )}
+      <section>
+        <h2 className="text-lg font-semibold">Course performance</h2>
+        <p className="mt-1 text-pretty text-sm text-muted-foreground">
+          View starts, completions, lesson funnels, and quiz diagnostics for
+          published courses.
+        </p>
+        <Button asChild variant="outline" className="mt-4">
+          <Link href={`/partner-console/${productId}/analytics`}>
+            <BarChart3 className="size-4" />
+            View analytics
+          </Link>
+        </Button>
+      </section>
     </div>
   );
 }

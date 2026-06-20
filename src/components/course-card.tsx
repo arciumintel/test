@@ -47,16 +47,16 @@ export function CourseCard({ course }: { course: CourseCardData }) {
           </div>
         </div>
         <CardContent className="flex flex-col gap-3 p-5">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {course.productName}
-          </span>
-          <h3 className="font-semibold leading-snug tracking-tight group-hover:text-primary">
+          <h3 className="text-pretty font-semibold leading-snug tracking-tight group-hover:text-primary">
             {course.title}
           </h3>
-          <p className="line-clamp-2 text-sm text-muted-foreground">
+          <p className="line-clamp-2 text-pretty text-sm leading-relaxed text-muted-foreground">
             {course.summary}
           </p>
-          <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span className="font-medium text-foreground/80">
+              {course.productName}
+            </span>
             <span className="inline-flex items-center gap-1">
               <BookOpen className="size-3.5" />
               {course.lessonCount} lesson{course.lessonCount === 1 ? "" : "s"}

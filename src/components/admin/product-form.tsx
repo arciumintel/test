@@ -91,7 +91,7 @@ export function ProductForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {variant === "partner" && (
         <p className="text-sm text-muted-foreground">
-          Update your ecosystem project page details. Publishing and visibility
+          Update your project page details. Publishing and visibility
           changes are handled by Arcademy staff.
         </p>
       )}
@@ -112,14 +112,14 @@ export function ProductForm({
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="A plain-language explanation of what this ecosystem project does."
+          placeholder="A plain-language explanation of what this project does."
           required
           rows={5}
         />
       </div>
 
       <CloudinaryUpload
-        label="Ecosystem project logo"
+        label="Project logo"
         value={logoUrl}
         onChange={setLogoUrl}
         productId={variant === "partner" ? partnerProductId : undefined}
@@ -147,7 +147,7 @@ export function ProductForm({
       </div>
 
       <div className="grid gap-2">
-        <Label>Ecosystem project links</Label>
+        <Label>Project links</Label>
         <div className="space-y-2">
           {links.map((link, i) => (
             <div key={i} className="grid gap-2 sm:grid-cols-[160px_1fr_auto]">
@@ -205,7 +205,7 @@ export function ProductForm({
             ? "Save project settings"
             : isEdit
               ? "Save changes"
-              : "Create ecosystem project"}
+              : "Create project"}
         </Button>
         {saved && (
           <span className="flex items-center gap-1 text-sm text-success">

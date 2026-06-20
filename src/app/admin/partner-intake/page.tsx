@@ -4,6 +4,7 @@ import { Plus, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { prisma } from "@/lib/prisma";
 import type { PartnerIntakeReviewStatus } from "@prisma/client";
 
@@ -60,17 +61,27 @@ export default async function PartnerIntakeListPage() {
     intakes = [];
   }
 
+  const pendingCount = intakes.filter(isPendingApplication).length;
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <div className="flex items-center justify-between gap-4">
+    <>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Partner intake</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h1 className="text-balance text-2xl font-semibold tracking-tight">
+            Partner intake
+          </h1>
+          <p className="mt-1 text-pretty text-sm text-muted-foreground">
             Review partner applications and track source material intake for
             staff-managed publishing.
           </p>
+          {!dbError && pendingCount > 0 && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              {pendingCount} pending application
+              {pendingCount === 1 ? "" : "s"}
+            </p>
+          )}
         </div>
-        <Button asChild>
+        <Button asChild className="shrink-0 self-start">
           <Link href="/admin/partner-intake/new">
             <Plus />
             New intake
@@ -78,67 +89,77 @@ export default async function PartnerIntakeListPage() {
         </Button>
       </div>
 
-      {dbError && (
-        <div className="mt-6 rounded-lg border border-dashed bg-muted/30 p-4 text-sm text-muted-foreground">
-          Partner intake table is not available yet. Run{" "}
-          <code className="rounded bg-muted px-1">pnpm db:push</code> to apply
-          the latest schema.
+      {dbError ? (
+        <div className="mt-8">
+          <HomeSectionLoadError
+            title="Partner intake did not load"
+            description="Intake records are unavailable right now. Refresh the page, or run pnpm db:push if the partner intake schema is new."
+          />
+        </div>
+      ) : (
+        <div className="mt-8 space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight">
+            All intakes ({intakes.length})
+          </h2>
+          {intakes.length === 0 ? (
+            <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
+              <ClipboardList
+                className="mx-auto size-8 text-muted-foreground"
+                aria-hidden
+              />
+              <p className="mt-3 font-medium">No partner intakes yet</p>
+              <p className="mt-1 text-pretty text-sm text-muted-foreground">
+                Create an intake when a partner submits source material, or
+                review a partner application from the public apply form.
+              </p>
+            </div>
+          ) : (
+            intakes.map((intake) => (
+              <Card key={intake.id}>
+                <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`/admin/partner-intake/${intake.id}`}
+                        className="font-medium hover:text-primary"
+                      >
+                        {intake.partnerName}
+                      </Link>
+                      {isPendingApplication(intake) && (
+                        <Badge variant="default">Partner application</Badge>
+                      )}
+                      <Badge
+                        variant={STATUS_VARIANT[intake.reviewStatus]}
+                        className="capitalize"
+                      >
+                        {intake.reviewStatus.replace(/_/g, " ")}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
+                      {intake.projectName ||
+                        intake.requestedCourseTopic ||
+                        intake.product?.name ||
+                        "No topic linked"}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Updated {intake.updatedAt.toLocaleDateString()}
+                      {intake.contactName ? ` · ${intake.contactName}` : ""}
+                      {intake.applicant?.walletAddress
+                        ? ` · ${intake.applicant.walletAddress.slice(0, 4)}…${intake.applicant.walletAddress.slice(-4)}`
+                        : ""}
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/admin/partner-intake/${intake.id}`}>
+                      Open
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
       )}
-
-      <div className="mt-6 space-y-3">
-        {intakes.length === 0 && !dbError && (
-          <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
-            <ClipboardList className="mx-auto size-8 text-muted-foreground" />
-            <p className="mt-3 font-medium">No partner intakes yet</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Create an intake when a partner submits source material, or review
-              a partner application from the public apply form.
-            </p>
-          </div>
-        )}
-        {intakes.map((intake) => (
-          <Card key={intake.id}>
-            <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Link
-                    href={`/admin/partner-intake/${intake.id}`}
-                    className="font-medium hover:text-primary"
-                  >
-                    {intake.partnerName}
-                  </Link>
-                  {isPendingApplication(intake) && (
-                    <Badge variant="default">Partner application</Badge>
-                  )}
-                  <Badge
-                    variant={STATUS_VARIANT[intake.reviewStatus]}
-                    className="capitalize"
-                  >
-                    {intake.reviewStatus.replace(/_/g, " ")}
-                  </Badge>
-                </div>
-                <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
-                  {intake.projectName ||
-                    intake.requestedCourseTopic ||
-                    intake.product?.name ||
-                    "No topic linked"}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Updated {intake.updatedAt.toLocaleDateString()}
-                  {intake.contactName ? ` · ${intake.contactName}` : ""}
-                  {intake.applicant?.walletAddress
-                    ? ` · ${intake.applicant.walletAddress.slice(0, 4)}…${intake.applicant.walletAddress.slice(-4)}`
-                    : ""}
-                </p>
-              </div>
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`/admin/partner-intake/${intake.id}`}>Open</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
+    </>
   );
 }

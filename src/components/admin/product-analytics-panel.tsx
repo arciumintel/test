@@ -57,7 +57,7 @@ export function ProductAnalyticsPanel({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          Aggregate performance across all courses for this ecosystem project.
+          Aggregate performance across all courses for this project.
           Export a markdown summary to share with partners manually.
         </p>
         <Button size="sm" variant="outline" onClick={handleExport} disabled={exporting}>

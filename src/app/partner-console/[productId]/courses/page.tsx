@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { ChevronLeft, Plus } from "lucide-react";
+import { notFound } from "next/navigation";
+import { Plus } from "lucide-react";
 import { listPartnerCourses } from "@/app/actions/project-courses";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { getProjectAdminAccess } from "@/lib/project-admin";
+import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { formatCourseStatus } from "@/lib/course-status";
 import { prisma } from "@/lib/prisma";
 
@@ -19,7 +19,7 @@ export async function generateMetadata({
     where: { id: productId },
     select: { name: true },
   });
-  return { title: product ? `Courses — ${product.name}` : "Course drafts" };
+  return { title: product ? `Courses: ${product.name}` : "Course drafts" };
 }
 
 export default async function PartnerCoursesPage({
@@ -28,9 +28,6 @@ export default async function PartnerCoursesPage({
   params: Promise<{ productId: string }>;
 }) {
   const { productId } = await params;
-  const access = await getProjectAdminAccess(productId);
-  if (!access.user) redirect("/courses");
-  if (!access.canManage) redirect("/partner-console");
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
@@ -39,24 +36,40 @@ export default async function PartnerCoursesPage({
   if (!product) notFound();
 
   const result = await listPartnerCourses(productId);
-  if ("error" in result) notFound();
+  if ("error" in result) {
+    return (
+      <>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Course drafts
+            </h1>
+            <p className="mt-1 text-pretty text-sm text-muted-foreground">
+              Create and submit courses for Arcademy staff review.
+            </p>
+          </div>
+        </div>
+        <div className="mt-8">
+          <HomeSectionLoadError
+            title="Course drafts did not load"
+            description="The draft list is unavailable right now. Refresh the page, or try again in a few minutes."
+          />
+        </div>
+      </>
+    );
+  }
+
   const courses = result.courses;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <Link
-        href="/partner-console"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="size-4" />
-        Partner console
-      </Link>
-
+    <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Course drafts</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {product.name} — create and submit courses for Arcademy staff review.
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Course drafts
+          </h1>
+          <p className="mt-1 text-pretty text-sm text-muted-foreground">
+            Create and submit courses for Arcademy staff review.
           </p>
         </div>
         <Button asChild>
@@ -70,8 +83,16 @@ export default async function PartnerCoursesPage({
       <div className="mt-8 space-y-3">
         {courses.length === 0 ? (
           <Card>
-            <CardContent className="py-10 text-center text-sm text-muted-foreground">
-              No course drafts yet. Create your first draft to get started.
+            <CardContent className="py-10 text-center">
+              <p className="font-medium">No course drafts yet</p>
+              <p className="mt-1 text-pretty text-sm text-muted-foreground">
+                Create your first draft to get started.
+              </p>
+              <Button asChild className="mt-4" size="sm">
+                <Link href={`/partner-console/${productId}/courses/new`}>
+                  Create course draft
+                </Link>
+              </Button>
             </CardContent>
           </Card>
         ) : (
@@ -96,7 +117,9 @@ export default async function PartnerCoursesPage({
                   </p>
                 </div>
                 <Button asChild variant="outline" size="sm">
-                  <Link href={`/partner-console/${productId}/courses/${course.id}`}>
+                  <Link
+                    href={`/partner-console/${productId}/courses/${course.id}`}
+                  >
                     Edit draft
                   </Link>
                 </Button>
@@ -105,6 +128,6 @@ export default async function PartnerCoursesPage({
           ))
         )}
       </div>
-    </div>
+    </>
   );
 }

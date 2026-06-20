@@ -32,8 +32,9 @@ export function DisplayNameForm({
           {initialName || "Learner"}
         </h1>
         <button
+          type="button"
           onClick={() => setEditing(true)}
-          className="text-muted-foreground hover:text-foreground cursor-pointer"
+          className="cursor-pointer rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
           aria-label="Edit display name"
         >
           <Pencil className="size-4" />

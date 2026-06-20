@@ -1,21 +1,40 @@
 import { prisma } from "@/lib/prisma";
 import { absoluteUrl, getSiteUrl } from "@/lib/site";
 import { coursePath, productPath } from "@/lib/paths";
+import type { AnalyticsDateRange } from "@/lib/analytics-date-range";
+import {
+  awardedAtFilter,
+  progressCompletedAtFilter,
+  progressCreatedAtFilter,
+  submittedAtFilter,
+} from "@/lib/analytics-date-range";
+
+export type CourseAnalyticsOptions = {
+  range?: AnalyticsDateRange;
+};
 
 export type CourseAnalytics = {
   starts: number;
   completions: number;
   badgeAwards: number;
-  quizPassRate: number | null; // 0-100, distinct learners
-  averageQuizScore: number | null; // 0-100, across attempts
+  quizPassRate: number | null;
+  averageQuizScore: number | null;
   attempts: number;
+  averageAttemptsBeforePass: number | null;
   dropOff: { lessonTitle: string; order: number } | null;
   lessonFunnel: { title: string; order: number; completed: number }[];
 };
 
 export async function getCourseAnalytics(
-  courseId: string
+  courseId: string,
+  options?: CourseAnalyticsOptions
 ): Promise<CourseAnalytics> {
+  const range = options?.range;
+  const createdAtFilter = range ? progressCreatedAtFilter(range) : undefined;
+  const completedAtFilter = range ? progressCompletedAtFilter(range) : undefined;
+  const badgeAtFilter = range ? awardedAtFilter(range) : undefined;
+  const attemptAtFilter = range ? submittedAtFilter(range) : undefined;
+
   const [lessons, finalQuiz, badgeAwards] = await Promise.all([
     prisma.lesson.findMany({
       where: { courseId, status: "published" },
@@ -26,31 +45,40 @@ export async function getCourseAnalytics(
       where: { courseId, lessonId: null },
       select: { id: true },
     }),
-    prisma.badgeAward.count({ where: { courseId } }),
+    prisma.badgeAward.count({
+      where: {
+        courseId,
+        ...(badgeAtFilter ? { awardedAt: badgeAtFilter } : {}),
+      },
+    }),
   ]);
 
   const lessonIds = lessons.map((l) => l.id);
 
-  // Starts = distinct learners with any progress in the course.
   const starters = await prisma.progress.findMany({
-    where: { courseId },
+    where: {
+      courseId,
+      ...(createdAtFilter ? { createdAt: createdAtFilter } : {}),
+    },
     distinct: ["userId"],
     select: { userId: true },
   });
   const starts = starters.length;
 
-  // Per-lesson completion counts (funnel).
   const lessonFunnel = await Promise.all(
     lessons.map(async (l) => ({
       title: l.title,
       order: l.order,
       completed: await prisma.progress.count({
-        where: { lessonId: l.id, completed: true },
+        where: {
+          lessonId: l.id,
+          completed: true,
+          ...(completedAtFilter ? { completedAt: completedAtFilter } : {}),
+        },
       }),
     }))
   );
 
-  // Drop-off = step with the largest fall in completers (baseline = starts).
   let dropOff: CourseAnalytics["dropOff"] = null;
   if (lessonFunnel.length > 0 && starts > 0) {
     let prev = starts;
@@ -65,14 +93,24 @@ export async function getCourseAnalytics(
     }
   }
 
-  // Quiz metrics.
   let quizPassRate: number | null = null;
   let averageQuizScore: number | null = null;
+  let averageAttemptsBeforePass: number | null = null;
   let attempts = 0;
+
   if (finalQuiz) {
     const allAttempts = await prisma.quizAttempt.findMany({
-      where: { quizId: finalQuiz.id },
-      select: { userId: true, score: true, passed: true },
+      where: {
+        quizId: finalQuiz.id,
+        ...(attemptAtFilter ? { submittedAt: attemptAtFilter } : {}),
+      },
+      select: {
+        userId: true,
+        score: true,
+        passed: true,
+        submittedAt: true,
+      },
+      orderBy: { submittedAt: "asc" },
     });
     attempts = allAttempts.length;
     if (attempts > 0) {
@@ -85,30 +123,57 @@ export async function getCourseAnalytics(
       }
       const passed = [...byUser.values()].filter(Boolean).length;
       quizPassRate = Math.round((passed / byUser.size) * 100);
+
+      const attemptsBeforePass: number[] = [];
+      const byUserAttempts = new Map<string, typeof allAttempts>();
+      for (const a of allAttempts) {
+        const list = byUserAttempts.get(a.userId) ?? [];
+        list.push(a);
+        byUserAttempts.set(a.userId, list);
+      }
+      for (const userAttempts of byUserAttempts.values()) {
+        const firstPassIdx = userAttempts.findIndex((a) => a.passed);
+        if (firstPassIdx >= 0) {
+          attemptsBeforePass.push(firstPassIdx + 1);
+        }
+      }
+      if (attemptsBeforePass.length > 0) {
+        averageAttemptsBeforePass = Math.round(
+          (attemptsBeforePass.reduce((s, n) => s + n, 0) /
+            attemptsBeforePass.length) *
+            10
+        ) / 10;
+      }
     }
   }
 
-  // Completions = learners who finished all lessons + passed final quiz.
-  let completions = 0;
-  if (lessonIds.length > 0) {
-    const grouped = await prisma.progress.groupBy({
-      by: ["userId"],
-      where: { lessonId: { in: lessonIds }, completed: true },
-      _count: { lessonId: true },
-    });
-    const finishers = grouped
-      .filter((g) => g._count.lessonId === lessonIds.length)
-      .map((g) => g.userId);
-
-    if (!finalQuiz) {
-      completions = finishers.length;
-    } else if (finishers.length > 0) {
-      const passers = await prisma.quizAttempt.findMany({
-        where: { quizId: finalQuiz.id, passed: true, userId: { in: finishers } },
-        distinct: ["userId"],
-        select: { userId: true },
+  let completions = badgeAwards;
+  if (!range) {
+    completions = 0;
+    if (lessonIds.length > 0) {
+      const grouped = await prisma.progress.groupBy({
+        by: ["userId"],
+        where: { lessonId: { in: lessonIds }, completed: true },
+        _count: { lessonId: true },
       });
-      completions = passers.length;
+      const finishers = grouped
+        .filter((g) => g._count.lessonId === lessonIds.length)
+        .map((g) => g.userId);
+
+      if (!finalQuiz) {
+        completions = finishers.length;
+      } else if (finishers.length > 0) {
+        const passers = await prisma.quizAttempt.findMany({
+          where: {
+            quizId: finalQuiz.id,
+            passed: true,
+            userId: { in: finishers },
+          },
+          distinct: ["userId"],
+          select: { userId: true },
+        });
+        completions = passers.length;
+      }
     }
   }
 
@@ -119,6 +184,7 @@ export async function getCourseAnalytics(
     quizPassRate,
     averageQuizScore,
     attempts,
+    averageAttemptsBeforePass,
     dropOff,
     lessonFunnel,
   };
@@ -143,6 +209,7 @@ export type ProductCourseMetric = {
   completions: number;
   badgeAwards: number;
   quizPassRate: number | null;
+  averageQuizScore: number | null;
 };
 
 export type ProductAnalytics = {
@@ -158,9 +225,9 @@ export type ProductAnalytics = {
   courses: ProductCourseMetric[];
 };
 
-/** Aggregates learner metrics across all courses for an ecosystem project. */
 export async function getProductAnalytics(
-  productId: string
+  productId: string,
+  options?: CourseAnalyticsOptions
 ): Promise<ProductAnalytics | null> {
   const product = await prisma.product.findUnique({
     where: { id: productId },
@@ -178,7 +245,7 @@ export async function getProductAnalytics(
 
   const courseMetrics = await Promise.all(
     product.courses.map(async (course) => {
-      const analytics = await getCourseAnalytics(course.id);
+      const analytics = await getCourseAnalytics(course.id, options);
       return {
         courseId: course.id,
         title: course.title,
@@ -188,20 +255,21 @@ export async function getProductAnalytics(
         completions: analytics.completions,
         badgeAwards: analytics.badgeAwards,
         quizPassRate: analytics.quizPassRate,
+        averageQuizScore: analytics.averageQuizScore,
       };
     })
   );
 
-  const starts = courseMetrics.reduce((sum, c) => sum + c.starts, 0);
-  const completions = courseMetrics.reduce((sum, c) => sum + c.completions, 0);
-  const badgeAwards = courseMetrics.reduce((sum, c) => sum + c.badgeAwards, 0);
-  const publishedCourses = product.courses.filter((c) => c.status === "published").length;
+  const published = courseMetrics.filter((c) => c.status === "published");
+  const starts = published.reduce((sum, c) => sum + c.starts, 0);
+  const completions = published.reduce((sum, c) => sum + c.completions, 0);
+  const badgeAwards = published.reduce((sum, c) => sum + c.badgeAwards, 0);
 
   return {
     productId: product.id,
     productName: product.name,
     productSlug: product.slug,
-    publishedCourses,
+    publishedCourses: published.length,
     totalCourses: product.courses.length,
     starts,
     completions,
@@ -226,7 +294,6 @@ export type PartnerSafeAnalytics = {
   }[];
 };
 
-/** Partner-visible metrics only — published courses, no internal IDs or draft data. */
 export async function getPartnerSafeAnalytics(
   productId: string
 ): Promise<PartnerSafeAnalytics | null> {
@@ -256,7 +323,6 @@ export type PartnerReport = {
   filename: string;
 };
 
-/** Staff-generated summary for manual partner sharing (no partner dashboard). */
 export async function generatePartnerReport(
   productId: string
 ): Promise<PartnerReport | null> {
@@ -345,11 +411,11 @@ ${suggestedCopy}
 
 - Product onboarding or docs "Learn" section
 - Welcome email or community announcement
-- Campaign landing pages with UTM parameters
+- Campaign landing pages
 
 ---
 
-_This report was generated by Arcademy staff. V1 does not include a partner login or self-service analytics portal._
+_This report was generated by Arcademy staff._
 `;
 
   const slug = product.slug.replace(/[^a-z0-9-]/gi, "-").toLowerCase();

@@ -1,10 +1,11 @@
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { ChevronLeft, ClipboardList } from "lucide-react";
+import { notFound } from "next/navigation";
 import { ProjectDiscordConsole } from "@/components/partner-console/project-discord-console";
-import { Button } from "@/components/ui/button";
 import { getProjectAdminAccess } from "@/lib/project-admin";
-import { getDiscordBotInviteUrlForProduct, isDiscordConfigured, listAssignableGuildRoles } from "@/lib/discord";
+import {
+  getDiscordBotInviteUrlForProduct,
+  isDiscordConfigured,
+  listAssignableGuildRoles,
+} from "@/lib/discord";
 import { prisma } from "@/lib/prisma";
 import { shortWallet } from "@/lib/utils";
 
@@ -18,7 +19,7 @@ export async function generateMetadata({
     where: { id: productId },
     select: { name: true },
   });
-  return { title: product ? `Discord — ${product.name}` : "Discord setup" };
+  return { title: product ? `Discord: ${product.name}` : "Discord setup" };
 }
 
 export default async function ProjectDiscordPage({
@@ -31,8 +32,6 @@ export default async function ProjectDiscordPage({
   const { productId } = await params;
   const { discord: discordStatus } = await searchParams;
   const access = await getProjectAdminAccess(productId);
-  if (!access.user) redirect("/courses");
-  if (!access.canManage) redirect("/partner-console");
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
@@ -65,7 +64,9 @@ export default async function ProjectDiscordPage({
         orderBy: { updatedAt: "desc" },
         take: 20,
         include: {
-          discordRoleRule: { select: { discordRoleName: true, unlockLabel: true } },
+          discordRoleRule: {
+            select: { discordRoleName: true, unlockLabel: true },
+          },
           user: { select: { walletAddress: true } },
         },
       })
@@ -75,7 +76,10 @@ export default async function ProjectDiscordPage({
   let botInviteConfigError: string | null = null;
   if (isDiscordConfigured() && access.user) {
     try {
-      botInviteUrl = await getDiscordBotInviteUrlForProduct(productId, access.user.id);
+      botInviteUrl = await getDiscordBotInviteUrlForProduct(
+        productId,
+        access.user.id
+      );
     } catch {
       botInviteConfigError =
         "Bot install redirects are not configured. Set NEXT_PUBLIC_APP_URL in .env and register the bot-install callback URL in the Discord Developer Portal.";
@@ -84,11 +88,16 @@ export default async function ProjectDiscordPage({
 
   let initialGuildRoles: { id: string; name: string; position: number }[] = [];
   let initialGuildRolesError: string | null = null;
-  if (integration?.guildId && integration.botInstalled && isDiscordConfigured()) {
+  if (
+    integration?.guildId &&
+    integration.botInstalled &&
+    isDiscordConfigured()
+  ) {
     try {
       initialGuildRoles = await listAssignableGuildRoles(integration.guildId);
       if (initialGuildRoles.length === 0) {
-        initialGuildRolesError = "No assignable roles found — check bot permissions.";
+        initialGuildRolesError =
+          "No assignable roles found. Check bot permissions.";
       }
     } catch {
       initialGuildRolesError =
@@ -97,70 +106,52 @@ export default async function ProjectDiscordPage({
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <Link
-        href="/partner-console"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="size-4" />
-        Partner console
-      </Link>
-
-      <div className="mb-6">
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/partner-console/${productId}/self-service`}>
-            <ClipboardList className="size-4" />
-            Partner self-service
-          </Link>
-        </Button>
-      </div>
-
-      <ProjectDiscordConsole
-        key={`${integration?.guildId ?? "none"}:${integration?.status ?? "draft"}:${initialGuildRoles.length}`}
-        productId={product.id}
-        productName={product.name}
-        botInviteUrl={botInviteUrl}
-        botInviteConfigError={botInviteConfigError}
-        discordStatus={discordStatus ?? null}
-        integration={
-          integration
-            ? {
-                guildId: integration.guildId,
-                guildName: integration.guildName,
-                status: integration.status,
-                botInstalled: integration.botInstalled,
-                lastPermissionCheckStatus: integration.lastPermissionCheckStatus,
-                lastPermissionCheckAt: integration.lastPermissionCheckAt?.toISOString() ?? null,
-              }
-            : null
-        }
-        badges={product.courses
-          .filter((c) => c.badge)
-          .map((c) => ({
-            id: c.badge!.id,
-            name: c.badge!.name,
-            courseTitle: c.title,
-          }))}
-        rules={rules.map((r) => ({
-          id: r.id,
-          badgeId: r.badgeId,
-          discordRoleId: r.discordRoleId,
-          discordRoleName: r.discordRoleName,
-          unlockLabel: r.unlockLabel,
-          status: r.status,
+    <ProjectDiscordConsole
+      key={`${integration?.guildId ?? "none"}:${integration?.status ?? "draft"}:${initialGuildRoles.length}`}
+      productId={product.id}
+      botInviteUrl={botInviteUrl}
+      botInviteConfigError={botInviteConfigError}
+      discordStatus={discordStatus ?? null}
+      integration={
+        integration
+          ? {
+              guildId: integration.guildId,
+              guildName: integration.guildName,
+              status: integration.status,
+              botInstalled: integration.botInstalled,
+              lastPermissionCheckStatus: integration.lastPermissionCheckStatus,
+              lastPermissionCheckAt:
+                integration.lastPermissionCheckAt?.toISOString() ?? null,
+            }
+          : null
+      }
+      badges={product.courses
+        .filter((c) => c.badge)
+        .map((c) => ({
+          id: c.badge!.id,
+          name: c.badge!.name,
+          courseTitle: c.title,
         }))}
-        initialGuildRoles={initialGuildRoles}
-        initialGuildRolesError={initialGuildRolesError}
-        recentGrants={recentGrants.map((g) => ({
-          id: g.id,
-          status: g.status,
-          lastErrorMessage: g.lastErrorMessage,
-          attemptCount: g.attemptCount,
-          updatedAt: g.updatedAt.toISOString(),
-          userWallet: shortWallet(g.user.walletAddress, 4),
-          ruleName: g.discordRoleRule.unlockLabel || g.discordRoleRule.discordRoleName,
-        }))}
-      />
-    </div>
+      rules={rules.map((r) => ({
+        id: r.id,
+        badgeId: r.badgeId,
+        discordRoleId: r.discordRoleId,
+        discordRoleName: r.discordRoleName,
+        unlockLabel: r.unlockLabel,
+        status: r.status,
+      }))}
+      initialGuildRoles={initialGuildRoles}
+      initialGuildRolesError={initialGuildRolesError}
+      recentGrants={recentGrants.map((g) => ({
+        id: g.id,
+        status: g.status,
+        lastErrorMessage: g.lastErrorMessage,
+        attemptCount: g.attemptCount,
+        updatedAt: g.updatedAt.toISOString(),
+        userWallet: shortWallet(g.user.walletAddress, 4),
+        ruleName:
+          g.discordRoleRule.unlockLabel || g.discordRoleRule.discordRoleName,
+      }))}
+    />
   );
 }

@@ -164,8 +164,8 @@ export function QuizRunner({
                 <Award />
                 <AlertTitle>Badge earned</AlertTitle>
                 <AlertDescription>
-                  You&apos;ve completed the course. Your new badge is in your
-                  profile.
+                  You&apos;ve completed the course. Your new badge is saved in
+                  My learning.
                 </AlertDescription>
               </Alert>
             )}
@@ -210,13 +210,13 @@ export function QuizRunner({
                     ) : (
                       <Button asChild>
                         <Link href="/profile">
-                          View my profile
+                          View my learning
                           <ArrowRight />
                         </Link>
                       </Button>
                     )}
                     <Button variant="outline" asChild>
-                      <Link href="/profile">My profile</Link>
+                      <Link href="/profile">My learning</Link>
                     </Button>
                     <Button variant="outline" asChild>
                       <Link href={coursePath(productSlug, courseSlug)}>
@@ -233,7 +233,7 @@ export function QuizRunner({
                       </Link>
                     </Button>
                     <Button variant="outline" asChild>
-                      <Link href="/profile">View my profile</Link>
+                      <Link href="/profile">View my learning</Link>
                     </Button>
                   </>
                 )

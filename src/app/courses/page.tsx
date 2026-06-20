@@ -2,19 +2,23 @@ import type { Metadata } from "next";
 import { BookOpen } from "lucide-react";
 import { CourseCard } from "@/components/course-card";
 import { TrackView } from "@/components/analytics/track-view";
+import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { getPublishedCourses } from "@/lib/courses";
 
 export const metadata: Metadata = {
   title: "Courses",
-  description: "Browse official Arcium ecosystem courses on Arcademy.",
+  description:
+    "Short courses that explain Arcium in plain language. Browse the full catalog on Arcademy.",
 };
 
 export default async function CoursesPage() {
   let courses: Awaited<ReturnType<typeof getPublishedCourses>> = [];
+  let coursesLoadError = false;
+
   try {
     courses = await getPublishedCourses();
   } catch {
-    courses = [];
+    coursesLoadError = true;
   }
 
   return (
@@ -22,18 +26,29 @@ export default async function CoursesPage() {
       <TrackView
         eventName="course_catalog_viewed"
         path="/courses"
-        metadata={{ visibleCourseCount: courses.length }}
+        metadata={{ visibleCourseCount: coursesLoadError ? 0 : courses.length }}
       />
       <header className="mb-8 max-w-2xl">
-        <h1 className="text-3xl font-semibold tracking-tight">Courses</h1>
-        <p className="mt-2 text-muted-foreground">
-          Official, curated learning paths for the Arcium ecosystem. Browse
-          freely — connect a wallet when you&apos;re ready to track progress and
-          earn badges.
+        <h1
+          id="courses-heading"
+          className="text-balance text-3xl font-semibold tracking-tight"
+        >
+          Courses
+        </h1>
+        <p className="mt-2 text-pretty leading-relaxed text-muted-foreground">
+          Short courses that explain Arcium in plain language. You can read
+          without a wallet. Connect one when you want to save progress and earn
+          a badge in your profile.
         </p>
       </header>
 
-      {courses.length > 0 ? (
+      <section aria-labelledby="courses-heading">
+      {coursesLoadError ? (
+        <HomeSectionLoadError
+          title="Courses did not load"
+          description="The course catalog is unavailable right now. Refresh the page, or try again in a few minutes."
+        />
+      ) : courses.length > 0 ? (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((c) => (
             <CourseCard
@@ -54,14 +69,18 @@ export default async function CoursesPage() {
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border border-dashed bg-muted/30 p-12 text-center">
-          <BookOpen className="mx-auto size-8 text-muted-foreground" />
-          <p className="mt-3 font-medium">No courses available yet</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Check back soon — the Arcademy team is preparing the first courses.
+        <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
+          <BookOpen
+            className="mx-auto size-8 text-muted-foreground"
+            aria-hidden
+          />
+          <p className="mt-3 font-medium">No published courses yet</p>
+          <p className="mt-1 text-pretty text-sm text-muted-foreground">
+            The Arcademy team is preparing the first courses. Check back soon.
           </p>
         </div>
       )}
+      </section>
     </div>
   );
 }

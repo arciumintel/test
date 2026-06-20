@@ -155,7 +155,7 @@ export function CourseDetailsForm({
 
       <div className="grid gap-2 sm:grid-cols-2">
         <div className="grid gap-2">
-          <Label htmlFor="product">Ecosystem Project</Label>
+          <Label htmlFor="product">Project</Label>
           <Select
             id="product"
             value={productId}
@@ -172,7 +172,7 @@ export function CourseDetailsForm({
           </Select>
           {products.length === 0 && (
             <p className="text-xs text-destructive">
-              Create an ecosystem project before creating courses.
+              Create a project before creating courses.
             </p>
           )}
         </div>
@@ -210,7 +210,7 @@ export function CourseDetailsForm({
             onChange={(e) => setCourseType(e.target.value as CourseType)}
           >
             <option value="foundational">Foundational</option>
-            <option value="product_onboarding">Ecosystem project onboarding</option>
+            <option value="product_onboarding">Project onboarding</option>
             <option value="builder_intro">Builder intro</option>
           </Select>
         </div>

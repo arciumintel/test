@@ -54,7 +54,7 @@ export function PartnerApplicationApprovalPanel({
       <div className="rounded-lg border border-success/30 bg-success/5 p-4 text-sm">
         <span className="flex items-center gap-2 font-medium text-success">
           <Check className="size-4" />
-          Partner approved — draft ecosystem project created and console access
+          Partner approved. Draft project created and console access
           granted.
         </span>
       </div>
@@ -68,7 +68,7 @@ export function PartnerApplicationApprovalPanel({
       <div>
         <h2 className="font-medium">Partner application</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Approve to create a draft ecosystem project and grant Partner console
+          Approve to create a draft project and grant Partner console
           access to the applicant wallet.
         </p>
       </div>
@@ -95,7 +95,7 @@ export function PartnerApplicationApprovalPanel({
           value={rejectNotes}
           onChange={(e) => setRejectNotes(e.target.value)}
           rows={3}
-          placeholder="Reason for rejection — stored in staff notes only"
+          placeholder="Reason for rejection (stored in staff notes only)"
         />
         <Button
           type="button"

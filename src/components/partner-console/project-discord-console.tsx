@@ -45,7 +45,7 @@ function discordInstallFeedback(status: string | null): {
   switch (status) {
     case "bot_installed":
       return {
-        message: "Bot added — server ID and name were filled automatically.",
+        message: "Bot added. Server ID and name were filled automatically.",
         error: null,
       };
     case "bot_install_denied":
@@ -88,7 +88,6 @@ function discordInstallFeedback(status: string | null): {
 
 type Props = {
   productId: string;
-  productName: string;
   botInviteUrl: string | null;
   botInviteConfigError: string | null;
   discordStatus: string | null;
@@ -109,7 +108,6 @@ type Props = {
 
 export function ProjectDiscordConsole({
   productId,
-  productName,
   botInviteUrl,
   botInviteConfigError,
   discordStatus,
@@ -194,7 +192,7 @@ export function ProjectDiscordConsole({
     } else {
       setGuildRoles(res.roles);
       if (res.roles.length === 0) {
-        setRolesError("No assignable roles found — check bot permissions.");
+        setRolesError("No assignable roles found. Check bot permissions.");
       }
     }
     setRolesLoading(false);
@@ -307,8 +305,8 @@ export function ProjectDiscordConsole({
   return (
     <div className="space-y-10">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Discord — {productName}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h1 className="text-2xl font-semibold tracking-tight">Discord setup</h1>
+        <p className="mt-1 text-pretty text-sm text-muted-foreground">
           Connect your Discord server and map published badges to server roles.
         </p>
       </div>
@@ -321,7 +319,7 @@ export function ProjectDiscordConsole({
           automatically.
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          The bot may show as <strong>offline</strong> in your member list — that is
+          The bot may show as <strong>offline</strong> in your member list. That is
           normal. Arcademy assigns roles through Discord&apos;s API and does not keep a
           live chat connection.
         </p>
@@ -406,11 +404,11 @@ export function ProjectDiscordConsole({
             <ul className="mt-2 list-inside list-disc space-y-1 text-sm">
               <li>
                 Server integration set to <strong>Active</strong>
-                {integrationIsActive ? " ✓" : " — required for grants"}
+                {integrationIsActive ? " ✓" : " (required for grants)"}
               </li>
               <li>
                 At least one rule set to <strong>Active</strong>
-                {activeRuleCount > 0 ? ` ✓ (${activeRuleCount})` : " — required for grants"}
+                {activeRuleCount > 0 ? ` ✓ (${activeRuleCount})` : " (required for grants)"}
               </li>
               <li>Learners must connect Discord and join your server</li>
               <li>
@@ -423,7 +421,7 @@ export function ProjectDiscordConsole({
         <form onSubmit={saveRule} className="mt-4 grid gap-4">
           {editingRuleId && (
             <p className="text-sm text-muted-foreground">
-              Editing rule —{" "}
+              Editing rule:{" "}
               <button
                 type="button"
                 className="text-primary underline-offset-4 hover:underline"
@@ -449,7 +447,7 @@ export function ProjectDiscordConsole({
                     value={b.id}
                     disabled={usedBadgeIds.has(b.id)}
                   >
-                    {b.name} — {b.courseTitle}
+                    {b.name}: {b.courseTitle}
                     {usedBadgeIds.has(b.id) ? " (already mapped)" : ""}
                   </option>
                 ))

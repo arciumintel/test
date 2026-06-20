@@ -62,6 +62,8 @@ type Props = {
     linkedAt: string;
   } | null;
   recentFailures: GrantRow[];
+  className?: string;
+  headingId?: string;
 };
 
 function displayName(linked: NonNullable<Props["linked"]>): string {
@@ -72,6 +74,8 @@ export function DiscordProfileSection({
   discordStatus,
   linked,
   recentFailures,
+  className,
+  headingId = "discord-heading",
 }: Props) {
   const router = useRouter();
   const oauthFeedback = discordOAuthFeedback(discordStatus);
@@ -111,8 +115,10 @@ export function DiscordProfileSection({
 
   if (!linked) {
     return (
-      <section className="mt-10">
-        <h2 className="text-lg font-semibold">Discord</h2>
+      <section className={className} aria-labelledby={headingId}>
+        <h2 id={headingId} className="text-lg font-semibold tracking-tight">
+          Discord
+        </h2>
         <div className="mt-4 rounded-xl border bg-muted/20 p-6">
           <p className="text-sm text-muted-foreground">
             Link Discord to receive project server roles when you earn badges.
@@ -129,8 +135,10 @@ export function DiscordProfileSection({
   }
 
   return (
-    <section className="mt-10">
-      <h2 className="text-lg font-semibold">Discord</h2>
+    <section className={className} aria-labelledby={headingId}>
+      <h2 id={headingId} className="text-lg font-semibold tracking-tight">
+        Discord
+      </h2>
       <div className="mt-4 rounded-xl border p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -166,7 +174,7 @@ export function DiscordProfileSection({
                     <span className="font-medium">{grant.ruleName}</span>
                     {" · "}
                     {grant.guildName}
-                    {grant.lastErrorMessage ? ` — ${grant.lastErrorMessage}` : ""}
+                    {grant.lastErrorMessage ? `: ${grant.lastErrorMessage}` : ""}
                   </span>
                   <Button
                     size="sm"

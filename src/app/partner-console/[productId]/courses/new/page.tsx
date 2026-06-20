@@ -1,8 +1,5 @@
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { notFound } from "next/navigation";
 import { CourseDetailsForm } from "@/components/admin/course-details-form";
-import { getProjectAdminAccess } from "@/lib/project-admin";
 import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata({
@@ -15,7 +12,7 @@ export async function generateMetadata({
     where: { id: productId },
     select: { name: true },
   });
-  return { title: product ? `New course — ${product.name}` : "New course draft" };
+  return { title: product ? `New course: ${product.name}` : "New course draft" };
 }
 
 export default async function NewPartnerCoursePage({
@@ -24,9 +21,6 @@ export default async function NewPartnerCoursePage({
   params: Promise<{ productId: string }>;
 }) {
   const { productId } = await params;
-  const access = await getProjectAdminAccess(productId);
-  if (!access.user) redirect("/courses");
-  if (!access.canManage) redirect("/partner-console");
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
@@ -35,20 +29,13 @@ export default async function NewPartnerCoursePage({
   if (!product) notFound();
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-      <Link
-        href={`/partner-console/${productId}/courses`}
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="size-4" />
-        Course drafts
-      </Link>
+    <>
       <h1 className="text-2xl font-semibold tracking-tight">New course draft</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Create a course for {product.name}. After authoring, submit it for Arcademy
-        staff review before it can go live.
+      <p className="mt-1 text-pretty text-sm text-muted-foreground">
+        Create a course for {product.name}. After authoring, submit it for
+        Arcademy staff review before it can go live.
       </p>
-      <div className="mt-8">
+      <div className="mt-8 max-w-3xl">
         <CourseDetailsForm
           products={[{ id: product.id, name: product.name, status: product.status }]}
           variant="partner"
@@ -56,6 +43,6 @@ export default async function NewPartnerCoursePage({
           coursePathPrefix={`/partner-console/${productId}/courses`}
         />
       </div>
-    </div>
+    </>
   );
 }

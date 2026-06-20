@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { CourseStatusControls } from "@/components/admin/course-status-controls";
 import { StaffPartnerReviewControls } from "@/components/admin/staff-partner-review-controls";
 import { PublishReadinessPanel } from "@/components/admin/publish-readiness-panel";
@@ -14,7 +15,10 @@ import { coursePath } from "@/lib/paths";
 import { formatCourseStatus } from "@/lib/course-status";
 import type { CourseStatus } from "@prisma/client";
 
-const STATUS_VARIANT: Record<CourseStatus, "success" | "muted" | "secondary" | "default"> = {
+const STATUS_VARIANT: Record<
+  CourseStatus,
+  "success" | "muted" | "secondary" | "default"
+> = {
   published: "success",
   draft: "secondary",
   partner_draft: "secondary",
@@ -31,39 +35,84 @@ export default async function CourseEditorPage({
 }) {
   const { id } = await params;
 
-  const [course, products, readiness] = await Promise.all([
-    prisma.course.findUnique({
-      where: { id },
-      include: {
-        product: true,
-        lessons: { orderBy: { order: "asc" } },
-        badge: true,
-        quizzes: {
-          where: { lessonId: null },
-          include: { questions: { orderBy: { order: "asc" } } },
+  let course;
+  let products;
+  let readiness;
+  let analytics;
+  let prerequisiteOptions;
+
+  try {
+    [course, products, readiness] = await Promise.all([
+      prisma.course.findUnique({
+        where: { id },
+        include: {
+          product: true,
+          lessons: { orderBy: { order: "asc" } },
+          badge: true,
+          quizzes: {
+            where: { lessonId: null },
+            include: { questions: { orderBy: { order: "asc" } } },
+          },
+          reviewRequestedBy: { select: { walletAddress: true } },
         },
-        reviewRequestedBy: { select: { walletAddress: true } },
-      },
-    }),
-    prisma.product.findMany({
-      orderBy: { name: "asc" },
-      select: { id: true, name: true, status: true },
-    }),
-    getCoursePublishReadiness(id),
-  ]);
+      }),
+      prisma.product.findMany({
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, status: true },
+      }),
+      getCoursePublishReadiness(id),
+    ]);
+  } catch {
+    return (
+      <>
+        <Link
+          href="/admin"
+          className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft className="size-4" />
+          Dashboard
+        </Link>
+        <HomeSectionLoadError
+          title="Course editor did not load"
+          description="Course data is unavailable right now. Refresh the page, or return to the dashboard and try again."
+        />
+      </>
+    );
+  }
 
   if (!course) notFound();
 
-  const analytics = await getCourseAnalytics(course.id);
+  try {
+    [analytics, prerequisiteOptions] = await Promise.all([
+      getCourseAnalytics(course.id),
+      prisma.course.findMany({
+        where: { productId: course.productId, id: { not: course.id } },
+        orderBy: { title: "asc" },
+        select: { id: true, title: true },
+      }),
+    ]);
+  } catch {
+    return (
+      <>
+        <Link
+          href="/admin"
+          className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft className="size-4" />
+          Dashboard
+        </Link>
+        <HomeSectionLoadError
+          title="Course editor did not load"
+          description="Course data is unavailable right now. Refresh the page, or return to the dashboard and try again."
+        />
+      </>
+    );
+  }
+
   const finalQuiz = course.quizzes[0] ?? null;
-  const prerequisiteOptions = await prisma.course.findMany({
-    where: { productId: course.productId, id: { not: course.id } },
-    orderBy: { title: "asc" },
-    select: { id: true, title: true },
-  });
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+    <>
       <Link
         href="/admin"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -75,12 +124,10 @@ export default async function CourseEditorPage({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <h1 className="text-balance text-2xl font-semibold tracking-tight">
               {course.title}
             </h1>
-            <Badge
-              variant={STATUS_VARIANT[course.status]}
-            >
+            <Badge variant={STATUS_VARIANT[course.status]}>
               {formatCourseStatus(course.status)}
             </Badge>
           </div>
@@ -113,16 +160,17 @@ export default async function CourseEditorPage({
         </p>
       )}
 
-      {course.status === "submitted_for_review" && course.submittedForReviewAt && (
-        <p className="mt-2 text-sm text-muted-foreground">
-          Submitted for review on{" "}
-          {new Date(course.submittedForReviewAt).toLocaleString()}
-          {course.reviewRequestedBy
-            ? ` by ${course.reviewRequestedBy.walletAddress.slice(0, 4)}…${course.reviewRequestedBy.walletAddress.slice(-4)}`
-            : ""}
-          .
-        </p>
-      )}
+      {course.status === "submitted_for_review" &&
+        course.submittedForReviewAt && (
+          <p className="mt-2 text-pretty text-sm text-muted-foreground">
+            Submitted for review on{" "}
+            {new Date(course.submittedForReviewAt).toLocaleString()}
+            {course.reviewRequestedBy
+              ? ` by ${course.reviewRequestedBy.walletAddress.slice(0, 4)}…${course.reviewRequestedBy.walletAddress.slice(-4)}`
+              : ""}
+            .
+          </p>
+        )}
 
       <PublishReadinessPanel
         report={readiness}
@@ -188,6 +236,6 @@ export default async function CourseEditorPage({
         products={products}
         prerequisiteOptions={prerequisiteOptions}
       />
-    </div>
+    </>
   );
 }

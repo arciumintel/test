@@ -1,9 +1,7 @@
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { notFound } from "next/navigation";
 import { PartnerSelfServicePanel } from "@/components/partner-console/partner-self-service-panel";
+import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { getPartnerSelfServiceData } from "@/app/actions/project-partner-self-service";
-import { getProjectAdminAccess } from "@/lib/project-admin";
 import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata({
@@ -17,7 +15,7 @@ export async function generateMetadata({
     select: { name: true },
   });
   return {
-    title: product ? `Self-service — ${product.name}` : "Partner self-service",
+    title: product ? `Self-service: ${product.name}` : "Partner self-service",
   };
 }
 
@@ -27,30 +25,29 @@ export default async function PartnerSelfServicePage({
   params: Promise<{ productId: string }>;
 }) {
   const { productId } = await params;
-  const access = await getProjectAdminAccess(productId);
-  if (!access.user) redirect("/courses");
-  if (!access.canManage) redirect("/partner-console");
 
   const result = await getPartnerSelfServiceData(productId);
   if ("error" in result) {
-    if (result.error.includes("permission")) redirect("/partner-console");
-    notFound();
+    return (
+      <>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Partner self-service
+        </h1>
+        <p className="mt-1 text-pretty text-sm text-muted-foreground">
+          Submit materials, track review progress, and view basic course
+          performance.
+        </p>
+        <div className="mt-8">
+          <HomeSectionLoadError
+            title="Self-service did not load"
+            description="Partner self-service data is unavailable right now. Refresh the page, or try again in a few minutes."
+          />
+        </div>
+      </>
+    );
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <Link
-        href="/partner-console"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="size-4" />
-        Partner console
-      </Link>
-
-      <PartnerSelfServicePanel
-        productId={productId}
-        initial={result.data}
-      />
-    </div>
+    <PartnerSelfServicePanel productId={productId} initial={result.data} />
   );
 }

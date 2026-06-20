@@ -7,7 +7,7 @@ import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import bs58 from "bs58";
 import { LogOut, Loader2, Wallet, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { shortWallet } from "@/lib/utils";
+import { cn, shortWallet } from "@/lib/utils";
 import { requestNonce, verifySignature, signOut } from "@/app/actions/auth";
 import { trackClientEvent } from "@/app/actions/tracking";
 import {
@@ -20,6 +20,7 @@ import {
 type Props = {
   authedWallet?: string | null;
   className?: string;
+  align?: "center" | "end";
 };
 
 function currentPath(): string {
@@ -41,7 +42,12 @@ async function trackWalletFailure(
   });
 }
 
-export function WalletAuth({ authedWallet, className }: Props) {
+export function WalletAuth({ authedWallet, className, align = "end" }: Props) {
+  const stackClassName = cn(
+    "flex flex-col gap-1",
+    align === "center" ? "items-center" : "items-end",
+    className
+  );
   const router = useRouter();
   const { publicKey, signMessage, connected, disconnect, wallet } = useWallet();
   const { setVisible } = useWalletModal();
@@ -175,7 +181,7 @@ export function WalletAuth({ authedWallet, className }: Props) {
   // Wallet connected, needs to sign in.
   if (connected && publicKey) {
     return (
-      <div className={`flex flex-col items-end gap-1 ${className ?? ""}`}>
+      <div className={stackClassName}>
         <Button onClick={runSignIn} disabled={busy}>
           {busy ? <Loader2 className="animate-spin" /> : <ShieldCheck />}
           Sign in to continue
@@ -187,7 +193,7 @@ export function WalletAuth({ authedWallet, className }: Props) {
 
   // Not connected.
   return (
-    <div className={`flex flex-col items-end gap-1 ${className ?? ""}`}>
+    <div className={stackClassName}>
       <Button onClick={openWalletModal} disabled={busy}>
         <Wallet />
         Connect wallet

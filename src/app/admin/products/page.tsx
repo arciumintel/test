@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AlertTriangle, PackageOpen, Pencil, Plus } from "lucide-react";
+import { PackageOpen, Pencil, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { ProductStatusControls } from "@/components/admin/product-status-controls";
 import { prisma } from "@/lib/prisma";
 import type { ProductStatus } from "@prisma/client";
 
-export const metadata: Metadata = { title: "Admin ecosystem projects" };
+export const metadata: Metadata = { title: "Admin projects" };
 
 const STATUS_VARIANT: Record<
   ProductStatus,
@@ -46,83 +46,92 @@ export default async function AdminProductsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <div className="flex items-center justify-between gap-4">
+    <>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Ecosystem Projects
+          <h1 className="text-balance text-2xl font-semibold tracking-tight">
+            Projects
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Manage ecosystem project landing pages and course ownership.
+          <p className="mt-1 text-pretty text-sm text-muted-foreground">
+            Manage project landing pages and course ownership.
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="shrink-0 self-start">
           <Link href="/admin/products/new">
             <Plus />
-            New ecosystem project
+            New project
           </Link>
         </Button>
       </div>
 
-      {dbError && (
-        <Alert variant="warning" className="mt-6">
-          <AlertTriangle />
-          <AlertTitle>Database not reachable</AlertTitle>
-          <AlertDescription>
-            Set <code>DATABASE_URL</code> and run the database migration.
-          </AlertDescription>
-        </Alert>
+      {dbError ? (
+        <div className="mt-8">
+          <HomeSectionLoadError
+            title="Projects did not load"
+            description="The project list is unavailable right now. Refresh the page, or check DATABASE_URL if this is a new environment."
+          />
+        </div>
+      ) : (
+        <div className="mt-8 space-y-3">
+          <h2 className="text-lg font-semibold tracking-tight">
+            All projects ({products.length})
+          </h2>
+          {products.length === 0 ? (
+            <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
+              <PackageOpen
+                className="mx-auto size-8 text-muted-foreground"
+                aria-hidden
+              />
+              <p className="mt-3 font-medium">No projects yet</p>
+              <p className="mt-1 text-pretty text-sm text-muted-foreground">
+                Create a project before publishing courses.
+              </p>
+              <Button asChild className="mt-4" size="sm">
+                <Link href="/admin/products/new">New project</Link>
+              </Button>
+            </div>
+          ) : (
+            products.map((product) => (
+              <Card key={product.id}>
+                <CardContent className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/admin/products/${product.id}`}
+                        className="truncate font-medium hover:text-primary"
+                      >
+                        {product.name}
+                      </Link>
+                      <Badge
+                        variant={STATUS_VARIANT[product.status]}
+                        className="capitalize"
+                      >
+                        {product.status}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      /products/{product.slug} · {product._count.courses}{" "}
+                      course{product._count.courses === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/admin/products/${product.id}`}>
+                        <Pencil />
+                        Edit
+                      </Link>
+                    </Button>
+                    <ProductStatusControls
+                      productId={product.id}
+                      status={product.status}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
       )}
-
-      <div className="mt-6 space-y-3">
-        {products.length === 0 && !dbError && (
-          <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
-            <PackageOpen className="mx-auto size-8 text-muted-foreground" />
-            <p className="mt-3 font-medium">No ecosystem projects yet</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Create an ecosystem project before publishing courses.
-            </p>
-          </div>
-        )}
-        {products.map((product) => (
-          <Card key={product.id}>
-            <CardContent className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <Link
-                    href={`/admin/products/${product.id}`}
-                    className="truncate font-medium hover:text-primary"
-                  >
-                    {product.name}
-                  </Link>
-                  <Badge
-                    variant={STATUS_VARIANT[product.status]}
-                    className="capitalize"
-                  >
-                    {product.status}
-                  </Badge>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  /products/{product.slug} · {product._count.courses} course
-                  {product._count.courses === 1 ? "" : "s"}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" asChild>
-                  <Link href={`/admin/products/${product.id}`}>
-                    <Pencil />
-                    Edit
-                  </Link>
-                </Button>
-                <ProductStatusControls
-                  productId={product.id}
-                  status={product.status}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
+    </>
   );
 }

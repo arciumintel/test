@@ -149,7 +149,7 @@ export function PartnerIntakeForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid gap-2">
           <Label htmlFor="intake-project-name">
-            Ecosystem project name{" "}
+            Project name{" "}
             <span className="text-muted-foreground">(applications)</span>
           </Label>
           <Input
@@ -171,7 +171,7 @@ export function PartnerIntakeForm({
 
       <div className="grid gap-2">
         <Label htmlFor="intake-product">
-          Linked ecosystem project{" "}
+          Linked project{" "}
           <span className="text-muted-foreground">(optional)</span>
         </Label>
         <Select

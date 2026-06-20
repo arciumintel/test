@@ -1,63 +1,80 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PackageOpen } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ProductCard } from "@/components/product-card";
+import { HomeSectionLoadError } from "@/components/home-section-load-error";
+import { ProductRowLink } from "@/components/product-row-link";
 import { getPublishedProducts } from "@/lib/products";
 
 export const metadata: Metadata = {
-  title: "Ecosystem Projects",
-  description: "Explore curated Arcium ecosystem projects on Arcademy.",
+  title: "Projects",
+  description:
+    "Browse Arcium apps and tools on Arcademy. Each project has its own course list.",
 };
 
 export default async function ProductsPage() {
   let products: Awaited<ReturnType<typeof getPublishedProducts>> = [];
+  let productsLoadError = false;
+
   try {
     products = await getPublishedProducts();
   } catch {
-    products = [];
+    productsLoadError = true;
   }
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
       <header className="mb-8 max-w-2xl">
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Ecosystem Projects
+        <h1
+          id="projects-heading"
+          className="text-balance text-3xl font-semibold tracking-tight"
+        >
+          Projects
         </h1>
-        <p className="mt-2 text-muted-foreground">
-          Browse staff-curated Arcium ecosystem projects, then follow the
-          courses attached to each one.
+        <p className="mt-2 text-pretty leading-relaxed text-muted-foreground">
+          Each project is an app or tool in Arcium with its own course list. Pick
+          a project to see its courses.
         </p>
       </header>
 
-      {products.length > 0 ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={{
-                slug: product.slug,
-                name: product.name,
-                description: product.description,
-                logoUrl: product.logoUrl,
-                category: product.category,
-                courseCount: product._count.courses,
-              }}
+      <section aria-labelledby="projects-heading">
+        {productsLoadError ? (
+          <HomeSectionLoadError
+            title="Projects did not load"
+            description="The project list is unavailable right now. Refresh the page, or try again in a few minutes."
+          />
+        ) : products.length > 0 ? (
+          <div className="overflow-hidden rounded-xl border bg-card divide-y">
+            {products.map((product) => (
+              <ProductRowLink
+                key={product.id}
+                product={{
+                  slug: product.slug,
+                  name: product.name,
+                  description: product.description,
+                  logoUrl: product.logoUrl,
+                  courseCount: product._count.courses,
+                }}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
+            <BookOpen
+              className="mx-auto size-8 text-muted-foreground"
+              aria-hidden
             />
-          ))}
-        </div>
-      ) : (
-        <div className="rounded-xl border border-dashed bg-muted/30 p-12 text-center">
-          <PackageOpen className="mx-auto size-8 text-muted-foreground" />
-          <p className="mt-3 font-medium">No ecosystem projects available yet</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            The Arcademy team is preparing the first ecosystem project pages.
-          </p>
-          <Button variant="outline" className="mt-4" asChild>
-            <Link href="/courses">Browse courses</Link>
-          </Button>
-        </div>
-      )}
+            <p className="mt-3 font-medium">No published projects yet</p>
+            <p className="mt-1 text-pretty text-sm text-muted-foreground">
+              Project pages appear here as Arcium apps and tools are added to
+              Arcademy.
+            </p>
+            <Button variant="outline" className="mt-4" asChild>
+              <Link href="/courses">Browse courses</Link>
+            </Button>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
