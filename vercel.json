@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/discord-role-grants",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 6 * * *"
     }
   ]
 }
