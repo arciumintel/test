@@ -32,6 +32,7 @@ import {
   deletePartnerLesson,
   reorderPartnerLessons,
 } from "@/app/actions/project-courses";
+import { FIELD_LIMITS as L } from "@/lib/field-limits";
 import type { LessonStatus } from "@prisma/client";
 
 export type AdminLesson = {
@@ -123,58 +124,64 @@ export function LessonsManager({
           ) : (
             <div
               key={lesson.id}
-              className="flex items-center gap-3 rounded-lg border bg-card px-3 py-2.5"
+              className="flex flex-col gap-2 rounded-lg border bg-card px-3 py-2.5 sm:flex-row sm:items-center sm:gap-3"
             >
-              {!readOnly && (
-                <>
-                  <GripVertical className="size-4 text-muted-foreground/50" />
-                  <div className="flex flex-col">
-                    <button
-                      onClick={() => move(i, -1)}
-                      disabled={i === 0 || reordering}
-                      className="text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
-                      aria-label="Move up"
+              <div className="flex min-w-0 items-center gap-3">
+                {!readOnly && (
+                  <>
+                    <GripVertical className="size-4 shrink-0 text-muted-foreground/50" />
+                    <div className="flex shrink-0 flex-col">
+                      <button
+                        onClick={() => move(i, -1)}
+                        disabled={i === 0 || reordering}
+                        className="cursor-pointer text-muted-foreground hover:text-foreground disabled:opacity-30"
+                        aria-label="Move up"
+                      >
+                        <ChevronUp className="size-4" />
+                      </button>
+                      <button
+                        onClick={() => move(i, 1)}
+                        disabled={i === lessons.length - 1 || reordering}
+                        className="cursor-pointer text-muted-foreground hover:text-foreground disabled:opacity-30"
+                        aria-label="Move down"
+                      >
+                        <ChevronDown className="size-4" />
+                      </button>
+                    </div>
+                  </>
+                )}
+                <span className="w-6 shrink-0 text-sm text-muted-foreground">
+                  {i + 1}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                  {lesson.title}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center justify-end gap-2 sm:shrink-0">
+                <Badge
+                  variant={lesson.status === "published" ? "success" : "secondary"}
+                >
+                  {lesson.status}
+                </Badge>
+                {!lesson.required && <Badge variant="muted">Optional</Badge>}
+                {!readOnly && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setEditing(lesson.id)}
                     >
-                      <ChevronUp className="size-4" />
-                    </button>
-                    <button
-                      onClick={() => move(i, 1)}
-                      disabled={i === lessons.length - 1 || reordering}
-                      className="text-muted-foreground hover:text-foreground disabled:opacity-30 cursor-pointer"
-                      aria-label="Move down"
-                    >
-                      <ChevronDown className="size-4" />
-                    </button>
-                  </div>
-                </>
-              )}
-              <span className="w-6 text-sm text-muted-foreground">{i + 1}</span>
-              <span className="flex-1 truncate text-sm font-medium">
-                {lesson.title}
-              </span>
-              <Badge variant={lesson.status === "published" ? "success" : "secondary"}>
-                {lesson.status}
-              </Badge>
-              {!lesson.required && (
-                <Badge variant="muted">Optional</Badge>
-              )}
-              {!readOnly && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setEditing(lesson.id)}
-                  >
-                    <Pencil />
-                  </Button>
-                  <DeleteLessonButton
-                    lessonId={lesson.id}
-                    variant={variant}
-                    partnerProductId={partnerProductId}
-                    onDeleted={() => router.refresh()}
-                  />
-                </>
-              )}
+                      <Pencil />
+                    </Button>
+                    <DeleteLessonButton
+                      lessonId={lesson.id}
+                      variant={variant}
+                      partnerProductId={partnerProductId}
+                      onDeleted={() => router.refresh()}
+                    />
+                  </>
+                )}
+              </div>
             </div>
           )
         )}
@@ -255,6 +262,7 @@ function LessonForm({
           id="lesson-title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          maxLength={L.lessonTitle}
           required
         />
       </div>
@@ -270,6 +278,7 @@ function LessonForm({
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={10}
+          maxLength={L.lessonContent}
           required
           className="font-mono text-[0.85rem]"
         />

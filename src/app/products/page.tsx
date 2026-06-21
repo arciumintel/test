@@ -54,7 +54,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       <header className="mb-8 max-w-2xl">
         <h1
           id="projects-heading"
-          className="text-balance text-3xl font-semibold tracking-tight"
+          className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl"
         >
           Projects
         </h1>

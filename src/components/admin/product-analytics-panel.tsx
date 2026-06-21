@@ -90,7 +90,40 @@ export function ProductAnalyticsPanel({
         <Card>
           <CardContent className="py-5">
             <h3 className="text-sm font-semibold">By course</h3>
-            <div className="mt-4 overflow-x-auto">
+            <div className="mt-4 space-y-3 md:hidden">
+              {data.courses.map((c) => (
+                <div
+                  key={c.courseId}
+                  className="rounded-lg border bg-card p-3 text-sm"
+                >
+                  <p className="font-medium">{c.title}</p>
+                  <p className="mt-1 capitalize text-muted-foreground">
+                    {c.status}
+                  </p>
+                  <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <dt className="text-muted-foreground">Starts</dt>
+                      <dd className="font-medium">{c.starts}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">Done</dt>
+                      <dd className="font-medium">{c.completions}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">Badges</dt>
+                      <dd className="font-medium">{c.badgeAwards}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">Quiz pass</dt>
+                      <dd className="font-medium">
+                        {c.quizPassRate === null ? "—" : `${c.quizPassRate}%`}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 hidden overflow-x-auto md:block">
               <table className="w-full min-w-[480px] text-left text-sm">
                 <thead>
                   <tr className="border-b text-xs text-muted-foreground">

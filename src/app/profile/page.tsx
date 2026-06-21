@@ -46,11 +46,11 @@ export default async function ProfilePage({
 
   if (!user) {
     return (
-      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+      <div className="mx-auto min-w-0 max-w-5xl px-4 py-10 sm:px-6">
         <header className="mb-8 max-w-2xl">
           <h1
             id="profile-heading"
-            className="text-balance text-3xl font-semibold tracking-tight"
+            className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl"
           >
             My learning
           </h1>
@@ -232,7 +232,7 @@ export default async function ProfilePage({
   const completed = courses.filter((c) => c.completed || c.pct >= 100);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+    <div className="mx-auto min-w-0 max-w-5xl px-4 py-10 sm:px-6">
       {!profileLoadError && (
         <TrackView
           eventName="profile_viewed"
@@ -245,14 +245,14 @@ export default async function ProfilePage({
         />
       )}
 
-      <header className="mb-8">
-        <div className="flex items-center gap-4">
-          <span className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+      <header className="mb-8 min-w-0">
+        <div className="flex min-w-0 items-start gap-4">
+          <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
             <GraduationCap className="size-7" aria-hidden />
           </span>
-          <div>
+          <div className="min-w-0 flex-1">
             <DisplayNameForm initialName={user.displayName} />
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 truncate text-sm text-muted-foreground">
               {shortWallet(user.walletAddress, 6)}
             </p>
           </div>
@@ -275,18 +275,21 @@ export default async function ProfilePage({
               {awards.length > 0 ? ` (${awards.length})` : ""}
             </h2>
             {awards.length > 0 ? (
-              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-4 grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-3 [&>*]:min-w-0">
                 {awards.map((award) => (
-                  <Card key={award.id}>
-                    <CardContent className="flex flex-col gap-4 py-5">
-                      <div className="flex items-center gap-4">
+                  <Card key={award.id} className="min-w-0 overflow-hidden">
+                    <CardContent className="flex min-w-0 flex-col gap-4 py-5">
+                      <div className="flex min-w-0 items-start gap-4">
                         <BadgeMedallion
                           name={award.badge.name}
                           imageUrl={award.badge.imageUrl}
+                          className="shrink-0"
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium">{award.badge.name}</p>
-                          <p className="line-clamp-1 text-sm text-muted-foreground">
+                          <p className="line-clamp-2 break-words font-medium">
+                            {award.badge.name}
+                          </p>
+                          <p className="line-clamp-2 break-words text-sm text-muted-foreground">
                             {award.course.title}
                           </p>
                           <p className="mt-1 text-xs text-muted-foreground">
@@ -429,26 +432,26 @@ function CourseProgressRow({
   completed: boolean;
 }) {
   return (
-    <Link href={coursePath(productSlug, slug)} className="block">
-      <Card className="transition-colors hover:bg-muted/30">
-        <CardContent className="flex items-center gap-4 py-4">
+    <Link href={coursePath(productSlug, slug)} className="block min-w-0">
+      <Card className="min-w-0 overflow-hidden transition-colors hover:bg-muted/30">
+        <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:gap-4">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <p className="truncate font-medium">{title}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="min-w-0 flex-1 truncate font-medium">{title}</p>
               {completed && (
-                <Badge variant="success">
+                <Badge variant="success" className="shrink-0">
                   <Award />
                   Complete
                 </Badge>
               )}
             </div>
-            <div className="mt-2 flex items-center gap-3">
-              <Progress value={pct} className="max-w-xs" />
-              <span className="text-xs text-muted-foreground">{pct}%</span>
+            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+              <Progress value={pct} className="w-full sm:max-w-xs" />
+              <span className="shrink-0 text-xs text-muted-foreground">{pct}%</span>
             </div>
           </div>
           <ArrowRight
-            className="size-4 shrink-0 text-muted-foreground"
+            className="hidden size-4 shrink-0 text-muted-foreground sm:block"
             aria-hidden
           />
         </CardContent>

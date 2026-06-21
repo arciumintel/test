@@ -107,9 +107,9 @@ export default async function ProductEditorPage({
         Projects
       </Link>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-balance text-2xl font-semibold tracking-tight">
               {product.name}
             </h1>
@@ -126,22 +126,28 @@ export default async function ProductEditorPage({
             {product.partnerName ? ` · Partner: ${product.partnerName}` : ""}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" asChild>
             <Link href={`/partner-console/${product.id}/analytics`}>
-              Partner analytics
+              <span className="hidden sm:inline">Partner analytics</span>
+              <span className="sm:hidden">Analytics</span>
             </Link>
           </Button>
-          <Button variant="outline" size="sm" asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            asChild
+            aria-label="Discord console"
+          >
             <Link href={`/partner-console/${product.id}/discord`}>
               <MessageCircle />
-              Discord console
+              <span className="hidden sm:inline">Discord console</span>
             </Link>
           </Button>
-          <Button variant="outline" size="sm" asChild>
+          <Button variant="outline" size="sm" asChild aria-label="Preview project">
             <Link href={productPath(product.slug)} target="_blank">
               <Eye />
-              Preview
+              <span className="hidden sm:inline">Preview</span>
             </Link>
           </Button>
           <ProductStatusControls

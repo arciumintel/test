@@ -59,7 +59,7 @@ export default async function ProductPage({
               <Badge variant="muted">{product.category}</Badge>
             )}
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">
             {product.name}
           </h1>
           {product.partnerName && product.partnerName !== product.name && (
@@ -102,7 +102,7 @@ export default async function ProductPage({
       </section>
 
       <section className="mt-12">
-        <div className="mb-6 flex items-end justify-between gap-4">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-2xl font-semibold tracking-tight">Courses</h2>
             <p className="mt-1 text-sm text-muted-foreground">

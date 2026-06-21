@@ -32,6 +32,7 @@ import {
   updatePartnerQuestion,
   deletePartnerQuestion,
 } from "@/app/actions/project-courses";
+import { FIELD_LIMITS as L } from "@/lib/field-limits";
 
 export type AdminQuestion = {
   id: string;
@@ -116,6 +117,7 @@ export function QuizManager({
                 id="quiz-title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                maxLength={L.quizTitle}
               />
             </div>
             <div className="grid gap-2">
@@ -139,6 +141,7 @@ export function QuizManager({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
+              maxLength={L.quizDescription}
               placeholder="Explain what this quiz checks."
             />
           </div>
@@ -340,6 +343,7 @@ function QuestionForm({
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           rows={2}
+          maxLength={L.questionPrompt}
           required
         />
       </div>
@@ -348,7 +352,7 @@ function QuestionForm({
         <Label>Answer options (select the correct one)</Label>
         <div className="space-y-2">
           {options.map((opt, i) => (
-            <div key={i} className="flex items-center gap-2">
+            <div key={i} className="flex min-w-0 items-center gap-2">
               <button
                 type="button"
                 onClick={() => setCorrect(i)}
@@ -369,6 +373,8 @@ function QuestionForm({
                   )
                 }
                 placeholder={`Option ${String.fromCharCode(65 + i)}`}
+                maxLength={L.questionOption}
+                className="min-w-0"
                 required
               />
               {options.length > 2 && (
@@ -410,6 +416,7 @@ function QuestionForm({
           value={explanation}
           onChange={(e) => setExplanation(e.target.value)}
           rows={2}
+          maxLength={L.questionExplanation}
           placeholder="Shown after the learner answers."
         />
       </div>

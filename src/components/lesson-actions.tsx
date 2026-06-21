@@ -37,15 +37,19 @@ export function LessonActions({
   }
 
   return (
-    <div className="flex flex-col items-end gap-2">
-      <div className="flex items-center gap-3">
+    <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-end">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         {alreadyComplete && (
-          <span className="flex items-center gap-1.5 text-sm font-medium text-success">
+          <span className="flex items-center justify-center gap-1.5 text-sm font-medium text-success sm:justify-start">
             <CheckCircle2 className="size-4" />
             Completed
           </span>
         )}
-        <Button onClick={handleComplete} disabled={busy}>
+        <Button
+          onClick={handleComplete}
+          disabled={busy}
+          className="w-full sm:w-auto"
+        >
           {busy ? (
             <Loader2 className="animate-spin" />
           ) : alreadyComplete ? (

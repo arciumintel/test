@@ -16,7 +16,7 @@ function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
       return (
         <code
           key={key}
-          className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em]"
+          className="break-all rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em]"
         >
           {tok.slice(1, -1)}
         </code>
@@ -92,5 +92,5 @@ export function LessonContent({ content }: { content: string }) {
   }
   flushList();
 
-  return <div className="text-[0.95rem]">{blocks}</div>;
+  return <div className="break-words text-[0.95rem]">{blocks}</div>;
 }

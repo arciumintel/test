@@ -12,6 +12,7 @@ import { CloudinaryUpload } from "@/components/cloudinary-upload";
 import { BadgeMedallion } from "@/components/badge-medallion";
 import { upsertBadge } from "@/app/actions/admin";
 import { upsertPartnerBadge } from "@/app/actions/project-courses";
+import { FIELD_LIMITS as L } from "@/lib/field-limits";
 import type { BadgeStatus } from "@prisma/client";
 
 type Initial = {
@@ -91,11 +92,13 @@ export function BadgeForm({
         verification page.
       </p>
 
-      <div className="flex items-center gap-4 rounded-lg border bg-muted/20 p-4">
-        <BadgeMedallion name={name || "Badge"} imageUrl={imageUrl} />
-        <div>
-          <p className="font-medium">{name || "Badge preview"}</p>
-          <p className="text-sm text-muted-foreground">
+      <div className="flex min-w-0 items-start gap-4 rounded-lg border bg-muted/20 p-4">
+        <BadgeMedallion name={name || "Badge"} imageUrl={imageUrl} className="shrink-0" />
+        <div className="min-w-0 flex-1">
+          <p className="line-clamp-2 break-words font-medium">
+            {name || "Badge preview"}
+          </p>
+          <p className="line-clamp-3 break-words text-sm text-muted-foreground">
             {description || "Description appears here."}
           </p>
         </div>
@@ -108,8 +111,12 @@ export function BadgeForm({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Arcium Foundations"
+          maxLength={L.badgeName}
           required
         />
+        <p className="text-xs text-muted-foreground">
+          {name.length}/{L.badgeName} characters. Keep it short for profile cards.
+        </p>
       </div>
       <div className="grid gap-2">
         <Label htmlFor="badge-desc">Description</Label>
@@ -119,6 +126,7 @@ export function BadgeForm({
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Awarded for completing Welcome to Arcium."
           rows={2}
+          maxLength={L.badgeDescription}
           required
         />
       </div>
@@ -130,6 +138,7 @@ export function BadgeForm({
           onChange={(e) => setCriteria(e.target.value)}
           placeholder="Complete all required lessons and pass the final quiz."
           rows={2}
+          maxLength={L.badgeCriteria}
         />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -140,6 +149,7 @@ export function BadgeForm({
             value={issuer}
             onChange={(e) => setIssuer(e.target.value)}
             placeholder="Arcademy"
+            maxLength={L.badgeIssuer}
           />
         </div>
         <div className="grid gap-2">

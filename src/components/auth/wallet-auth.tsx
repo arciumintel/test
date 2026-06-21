@@ -146,11 +146,13 @@ export function WalletAuth({ authedWallet, className, align = "end" }: Props) {
       <div className={`relative ${className ?? ""}`}>
         <Button
           variant="outline"
+          size="sm"
           onClick={() => setMenuOpen((o) => !o)}
           className="font-mono"
+          aria-label={`Signed in as ${authedWallet}`}
         >
           <ShieldCheck className="text-success" />
-          {shortWallet(authedWallet)}
+          <span className="hidden sm:inline">{shortWallet(authedWallet)}</span>
         </Button>
         {menuOpen && (
           <>
@@ -182,9 +184,10 @@ export function WalletAuth({ authedWallet, className, align = "end" }: Props) {
   if (connected && publicKey) {
     return (
       <div className={stackClassName}>
-        <Button onClick={runSignIn} disabled={busy}>
+        <Button onClick={runSignIn} disabled={busy} size="sm" className="sm:h-10">
           {busy ? <Loader2 className="animate-spin" /> : <ShieldCheck />}
-          Sign in to continue
+          <span className="hidden sm:inline">Sign in to continue</span>
+          <span className="sm:hidden">Sign in</span>
         </Button>
         {error && <p className="text-xs text-destructive">{error}</p>}
       </div>
@@ -194,9 +197,9 @@ export function WalletAuth({ authedWallet, className, align = "end" }: Props) {
   // Not connected.
   return (
     <div className={stackClassName}>
-      <Button onClick={openWalletModal} disabled={busy}>
+      <Button onClick={openWalletModal} disabled={busy} size="sm" className="sm:h-10">
         <Wallet />
-        Connect wallet
+        <span className="hidden sm:inline">Connect wallet</span>
       </Button>
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>

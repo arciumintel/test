@@ -121,9 +121,9 @@ export default async function CourseEditorPage({
         Dashboard
       </Link>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-balance text-2xl font-semibold tracking-tight">
               {course.title}
             </h1>
@@ -135,14 +135,14 @@ export default async function CourseEditorPage({
             /products/{course.product.slug}/courses/{course.slug}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" asChild>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" asChild aria-label="Preview course">
             <Link
               href={coursePath(course.product.slug, course.slug)}
               target="_blank"
             >
               <Eye />
-              Preview
+              <span className="hidden sm:inline">Preview</span>
             </Link>
           </Button>
           <StaffPartnerReviewControls

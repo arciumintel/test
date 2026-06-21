@@ -25,9 +25,9 @@ export function CourseCard({ course }: { course: CourseCardData }) {
   return (
     <Link
       href={coursePath(course.productSlug, course.slug)}
-      className="group block"
+      className="group block min-w-0"
     >
-      <Card className="h-full gap-0 overflow-hidden p-0 transition-all hover:-translate-y-0.5 hover:shadow-md">
+      <Card className="h-full min-w-0 gap-0 overflow-hidden p-0 transition-all hover:-translate-y-0.5 hover:shadow-md">
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-gradient-to-br from-primary/15 via-accent to-secondary">
           {course.thumbnailUrl ? (
             <Image
@@ -46,15 +46,15 @@ export function CourseCard({ course }: { course: CourseCardData }) {
             <LevelBadge level={course.level} />
           </div>
         </div>
-        <CardContent className="flex flex-col gap-3 p-5">
-          <h3 className="text-pretty font-semibold leading-snug tracking-tight group-hover:text-primary">
+        <CardContent className="flex min-w-0 flex-col gap-3 p-5">
+          <h3 className="line-clamp-2 break-words text-pretty font-semibold leading-snug tracking-tight group-hover:text-primary">
             {course.title}
           </h3>
-          <p className="line-clamp-2 text-pretty text-sm leading-relaxed text-muted-foreground">
+          <p className="line-clamp-2 break-words text-pretty text-sm leading-relaxed text-muted-foreground">
             {course.summary}
           </p>
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-            <span className="font-medium text-foreground/80">
+          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span className="max-w-full truncate font-medium text-foreground/80">
               {course.productName}
             </span>
             <span className="inline-flex items-center gap-1">

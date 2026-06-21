@@ -95,11 +95,11 @@ export default async function CourseDetailPage({
       />
 
       <div className="grid gap-10 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="order-2 lg:order-1 lg:col-span-2">
           <span className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
             {course.product.name}
           </span>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">
             {course.title}
           </h1>
           <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
@@ -199,7 +199,7 @@ export default async function CourseDetailPage({
           </div>
         </div>
 
-        <aside className="lg:col-span-1">
+        <aside className="order-1 lg:order-2 lg:col-span-1">
           <div className="lg:sticky lg:top-20">
             <Card className="overflow-hidden p-0">
               <div className="relative aspect-[16/9] w-full bg-gradient-to-br from-primary/15 via-accent to-secondary">
@@ -245,32 +245,34 @@ export default async function CourseDetailPage({
                 <Separator />
 
                 <ul className="space-y-3 text-sm">
-                  <li className="flex items-center justify-between">
-                    <span className="text-muted-foreground">
+                  <li className="flex min-w-0 items-center justify-between gap-3">
+                    <span className="shrink-0 text-muted-foreground">
                       Ecosystem Project
                     </span>
-                    <span className="font-medium">{course.product.name}</span>
+                    <span className="min-w-0 truncate text-right font-medium">
+                      {course.product.name}
+                    </span>
                   </li>
-                  <li className="flex items-center justify-between">
+                  <li className="flex items-center justify-between gap-3">
                     <span className="text-muted-foreground">Level</span>
                     <span className="font-medium capitalize">{course.level}</span>
                   </li>
-                  <li className="flex items-center justify-between">
+                  <li className="flex items-center justify-between gap-3">
                     <span className="text-muted-foreground">Estimated time</span>
                     <span className="font-medium">
                       {formatDuration(course.estimatedDuration)}
                     </span>
                   </li>
-                  <li className="flex items-center justify-between">
+                  <li className="flex items-center justify-between gap-3">
                     <span className="text-muted-foreground">Lessons</span>
                     <span className="font-medium">{course.lessons.length}</span>
                   </li>
                   {course.badge && (
-                    <li className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Reward</span>
-                      <span className="flex items-center gap-1 font-medium">
-                        <Award className="size-4 text-primary" />
-                        {course.badge.name}
+                    <li className="flex min-w-0 items-center justify-between gap-3">
+                      <span className="shrink-0 text-muted-foreground">Reward</span>
+                      <span className="flex min-w-0 items-center gap-1 truncate font-medium">
+                        <Award className="size-4 shrink-0 text-primary" />
+                        <span className="truncate">{course.badge.name}</span>
                       </span>
                     </li>
                   )}

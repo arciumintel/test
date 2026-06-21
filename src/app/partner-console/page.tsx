@@ -43,7 +43,7 @@ export default async function PartnerConsolePage({
         <header className="mb-8 max-w-2xl">
           <h1
             id="partner-console-heading"
-            className="text-balance text-3xl font-semibold tracking-tight"
+            className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl"
           >
             Partner console
           </h1>

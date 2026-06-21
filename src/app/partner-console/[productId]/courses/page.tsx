@@ -100,7 +100,7 @@ export default async function PartnerCoursesPage({
             <Card key={course.id}>
               <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Link
                       href={`/partner-console/${productId}/courses/${course.id}`}
                       className="font-medium hover:text-primary"

@@ -351,11 +351,16 @@ export function QuizRunner({
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
           {answeredCount} of {questions.length} answered
         </p>
-        <Button onClick={handleSubmit} disabled={!allAnswered || busy} size="lg">
+        <Button
+          onClick={handleSubmit}
+          disabled={!allAnswered || busy}
+          size="lg"
+          className="w-full sm:w-auto"
+        >
           {busy ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
           Submit quiz
         </Button>

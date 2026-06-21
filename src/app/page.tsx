@@ -61,7 +61,7 @@ export default async function HomePage() {
             <Badge variant="default" className="mx-auto mb-6">
               Official Arcium learning platform
             </Badge>
-            <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
+            <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
               Learn Arcium step by step
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-pretty text-lg text-muted-foreground">
@@ -133,7 +133,7 @@ export default async function HomePage() {
             aria-labelledby="featured-courses-heading"
             className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20"
           >
-            <div className="mb-8 flex items-end justify-between gap-4">
+            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h2
                   id="featured-courses-heading"
@@ -161,7 +161,7 @@ export default async function HomePage() {
                 description="Featured courses are unavailable right now. Refresh the page, or try again in a few minutes."
               />
             ) : featured.length > 0 ? (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid min-w-0 gap-6 sm:grid-cols-2 lg:grid-cols-3 [&>*]:min-w-0">
                 {featured.map((c) => (
                   <CourseCard
                     key={c.id}

@@ -22,7 +22,7 @@ export default async function CoursesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+    <div className="mx-auto min-w-0 max-w-6xl px-4 py-12 sm:px-6">
       <TrackView
         eventName="course_catalog_viewed"
         path="/courses"
@@ -31,7 +31,7 @@ export default async function CoursesPage() {
       <header className="mb-8 max-w-2xl">
         <h1
           id="courses-heading"
-          className="text-balance text-3xl font-semibold tracking-tight"
+          className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl"
         >
           Courses
         </h1>
@@ -49,7 +49,7 @@ export default async function CoursesPage() {
           description="The course catalog is unavailable right now. Refresh the page, or try again in a few minutes."
         />
       ) : courses.length > 0 ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid min-w-0 gap-6 sm:grid-cols-2 lg:grid-cols-3 [&>*]:min-w-0">
           {courses.map((c) => (
             <CourseCard
               key={c.id}

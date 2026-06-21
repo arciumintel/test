@@ -76,15 +76,17 @@ export function CourseEditorTabs({
 
   return (
     <Tabs defaultValue="details" className="mt-6">
-      <TabsList>
-        <TabsTrigger value="details">Details</TabsTrigger>
-        <TabsTrigger value="lessons">Lessons ({lessons.length})</TabsTrigger>
-        <TabsTrigger value="quiz">Quiz</TabsTrigger>
-        <TabsTrigger value="badge">Badge</TabsTrigger>
-        {variant === "admin" && (
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-        )}
-      </TabsList>
+      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <TabsList className="w-max min-w-full sm:min-w-0">
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="lessons">Lessons ({lessons.length})</TabsTrigger>
+          <TabsTrigger value="quiz">Quiz</TabsTrigger>
+          <TabsTrigger value="badge">Badge</TabsTrigger>
+          {variant === "admin" && (
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          )}
+        </TabsList>
+      </div>
 
       <TabsContent value="details" className="max-w-3xl">
         <CourseDetailsForm

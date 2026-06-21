@@ -14,6 +14,7 @@ import {
   createPartnerCourse,
   updatePartnerCourse,
 } from "@/app/actions/project-courses";
+import { FIELD_LIMITS as L } from "@/lib/field-limits";
 import type { CourseLevel, CourseType } from "@prisma/client";
 
 type EditorVariant = "admin" | "partner";
@@ -149,6 +150,7 @@ export function CourseDetailsForm({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Welcome to Arcium"
+          maxLength={L.courseTitle}
           required
         />
       </div>
@@ -226,7 +228,7 @@ export function CourseDetailsForm({
             {prerequisiteOptions.map((course) => (
               <label
                 key={course.id}
-                className="flex cursor-pointer items-center gap-2 text-sm"
+                className="flex min-w-0 cursor-pointer items-center gap-2 text-sm"
               >
                 <input
                   type="checkbox"
@@ -238,9 +240,9 @@ export function CourseDetailsForm({
                         : prev.filter((id) => id !== course.id)
                     );
                   }}
-                  className="size-4 rounded border-input"
+                  className="size-4 shrink-0 rounded border-input"
                 />
-                {course.title}
+                <span className="min-w-0 break-words">{course.title}</span>
               </label>
             ))}
           </div>
@@ -254,6 +256,7 @@ export function CourseDetailsForm({
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
           placeholder="A short, plain-language description shown on course cards."
+          maxLength={L.courseSummary}
           required
           rows={2}
         />
@@ -268,6 +271,7 @@ export function CourseDetailsForm({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="A fuller explanation of what the course covers and who it's for."
+          maxLength={L.courseDescription}
           rows={5}
         />
       </div>
@@ -276,7 +280,7 @@ export function CourseDetailsForm({
         <Label>What you&apos;ll learn</Label>
         <div className="space-y-2">
           {outcomes.map((outcome, i) => (
-            <div key={i} className="flex items-center gap-2">
+            <div key={i} className="flex min-w-0 items-center gap-2">
               <Input
                 value={outcome}
                 onChange={(e) =>
@@ -285,6 +289,8 @@ export function CourseDetailsForm({
                   )
                 }
                 placeholder={`Outcome ${i + 1}`}
+                maxLength={L.learningOutcome}
+                className="min-w-0"
               />
               <Button
                 type="button"

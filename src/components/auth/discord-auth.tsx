@@ -22,20 +22,34 @@ export function DiscordAuth({ linked, walletConnected, discordEnabled }: Props) 
 
   if (linked) {
     return (
-      <Button variant="outline" size="sm" asChild className="gap-1.5">
+      <Button
+        variant="outline"
+        size="sm"
+        asChild
+        className="gap-1.5"
+        aria-label={`Discord: ${displayName(linked)}`}
+      >
         <Link href="/profile">
           <MessageCircle className="size-4 text-[#5865F2]" />
-          <span className="max-w-[8rem] truncate">{displayName(linked)}</span>
+          <span className="hidden max-w-[8rem] truncate sm:inline">
+            {displayName(linked)}
+          </span>
         </Link>
       </Button>
     );
   }
 
   return (
-    <Button variant="outline" size="sm" asChild className="gap-1.5">
+    <Button
+      variant="outline"
+      size="sm"
+      asChild
+      className="gap-1.5"
+      aria-label="Connect Discord"
+    >
       <Link href="/api/discord/connect">
         <MessageCircle className="size-4 text-[#5865F2]" />
-        Connect Discord
+        <span className="hidden sm:inline">Connect Discord</span>
       </Link>
     </Button>
   );

@@ -52,7 +52,50 @@ export function PartnerAnalyticsOverview({
         {data.courses.length > 0 ? (
           <Card className="mt-4">
             <CardContent className="py-5">
-              <div className="overflow-x-auto">
+              <div className="space-y-3 md:hidden">
+                {data.courses.map((c) => (
+                  <div
+                    key={c.courseId}
+                    className="rounded-lg border bg-card p-3 text-sm"
+                  >
+                    <Link
+                      href={`/partner-console/${productId}/analytics/courses/${c.courseId}`}
+                      className="font-medium hover:underline"
+                    >
+                      {c.title}
+                    </Link>
+                    <dl className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <dt className="text-muted-foreground">Starts</dt>
+                        <dd className="font-medium">{c.starts}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted-foreground">Done</dt>
+                        <dd className="font-medium">{c.completions}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted-foreground">Badges</dt>
+                        <dd className="font-medium">{c.badgeAwards}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-muted-foreground">Quiz pass</dt>
+                        <dd className="font-medium">
+                          {c.quizPassRate === null ? "n/a" : `${c.quizPassRate}%`}
+                        </dd>
+                      </div>
+                      <div className="col-span-2">
+                        <dt className="text-muted-foreground">Avg score</dt>
+                        <dd className="font-medium">
+                          {c.averageQuizScore === null
+                            ? "n/a"
+                            : `${c.averageQuizScore}%`}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                ))}
+              </div>
+              <div className="hidden overflow-x-auto md:block">
                 <table className="w-full min-w-[520px] text-left text-sm">
                   <thead>
                     <tr className="border-b text-xs text-muted-foreground">

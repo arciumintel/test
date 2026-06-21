@@ -11,6 +11,7 @@ import { CloudinaryUpload } from "@/components/cloudinary-upload";
 import { ProductCategoryField } from "@/components/admin/product-category-field";
 import { createProduct, updateProduct } from "@/app/actions/admin-products";
 import { updatePartnerProduct } from "@/app/actions/partner-products";
+import { FIELD_LIMITS as L } from "@/lib/field-limits";
 
 type ProductLink = {
   label: string;
@@ -103,6 +104,7 @@ export function ProductForm({
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Arcium"
+          maxLength={L.productName}
           required
         />
       </div>
@@ -114,6 +116,7 @@ export function ProductForm({
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="A plain-language explanation of what this project does."
+          maxLength={L.productDescription}
           required
           rows={5}
         />
@@ -135,6 +138,7 @@ export function ProductForm({
             value={partnerName}
             onChange={(e) => setPartnerName(e.target.value)}
             placeholder="Arcium"
+            maxLength={L.partnerName}
           />
         </div>
       </div>
@@ -154,6 +158,8 @@ export function ProductForm({
                   )
                 }
                 placeholder="Docs"
+                maxLength={L.linkLabel}
+                className="min-w-0"
               />
               <Input
                 value={link.url}
@@ -165,6 +171,8 @@ export function ProductForm({
                   )
                 }
                 placeholder="https://docs.example.com"
+                maxLength={L.linkUrl}
+                className="min-w-0"
               />
               <Button
                 type="button"

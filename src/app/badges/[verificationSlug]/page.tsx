@@ -78,10 +78,12 @@ export default async function BadgeVerificationPage({
                 <CheckCircle2 />
                 Verified
               </Badge>
-              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              <h1 className="break-words text-2xl font-semibold tracking-tight sm:text-3xl">
                 {badge.name}
               </h1>
-              <p className="mt-2 text-muted-foreground">{badge.description}</p>
+              <p className="mt-2 break-words text-pretty text-muted-foreground">
+                {badge.description}
+              </p>
             </div>
           </div>
 

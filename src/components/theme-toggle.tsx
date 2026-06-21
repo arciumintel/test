@@ -28,7 +28,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
     return (
       <div
         className={cn(
-          "inline-flex h-9 w-[6.75rem] items-center rounded-md border bg-background p-0.5",
+          "inline-flex h-9 w-[6.25rem] items-center rounded-md border bg-background p-0.5",
           className
         )}
         aria-hidden

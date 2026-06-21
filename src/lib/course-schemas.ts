@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { FIELD_LIMITS as L } from "@/lib/field-limits";
 
 export function slugify(input: string): string {
   return input
@@ -12,21 +13,21 @@ export function slugify(input: string): string {
 }
 
 export const courseSchema = z.object({
-  title: z.string().min(2, "Title is required").max(140),
+  title: z.string().min(2, "Title is required").max(L.courseTitle),
   productId: z.string().min(1, "Product is required"),
-  summary: z.string().min(2, "Summary is required").max(400),
-  description: z.string().max(8000).optional().nullable(),
+  summary: z.string().min(2, "Summary is required").max(L.courseSummary),
+  description: z.string().max(L.courseDescription).optional().nullable(),
   level: z.enum(["beginner", "intermediate", "advanced"]),
   courseType: z.enum(["foundational", "product_onboarding", "builder_intro"]),
   thumbnailUrl: z.string().optional().nullable(),
   estimatedDuration: z.coerce.number().int().min(0).max(100000).optional().nullable(),
-  learningOutcomes: z.array(z.string().max(280)).max(20).optional(),
+  learningOutcomes: z.array(z.string().max(L.learningOutcome)).max(20).optional(),
   prerequisiteCourseIds: z.array(z.string()).max(10).optional(),
 });
 
 export const lessonSchema = z.object({
-  title: z.string().min(2, "Title is required").max(160),
-  content: z.string().min(1, "Lesson content is required").max(40000),
+  title: z.string().min(2, "Title is required").max(L.lessonTitle),
+  content: z.string().min(1, "Lesson content is required").max(L.lessonContent),
   mediaUrl: z.string().optional().nullable(),
   status: z.enum(["draft", "published"]),
   required: z.boolean(),
@@ -34,21 +35,24 @@ export const lessonSchema = z.object({
 });
 
 export const questionSchema = z.object({
-  prompt: z.string().min(2, "Prompt is required").max(600),
+  prompt: z.string().min(2, "Prompt is required").max(L.questionPrompt),
   answerOptions: z
-    .array(z.string().min(1).max(300))
+    .array(z.string().min(1).max(L.questionOption))
     .min(2, "Add at least two options")
     .max(6),
   correctAnswer: z.coerce.number().int().min(0),
-  explanation: z.string().max(800).optional().nullable(),
+  explanation: z.string().max(L.questionExplanation).optional().nullable(),
 });
 
 export const badgeSchema = z.object({
-  name: z.string().min(2, "Badge name is required").max(120),
-  description: z.string().min(2, "Description is required").max(400),
+  name: z
+    .string()
+    .min(2, "Badge name is required")
+    .max(L.badgeName, `Badge name must be ${L.badgeName} characters or fewer`),
+  description: z.string().min(2, "Description is required").max(L.badgeDescription),
   imageUrl: z.string().optional().nullable(),
-  criteria: z.string().max(600).optional().nullable(),
-  issuer: z.string().max(120).optional().nullable(),
+  criteria: z.string().max(L.badgeCriteria).optional().nullable(),
+  issuer: z.string().max(L.badgeIssuer).optional().nullable(),
   status: z.enum(["draft", "published", "archived"]),
 });
 
