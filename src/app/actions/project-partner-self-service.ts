@@ -55,6 +55,9 @@ export type PartnerSelfServicePayload = {
     updatedAt: string;
     canSubmitForReview: boolean;
   } | null;
+  /** Most recently updated non-published course, for draft review handoff. */
+  reviewDraftCourse: { id: string; title: string } | null;
+  hasPublishedCourses: boolean;
 };
 
 export async function getPartnerSelfServiceData(
@@ -75,6 +78,20 @@ export async function getPartnerSelfServiceData(
     },
   });
   if (!product) return { error: "Ecosystem project not found." };
+
+  const [reviewDraftCourse, publishedCourseCount] = await Promise.all([
+    prisma.course.findFirst({
+      where: {
+        productId,
+        status: { notIn: ["published", "archived"] },
+      },
+      orderBy: { updatedAt: "desc" },
+      select: { id: true, title: true },
+    }),
+    prisma.course.count({
+      where: { productId, status: "published" },
+    }),
+  ]);
 
   let intake: PartnerSelfServicePayload["intake"] = null;
   if (isPartnerIntakeAvailable()) {
@@ -108,6 +125,8 @@ export async function getPartnerSelfServiceData(
     data: {
       product,
       intake,
+      reviewDraftCourse,
+      hasPublishedCourses: publishedCourseCount > 0,
     },
   };
 }

@@ -1,12 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Eye, GraduationCap, Award, Target } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { AnalyticsRangePreset } from "@/lib/analytics-date-range";
 import { resolveAnalyticsDateRange } from "@/lib/analytics-date-range";
 import type { PartnerPlusAnalytics } from "@/lib/partner-analytics";
 import { PartnerAnalyticsWeeklyChart } from "@/components/partner-console/analytics/partner-analytics-weekly-chart";
+
+function formatOptionalPercent(value: number | null): string {
+  return value === null ? "n/a" : `${value}%`;
+}
 
 export function PartnerAnalyticsOverview({
   productId,
@@ -18,85 +22,21 @@ export function PartnerAnalyticsOverview({
   rangePreset: AnalyticsRangePreset;
 }) {
   const range = resolveAnalyticsDateRange(rangePreset);
-  const cards = [
-    { label: "Course starts", value: data.summary.starts, icon: GraduationCap },
-    {
-      label: "Completions",
-      value: data.summary.completions,
-      hint: `${data.summary.completionRate}% of starts`,
-      icon: GraduationCap,
-    },
-    {
-      label: "Quiz pass rate",
-      value: data.summary.quizPassRate === null ? "—" : `${data.summary.quizPassRate}%`,
-      icon: Target,
-    },
-    { label: "Badge awards", value: data.summary.badgeAwards, icon: Award },
-    {
-      label: "Project page views",
-      value: data.discovery.projectPageViews,
-      icon: Eye,
-    },
-    {
-      label: "Course page views",
-      value: data.discovery.courseDetailViews,
-      hint:
-        data.discovery.startConversionRate === null
-          ? undefined
-          : `${data.discovery.startConversionRate}% start conversion`,
-      icon: Eye,
-    },
-  ];
+  const { summary, discovery } = data;
 
   return (
     <div className="space-y-8">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {cards.map((c) => (
-          <Card key={c.label}>
-            <CardContent className="py-5">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <c.icon className="size-4" />
-                {c.label}
-              </div>
-              <p className="mt-2 text-2xl font-semibold">{c.value}</p>
-              {c.hint && (
-                <p className="mt-0.5 text-xs text-muted-foreground">{c.hint}</p>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {data.insights.length > 0 && (
-        <Card>
-          <CardContent className="py-5">
-            <h2 className="text-sm font-semibold">Insights</h2>
-            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
-              {data.insights.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
-      {data.staffNotes && (
-        <Card>
-          <CardContent className="py-5">
-            <h2 className="text-sm font-semibold">Notes from Arcademy staff</h2>
-            <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
-              {data.staffNotes}
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      <PartnerAnalyticsFunnel funnel={data.funnel} />
-      <PartnerAnalyticsWeeklyChart
-        trends={data.weeklyTrends}
-        rangeLabel={data.rangeLabel}
-        range={range}
-      />
+      <p className="text-sm text-muted-foreground">
+        <span className="font-medium text-foreground">{data.rangeLabel}:</span>{" "}
+        {summary.starts} starts · {summary.completions} completions (
+        {summary.completionRate}% of starts) ·{" "}
+        {formatOptionalPercent(summary.quizPassRate)} quiz pass rate ·{" "}
+        {summary.badgeAwards} badge awards · {discovery.projectPageViews}{" "}
+        project page views · {discovery.courseDetailViews} course page views
+        {discovery.startConversionRate === null
+          ? ""
+          : ` · ${discovery.startConversionRate}% start conversion`}
+      </p>
 
       <section>
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -139,10 +79,12 @@ export function PartnerAnalyticsOverview({
                         <td className="py-2.5 pr-4 text-right">{c.completions}</td>
                         <td className="py-2.5 pr-4 text-right">{c.badgeAwards}</td>
                         <td className="py-2.5 pr-4 text-right">
-                          {c.quizPassRate === null ? "—" : `${c.quizPassRate}%`}
+                          {c.quizPassRate === null ? "n/a" : `${c.quizPassRate}%`}
                         </td>
                         <td className="py-2.5 text-right">
-                          {c.averageQuizScore === null ? "—" : `${c.averageQuizScore}%`}
+                          {c.averageQuizScore === null
+                            ? "n/a"
+                            : `${c.averageQuizScore}%`}
                         </td>
                       </tr>
                     ))}
@@ -157,6 +99,37 @@ export function PartnerAnalyticsOverview({
           </p>
         )}
       </section>
+
+      {data.insights.length > 0 && (
+        <Card>
+          <CardContent className="py-5">
+            <h2 className="text-sm font-semibold">Insights</h2>
+            <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
+              {data.insights.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {data.staffNotes && (
+        <Card>
+          <CardContent className="py-5">
+            <h2 className="text-sm font-semibold">Notes from Arcademy staff</h2>
+            <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">
+              {data.staffNotes}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      <PartnerAnalyticsFunnel funnel={data.funnel} />
+      <PartnerAnalyticsWeeklyChart
+        trends={data.weeklyTrends}
+        rangeLabel={data.rangeLabel}
+        range={range}
+      />
     </div>
   );
 }

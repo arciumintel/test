@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +18,11 @@ export default async function PartnerProductLayout({
   const access = await getProjectAdminAccess(productId);
 
   if (!access.user) {
-    redirect("/partner-console");
+    const headerList = await headers();
+    const pathname =
+      headerList.get("x-pathname") ?? `/partner-console/${productId}`;
+    const next = encodeURIComponent(pathname);
+    redirect(`/partner-console?next=${next}`);
   }
 
   if (!access.canManage) {

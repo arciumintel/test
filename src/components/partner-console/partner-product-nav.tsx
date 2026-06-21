@@ -11,12 +11,6 @@ type PartnerProductNavProps = {
 const sections = (productId: string) =>
   [
     {
-      label: "Analytics",
-      href: `/partner-console/${productId}/analytics`,
-      match: (pathname: string) =>
-        pathname.startsWith(`/partner-console/${productId}/analytics`),
-    },
-    {
       label: "Course drafts",
       href: `/partner-console/${productId}/courses`,
       match: (pathname: string) =>
@@ -33,6 +27,12 @@ const sections = (productId: string) =>
       href: `/partner-console/${productId}/discord`,
       match: (pathname: string) =>
         pathname === `/partner-console/${productId}/discord`,
+    },
+    {
+      label: "Analytics",
+      href: `/partner-console/${productId}/analytics`,
+      match: (pathname: string) =>
+        pathname.startsWith(`/partner-console/${productId}/analytics`),
     },
     {
       label: "Settings",

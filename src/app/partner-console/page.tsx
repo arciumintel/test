@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   ArrowRight,
   BookOpen,
   ClipboardList,
   Handshake,
   BarChart3,
+  MessageCircle,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -15,16 +17,25 @@ import { PartnerConnectPrompt } from "@/components/partner-connect-prompt";
 import { getMyPartnerApplicationStatus } from "@/app/actions/partner-application";
 import { getCurrentUser } from "@/lib/session";
 import { getManagedProducts } from "@/lib/project-admin";
+import {
+  partnerConsoleDefaultPath,
+  safePartnerConsolePath,
+} from "@/lib/partner-console-paths";
 
 export const metadata = { title: "Partner console" };
 
 export default async function PartnerConsolePage({
   searchParams,
 }: {
-  searchParams: Promise<{ access?: string }>;
+  searchParams: Promise<{ access?: string; next?: string }>;
 }) {
   const user = await getCurrentUser();
-  const { access } = await searchParams;
+  const { access, next } = await searchParams;
+  const returnPath = safePartnerConsolePath(next);
+
+  if (user && returnPath) {
+    redirect(returnPath);
+  }
 
   if (!user) {
     return (
@@ -42,7 +53,7 @@ export default async function PartnerConsolePage({
           </p>
         </header>
         <section aria-labelledby="partner-console-heading">
-          <PartnerConnectPrompt />
+          <PartnerConnectPrompt returnPath={returnPath} />
         </section>
       </div>
     );
@@ -132,50 +143,69 @@ export default async function PartnerConsolePage({
         </div>
       ) : (
         <div className="mt-8 grid gap-4">
-          {products.map((product) => (
-            <Card key={product.id}>
-              <CardContent className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-medium">{product.name}</p>
-                    <Badge variant="secondary" className="capitalize">
-                      {product.status}
-                    </Badge>
+          {products.map((product) => {
+            const defaultPath = partnerConsoleDefaultPath(product.id);
+            const hasPublishedCourses = product._count.courses > 0;
+
+            return (
+              <Card key={product.id}>
+                <CardContent className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-medium">{product.name}</p>
+                      <Badge variant="secondary" className="capitalize">
+                        {product.status}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 text-pretty text-sm text-muted-foreground">
+                      {product.projectDiscordIntegration
+                        ? `Discord connected: ${product.projectDiscordIntegration.guildName} (${product.projectDiscordIntegration.status})`
+                        : "Discord not configured yet"}
+                    </p>
+                    <p className="mt-2 text-pretty text-xs text-muted-foreground">
+                      New here? Open course drafts to author content, or use
+                      self-service to submit source materials.
+                    </p>
                   </div>
-                  <p className="mt-1 text-pretty text-sm text-muted-foreground">
-                    {product.projectDiscordIntegration
-                      ? `Discord connected: ${product.projectDiscordIntegration.guildName} (${product.projectDiscordIntegration.status})`
-                      : "Discord not configured yet"}
-                  </p>
-                  <p className="mt-2 text-pretty text-xs text-muted-foreground">
-                    New here? Open course drafts to author content, or use
-                    self-service to submit source materials.
-                  </p>
-                </div>
-                <div className="flex shrink-0 flex-col gap-2 sm:items-end">
-                  <Button asChild>
-                    <Link href={`/partner-console/${product.id}/analytics`}>
-                      <BarChart3 className="size-4" />
-                      View analytics
-                      <ArrowRight className="size-4" />
-                    </Link>
-                  </Button>
-                  <Button asChild variant="outline">
-                    <Link href={`/partner-console/${product.id}/courses`}>
-                      <BookOpen className="size-4" />
-                      Course drafts
-                    </Link>
-                  </Button>
-                  <Button asChild variant="ghost" size="sm">
-                    <Link href={`/partner-console/${product.id}/self-service`}>
-                      <ClipboardList className="size-4" />
-                      Self-service
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                  <div className="flex shrink-0 flex-col gap-2 sm:items-end">
+                    <Button asChild>
+                      <Link href={defaultPath}>
+                        <BookOpen className="size-4" />
+                        Manage project
+                        <ArrowRight className="size-4" />
+                      </Link>
+                    </Button>
+                    <div className="flex flex-wrap gap-2 sm:justify-end">
+                      <Button asChild variant="outline" size="sm">
+                        <Link
+                          href={`/partner-console/${product.id}/self-service`}
+                        >
+                          <ClipboardList className="size-4" />
+                          Self-service
+                        </Link>
+                      </Button>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`/partner-console/${product.id}/discord`}>
+                          <MessageCircle className="size-4" />
+                          Discord
+                        </Link>
+                      </Button>
+                      {hasPublishedCourses && (
+                        <Button asChild variant="ghost" size="sm">
+                          <Link
+                            href={`/partner-console/${product.id}/analytics`}
+                          >
+                            <BarChart3 className="size-4" />
+                            Analytics
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

@@ -5,7 +5,11 @@ import { Handshake } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WalletAuth } from "@/components/auth/wallet-auth";
 
-export function PartnerConnectPrompt() {
+type Props = {
+  returnPath?: string | null;
+};
+
+export function PartnerConnectPrompt({ returnPath }: Props) {
   return (
     <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
       <Handshake
@@ -17,6 +21,11 @@ export function PartnerConnectPrompt() {
         Partner tools are tied to your wallet. Connect and sign in to manage
         projects, course drafts, and Discord setup.
       </p>
+      {returnPath && (
+        <p className="mt-2 text-pretty text-xs text-muted-foreground">
+          After you sign in, you will return to the page you requested.
+        </p>
+      )}
       <div className="mt-6 flex justify-center">
         <WalletAuth align="center" />
       </div>

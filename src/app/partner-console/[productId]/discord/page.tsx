@@ -80,9 +80,10 @@ export default async function ProjectDiscordPage({
         productId,
         access.user.id
       );
-    } catch {
+    } catch (err) {
+      console.error("[partner-console/discord] bot invite URL failed:", err);
       botInviteConfigError =
-        "Bot install redirects are not configured. Set NEXT_PUBLIC_APP_URL in .env and register the bot-install callback URL in the Discord Developer Portal.";
+        "Discord bot setup is temporarily unavailable on this site. Contact Arcademy staff for help.";
     }
   }
 

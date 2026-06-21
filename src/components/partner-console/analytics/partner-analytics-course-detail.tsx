@@ -11,17 +11,11 @@ export function PartnerAnalyticsCourseDetail({
 }) {
   return (
     <div className="space-y-8">
-      <CourseAnalyticsView data={data} />
-
-      <Card>
-        <CardContent className="py-5">
-          <h2 className="text-sm font-semibold">Badge verification views</h2>
-          <p className="mt-2 text-2xl font-semibold">{data.badgeVerificationViews}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Public badge verification page views for this course in the selected period.
-          </p>
-        </CardContent>
-      </Card>
+      <CourseAnalyticsView
+        data={data}
+        variant="compact"
+        compactExtra={`${data.badgeVerificationViews} badge verification views`}
+      />
 
       {data.attemptsBeforePass.some((b) => b.count > 0) && (
         <Card>
@@ -29,12 +23,17 @@ export function PartnerAnalyticsCourseDetail({
             <h2 className="text-sm font-semibold">Attempts before pass</h2>
             <div className="mt-4 space-y-3">
               {data.attemptsBeforePass.map((bucket) => {
-                const max = Math.max(...data.attemptsBeforePass.map((b) => b.count), 1);
+                const max = Math.max(
+                  ...data.attemptsBeforePass.map((b) => b.count),
+                  1
+                );
                 return (
                   <div key={bucket.label}>
                     <div className="mb-1 flex justify-between text-xs">
                       <span>{bucket.label}</span>
-                      <span className="text-muted-foreground">{bucket.count} learners</span>
+                      <span className="text-muted-foreground">
+                        {bucket.count} learners
+                      </span>
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
                       <div
@@ -57,11 +56,15 @@ export function PartnerAnalyticsCourseDetail({
           <CardContent className="py-5">
             <h2 className="text-sm font-semibold">Quiz diagnostics</h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              Aggregated miss rates help identify confusing questions. Individual answers are not shown.
+              Aggregated miss rates help identify confusing questions. Individual
+              answers are not shown.
             </p>
             <div className="mt-4 space-y-6">
               {data.quizDiagnostics.map((q) => (
-                <div key={q.questionId} className="border-b border-border/50 pb-6 last:border-0">
+                <div
+                  key={q.questionId}
+                  className="border-b border-border/50 pb-6 last:border-0"
+                >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <p className="text-sm font-medium">
                       Q{q.order + 1}. {q.prompt}
@@ -75,7 +78,9 @@ export function PartnerAnalyticsCourseDetail({
                       <li key={opt.label} className="text-xs">
                         <div className="mb-1 flex justify-between">
                           <span className="line-clamp-1 pr-2">{opt.label}</span>
-                          <span className="text-muted-foreground">{opt.percent}%</span>
+                          <span className="text-muted-foreground">
+                            {opt.percent}%
+                          </span>
                         </div>
                         <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
                           <div

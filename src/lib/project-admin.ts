@@ -34,6 +34,11 @@ export async function getManagedProducts(userId: string, isStaff: boolean) {
         projectDiscordIntegration: {
           select: { id: true, status: true, guildName: true },
         },
+        _count: {
+          select: {
+            courses: { where: { status: "published" } },
+          },
+        },
       },
     });
   }
@@ -49,6 +54,11 @@ export async function getManagedProducts(userId: string, isStaff: boolean) {
           status: true,
           projectDiscordIntegration: {
             select: { id: true, status: true, guildName: true },
+          },
+          _count: {
+            select: {
+              courses: { where: { status: "published" } },
+            },
           },
         },
       },
