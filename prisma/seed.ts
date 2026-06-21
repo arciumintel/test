@@ -198,7 +198,7 @@ const ARCIUM_PRODUCT = {
   slug: "arcium",
   description:
     "Arcium is a network for private computation. Programs can use sensitive data to produce results without exposing the underlying data itself.",
-  category: "Privacy Infrastructure",
+  category: "Consumer Apps",
   partnerName: "Arcium",
   links: [
     { label: "Website", url: "https://arcium.com" },

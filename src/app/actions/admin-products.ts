@@ -7,6 +7,7 @@ import { productPath } from "@/lib/paths";
 import { getProductPublishReadiness } from "@/lib/publish-readiness";
 import { requireStaff } from "@/lib/session";
 import { trackEventFireAndForget } from "@/lib/analytics-events";
+import { normalizeCategory } from "@/lib/project-categories";
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
 
@@ -71,7 +72,7 @@ export async function createProduct(
       slug: await uniqueSlug(data.name),
       description: data.description,
       logoUrl: data.logoUrl || null,
-      category: data.category?.trim() || null,
+      category: normalizeCategory(data.category),
       partnerName: data.partnerName?.trim() || null,
       links: data.links ?? [],
     },
@@ -120,7 +121,7 @@ export async function updateProduct(
       slug: nextSlug,
       description: data.description,
       logoUrl: data.logoUrl || null,
-      category: data.category?.trim() || null,
+      category: normalizeCategory(data.category),
       partnerName: data.partnerName?.trim() || null,
       links: data.links ?? [],
     },

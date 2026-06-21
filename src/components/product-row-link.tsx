@@ -8,6 +8,7 @@ export type ProductRowData = {
   name: string;
   description: string;
   logoUrl: string | null;
+  category?: string | null;
   courseCount: number;
 };
 
@@ -32,8 +33,15 @@ export function ProductRowLink({ product }: { product: ProductRowData }) {
         )}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate font-medium group-hover:text-primary">
-          {product.name}
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+          <span className="truncate font-medium group-hover:text-primary">
+            {product.name}
+          </span>
+          {product.category && (
+            <span className="shrink-0 text-xs text-muted-foreground">
+              {product.category}
+            </span>
+          )}
         </span>
         <span className="mt-0.5 block truncate text-sm text-muted-foreground">
           {product.description}

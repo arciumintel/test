@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { CloudinaryUpload } from "@/components/cloudinary-upload";
+import { ProductCategoryField } from "@/components/admin/product-category-field";
 import { createProduct, updateProduct } from "@/app/actions/admin-products";
 import { updatePartnerProduct } from "@/app/actions/partner-products";
 
@@ -126,15 +127,7 @@ export function ProductForm({
       />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="category">Category</Label>
-          <Input
-            id="category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="Privacy Infrastructure"
-          />
-        </div>
+        <ProductCategoryField value={category} onChange={setCategory} />
         <div className="grid gap-2">
           <Label htmlFor="partnerName">Partner name</Label>
           <Input

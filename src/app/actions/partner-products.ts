@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { productPath } from "@/lib/paths";
+import { normalizeCategory } from "@/lib/project-categories";
 import { requireProjectAdmin } from "@/lib/project-admin";
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
@@ -73,7 +74,7 @@ export async function updatePartnerProduct(
       slug: nextSlug,
       description: parsed.data.description,
       logoUrl: parsed.data.logoUrl || null,
-      category: parsed.data.category?.trim() || null,
+      category: normalizeCategory(parsed.data.category),
       partnerName: parsed.data.partnerName?.trim() || null,
       links: parsed.data.links ?? [],
     },
