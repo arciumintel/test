@@ -63,8 +63,9 @@ export function PartnerApplicationForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       <p className="text-sm text-muted-foreground">
         Tell us about your ecosystem project. After staff approval, you will get
-        access to the Partner console to manage courses, lessons, and Discord
-        integration.
+        access to the Partner console to submit source material, review course
+        drafts for factual accuracy, and view basic reporting. Arcademy staff
+        owns final publishing and learner-facing copy.
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2">

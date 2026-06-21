@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -147,4 +149,34 @@
     transparent 1px
   );
   background-size: 22px 22px;
+}
+
+/* Solana wallet modal — align with site theme in light mode */
+:root:not(.dark) .wallet-adapter-modal-wrapper {
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: 0 8px 24px color-mix(in oklch, var(--foreground) 12%, transparent);
+}
+
+:root:not(.dark) .wallet-adapter-modal-title,
+:root:not(.dark) .wallet-adapter-modal-list-more,
+:root:not(.dark) .wallet-adapter-dropdown-list-item,
+:root:not(.dark) .wallet-adapter-button {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .wallet-adapter-modal-button-close {
+  background: var(--muted);
+}
+
+:root:not(.dark) .wallet-adapter-modal-list .wallet-adapter-button:hover,
+:root:not(.dark) .wallet-adapter-dropdown-list-item:not([disabled]):hover,
+:root:not(.dark) .wallet-adapter-button:not([disabled]):hover {
+  background-color: var(--accent);
+}
+
+:root:not(.dark) .wallet-adapter-dropdown-list {
+  background: var(--popover);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px color-mix(in oklch, var(--foreground) 12%, transparent);
 }

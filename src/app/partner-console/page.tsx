@@ -106,7 +106,13 @@ export default async function PartnerConsolePage({
       </h1>
       <p className="mt-1 text-pretty text-sm text-muted-foreground">
         Choose a project to manage. Start with course drafts or self-service
-        materials, then configure Discord when you are ready.
+        materials, then configure Discord when you are ready.{" "}
+        <Link
+          href="/partners/docs"
+          className="font-medium text-primary underline-offset-4 hover:underline"
+        >
+          Partner handbook
+        </Link>
       </p>
 
       {access === "denied" && (

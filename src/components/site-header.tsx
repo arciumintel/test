@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { isDiscordConfigured } from "@/lib/discord";
 import { WalletAuth } from "@/components/auth/wallet-auth";
 import { DiscordAuth } from "@/components/auth/discord-auth";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 
 export async function SiteHeader() {
@@ -53,6 +54,9 @@ export async function SiteHeader() {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/products">Projects</Link>
             </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/partners">Partners</Link>
+            </Button>
             {user && (
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/profile">My learning</Link>
@@ -76,6 +80,7 @@ export async function SiteHeader() {
           </nav>
         </div>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <DiscordAuth
             linked={discordAccount}
             walletConnected={Boolean(user)}

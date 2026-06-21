@@ -16,6 +16,9 @@ export function SiteFooter() {
           <Link href="/products" className="hover:text-foreground">
             Projects
           </Link>
+          <Link href="/partners/docs" className="hover:text-foreground">
+            Partner handbook
+          </Link>
         </div>
       </div>
     </footer>

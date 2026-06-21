@@ -26,7 +26,7 @@ When filtered:
 
 - Summary cards: starts, completions, quiz pass rate, badges, page views
 - Learner funnel (event-based, no referral breakdown)
-- Weekly starts/completions trends
+- Weekly starts/completions trends (Recharts line chart)
 - Per-course lesson funnel and drop-off
 - Quiz diagnostics (aggregated miss rates and option distribution)
 - Attempts-before-pass histogram

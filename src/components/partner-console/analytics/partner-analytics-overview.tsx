@@ -4,7 +4,9 @@ import Link from "next/link";
 import { ArrowRight, Eye, GraduationCap, Award, Target } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { AnalyticsRangePreset } from "@/lib/analytics-date-range";
+import { resolveAnalyticsDateRange } from "@/lib/analytics-date-range";
 import type { PartnerPlusAnalytics } from "@/lib/partner-analytics";
+import { PartnerAnalyticsWeeklyChart } from "@/components/partner-console/analytics/partner-analytics-weekly-chart";
 
 export function PartnerAnalyticsOverview({
   productId,
@@ -15,6 +17,7 @@ export function PartnerAnalyticsOverview({
   data: PartnerPlusAnalytics;
   rangePreset: AnalyticsRangePreset;
 }) {
+  const range = resolveAnalyticsDateRange(rangePreset);
   const cards = [
     { label: "Course starts", value: data.summary.starts, icon: GraduationCap },
     {
@@ -89,7 +92,11 @@ export function PartnerAnalyticsOverview({
       )}
 
       <PartnerAnalyticsFunnel funnel={data.funnel} />
-      <PartnerAnalyticsTrends trends={data.weeklyTrends} />
+      <PartnerAnalyticsWeeklyChart
+        trends={data.weeklyTrends}
+        rangeLabel={data.rangeLabel}
+        range={range}
+      />
 
       <section>
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -190,62 +197,5 @@ function PartnerAnalyticsFunnel({
         </div>
       </CardContent>
     </Card>
-  );
-}
-
-function PartnerAnalyticsTrends({
-  trends,
-}: {
-  trends: PartnerPlusAnalytics["weeklyTrends"];
-}) {
-  const max = Math.max(...trends.flatMap((t) => [t.starts, t.completions]), 1);
-  return (
-    <Card>
-      <CardContent className="py-5">
-        <h2 className="text-sm font-semibold">Weekly trends</h2>
-        {trends.length === 0 ? (
-          <p className="mt-3 text-sm text-muted-foreground">No activity in this period.</p>
-        ) : (
-          <div className="mt-4 space-y-4">
-            {trends.map((w) => (
-              <div key={w.weekStart}>
-                <p className="mb-2 text-xs font-medium text-muted-foreground">
-                  Week of {w.weekStart}
-                </p>
-                <div className="space-y-2">
-                  <TrendBar label="Starts" value={w.starts} max={max} />
-                  <TrendBar label="Completions" value={w.completions} max={max} muted />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function TrendBar({
-  label,
-  value,
-  max,
-  muted,
-}: {
-  label: string;
-  value: number;
-  max: number;
-  muted?: boolean;
-}) {
-  return (
-    <div className="flex items-center gap-3 text-xs">
-      <span className="w-24 shrink-0 text-muted-foreground">{label}</span>
-      <div className="h-2 flex-1 overflow-hidden rounded-full bg-secondary">
-        <div
-          className={`h-full rounded-full ${muted ? "bg-muted-foreground/60" : "bg-primary"}`}
-          style={{ width: `${Math.round((value / max) * 100)}%` }}
-        />
-      </div>
-      <span className="w-8 shrink-0 text-right">{value}</span>
-    </div>
   );
 }

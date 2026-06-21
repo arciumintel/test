@@ -36,7 +36,14 @@ export default async function PartnerApplyPage() {
             Become an Arcademy partner
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Apply to publish ecosystem learning content on Arcademy.
+            Apply to publish ecosystem learning content on Arcademy.{" "}
+            <Link
+              href="/partners/docs"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Read the partner handbook
+            </Link>{" "}
+            before you apply.
           </p>
         </div>
       </div>
