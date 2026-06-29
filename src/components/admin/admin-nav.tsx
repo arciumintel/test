@@ -23,6 +23,11 @@ const sections = [
     href: "/admin/partner-intake",
     match: (pathname: string) => pathname.startsWith("/admin/partner-intake"),
   },
+  {
+    label: "Referrals",
+    href: "/admin/analytics/referrals",
+    match: (pathname: string) => pathname.startsWith("/admin/analytics"),
+  },
 ] as const;
 
 export function AdminNav() {

@@ -8,7 +8,12 @@ import { isDiscordConfigured } from "@/lib/discord";
 import { WalletAuth } from "@/components/auth/wallet-auth";
 import { DiscordAuth } from "@/components/auth/discord-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NotificationBell } from "@/components/notification-bell";
 import { MobileNav, type NavLink } from "@/components/mobile-nav";
+import {
+  getRecentNotifications,
+  getUnreadNotificationCount,
+} from "@/lib/notifications";
 import { Button } from "@/components/ui/button";
 
 export async function SiteHeader() {
@@ -37,6 +42,13 @@ export async function SiteHeader() {
     !partnerStatus?.pendingApplication;
 
   const discordEnabled = isDiscordConfigured();
+
+  const [notifications, unreadCount] = user
+    ? await Promise.all([
+        getRecentNotifications(user.id),
+        getUnreadNotificationCount(user.id),
+      ])
+    : [[], 0];
 
   const navLinks: NavLink[] = [
     { href: "/courses", label: "Courses" },
@@ -77,6 +89,15 @@ export async function SiteHeader() {
         </div>
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <ThemeToggle />
+          {user && (
+            <NotificationBell
+              notifications={notifications.map((n) => ({
+                ...n,
+                createdAt: n.createdAt.toISOString(),
+              }))}
+              unreadCount={unreadCount}
+            />
+          )}
           <DiscordAuth
             linked={discordAccount}
             walletConnected={Boolean(user)}

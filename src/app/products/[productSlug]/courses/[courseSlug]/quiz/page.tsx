@@ -4,7 +4,11 @@ import { ChevronLeft, HelpCircle } from "lucide-react";
 import { QuizRunner } from "@/components/quiz-runner";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { getCourseBySlugs, getFinalQuiz } from "@/lib/courses";
+import {
+  getCourseBySlugs,
+  getFinalQuiz,
+  getPostCompletionRecommendations,
+} from "@/lib/courses";
 import { hasActiveDiscordRoleUnlockForBadge } from "@/lib/discord-role-grants";
 import { isDiscordConfigured } from "@/lib/discord";
 import { getCurrentUser } from "@/lib/session";
@@ -60,6 +64,11 @@ export default async function QuizPage({
       course.product.id
     ));
 
+  const nextSteps = await getPostCompletionRecommendations(
+    course.id,
+    course.product.id
+  );
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <Breadcrumbs
@@ -79,7 +88,7 @@ export default async function QuizPage({
       </Link>
 
       <div className="mb-6 flex items-center gap-3">
-        <span className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <span className="flex size-10 items-center justify-center rounded-lg bg-info/10 text-info">
           <HelpCircle className="size-5" />
         </span>
         <div>
@@ -114,6 +123,7 @@ export default async function QuizPage({
           quizPath={quizPath(productSlug, courseSlug)}
           discordRoleUnlockAvailable={discordRoleUnlockAvailable}
           discordLinked={discordLinked}
+          nextSteps={nextSteps}
         />
       )}
     </div>

@@ -21,7 +21,7 @@ function Progress({
       {...props}
     >
       <div
-        className="h-full rounded-full bg-primary transition-[width] duration-500 ease-out"
+        className="h-full rounded-full bg-xp transition-[width] duration-500 ease-out"
         style={{ width: `${clamped}%` }}
       />
     </div>

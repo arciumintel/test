@@ -87,6 +87,9 @@ export default async function AdminDashboard() {
             New course
           </Link>
         </Button>
+        <Button asChild variant="outline" className="shrink-0 self-start">
+          <Link href="/admin/analytics/referrals">Referral analytics</Link>
+        </Button>
       </div>
 
       {dbError ? (

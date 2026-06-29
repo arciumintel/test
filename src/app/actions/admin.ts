@@ -256,6 +256,7 @@ const lessonSchema = z.object({
   status: z.enum(["draft", "published"]),
   required: z.boolean(),
   estimatedDuration: z.coerce.number().int().min(0).max(100000).optional().nullable(),
+  moduleId: z.string().optional().nullable(),
 });
 
 export async function createLesson(
@@ -282,6 +283,7 @@ export async function createLesson(
       status: parsed.data.status,
       required: parsed.data.required,
       estimatedDuration: parsed.data.estimatedDuration ?? null,
+      moduleId: parsed.data.moduleId || null,
       order: (last?.order ?? -1) + 1,
     },
   });
@@ -308,6 +310,7 @@ export async function updateLesson(
       status: parsed.data.status,
       required: parsed.data.required,
       estimatedDuration: parsed.data.estimatedDuration ?? null,
+      moduleId: parsed.data.moduleId || null,
     },
     select: { courseId: true },
   });
@@ -344,6 +347,107 @@ export async function reorderLessons(
     ),
     ...orderedIds.map((id, i) =>
       prisma.lesson.updateMany({
+        where: { id, courseId },
+        data: { order: i },
+      })
+    ),
+  ]);
+
+  revalidatePath(`/admin/courses/${courseId}`);
+  return { ok: true };
+}
+
+// ── Modules ──────────────────────────────────────────────────────────────────
+
+const moduleSchema = z.object({
+  title: z.string().min(2, "Title is required").max(L.lessonTitle),
+  description: z.string().max(500).optional().nullable(),
+});
+
+export async function createModule(
+  courseId: string,
+  raw: z.input<typeof moduleSchema>
+): Promise<Result<{ id: string }>> {
+  const err = await guard();
+  if (err) return { error: err };
+  const parsed = moduleSchema.safeParse(raw);
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+
+  const last = await prisma.module.findFirst({
+    where: { courseId },
+    orderBy: { order: "desc" },
+    select: { order: true },
+  });
+
+  const mod = await prisma.module.create({
+    data: {
+      courseId,
+      title: parsed.data.title,
+      description: parsed.data.description || null,
+      order: (last?.order ?? -1) + 1,
+    },
+  });
+
+  revalidatePath(`/admin/courses/${courseId}`);
+  return { ok: true, id: mod.id };
+}
+
+export async function updateModule(
+  id: string,
+  raw: z.input<typeof moduleSchema>
+): Promise<Result> {
+  const err = await guard();
+  if (err) return { error: err };
+  const parsed = moduleSchema.safeParse(raw);
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+
+  const mod = await prisma.module.update({
+    where: { id },
+    data: {
+      title: parsed.data.title,
+      description: parsed.data.description || null,
+    },
+    select: { courseId: true },
+  });
+
+  revalidatePath(`/admin/courses/${mod.courseId}`);
+  return { ok: true };
+}
+
+export async function deleteModule(id: string): Promise<Result> {
+  const err = await guard();
+  if (err) return { error: err };
+
+  const mod = await prisma.module.delete({
+    where: { id },
+    select: { courseId: true },
+  });
+
+  await prisma.lesson.updateMany({
+    where: { moduleId: id },
+    data: { moduleId: null },
+  });
+
+  revalidatePath(`/admin/courses/${mod.courseId}`);
+  return { ok: true };
+}
+
+export async function reorderModules(
+  courseId: string,
+  orderedIds: string[]
+): Promise<Result> {
+  const err = await guard();
+  if (err) return { error: err };
+
+  await prisma.$transaction([
+    ...orderedIds.map((id, i) =>
+      prisma.module.updateMany({
+        where: { id, courseId },
+        data: { order: -(i + 1) },
+      })
+    ),
+    ...orderedIds.map((id, i) =>
+      prisma.module.updateMany({
         where: { id, courseId },
         data: { order: i },
       })
@@ -411,6 +515,61 @@ export async function upsertFinalQuiz(
       });
     }
   }
+
+  revalidatePath(`/admin/courses/${courseId}`);
+  return { ok: true, id: quiz.id };
+}
+
+export async function upsertLessonKnowledgeCheck(
+  courseId: string,
+  lessonId: string,
+  raw: {
+    title: string;
+    passThreshold: number;
+    description?: string | null;
+    status?: "draft" | "published";
+  }
+): Promise<Result<{ id: string }>> {
+  const err = await guard();
+  if (err) return { error: err };
+
+  const lesson = await prisma.lesson.findFirst({
+    where: { id: lessonId, courseId },
+    select: { id: true },
+  });
+  if (!lesson) return { error: "Lesson not found." };
+
+  const threshold = Math.min(100, Math.max(1, Math.round(raw.passThreshold)));
+  const title = raw.title?.trim() || "Knowledge check";
+  const description = raw.description?.trim() || null;
+  const status = raw.status ?? "draft";
+
+  const existing = await prisma.quiz.findFirst({
+    where: { lessonId },
+  });
+
+  const quiz = existing
+    ? await prisma.quiz.update({
+        where: { id: existing.id },
+        data: {
+          title,
+          passThreshold: threshold,
+          description,
+          status,
+          type: "lesson_knowledge_check",
+        },
+      })
+    : await prisma.quiz.create({
+        data: {
+          courseId,
+          lessonId,
+          title,
+          passThreshold: threshold,
+          description,
+          status,
+          type: "lesson_knowledge_check",
+        },
+      });
 
   revalidatePath(`/admin/courses/${courseId}`);
   return { ok: true, id: quiz.id };

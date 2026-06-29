@@ -163,6 +163,15 @@ export async function evaluateCourseCompletion(
     ecosystemProjectSlug: course.product.slug,
   });
 
+  const { createNotification } = await import("@/lib/notifications");
+  void createNotification({
+    userId,
+    type: "badge_awarded",
+    title: `Badge earned: ${course.badge.name}`,
+    body: `You completed ${course.title}.`,
+    actionUrl: `/verify/${slug}`,
+  });
+
   if (award?.id) {
     const { queueDiscordRoleGrantsForBadgeAward } = await import(
       "@/lib/discord-role-grants"

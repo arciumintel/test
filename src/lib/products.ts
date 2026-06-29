@@ -9,7 +9,7 @@ export type ProductLink = {
   url: string;
 };
 
-function normalizeLinks(value: unknown): ProductLink[] {
+export function normalizeLinks(value: unknown): ProductLink[] {
   if (!Array.isArray(value)) return [];
   return value
     .filter(

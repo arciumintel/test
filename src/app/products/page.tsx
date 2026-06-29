@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { ProductRowLink } from "@/components/product-row-link";
 import { ProjectCategoryFilters } from "@/components/project-category-filters";
+import { PageHeader } from "@/components/page-header";
 import {
   categoryToSlug,
   groupProductsByCategory,
@@ -50,19 +51,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       : null;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-      <header className="mb-8 max-w-2xl">
-        <h1
-          id="projects-heading"
-          className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl"
-        >
-          Projects
-        </h1>
-        <p className="mt-2 text-pretty leading-relaxed text-muted-foreground">
-          Each project is an app or tool in Arcium with its own course list. Pick
-          a project to see its courses.
-        </p>
-      </header>
+    <div className="mx-auto max-w-6xl px-4 pb-12 sm:px-6">
+      <PageHeader
+        headingId="projects-heading"
+        title="Projects"
+        description="Each project is an app or tool in Arcium with its own course list. Pick a project to see its courses."
+      />
 
       {!productsLoadError && categoryLabels.length > 0 && (
         <div className="mb-6">

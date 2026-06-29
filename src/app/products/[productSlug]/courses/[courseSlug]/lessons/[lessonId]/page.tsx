@@ -11,7 +11,8 @@ import {
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { TrackView } from "@/components/analytics/track-view";
 import { Separator } from "@/components/ui/separator";
-import { getCourseBySlugs, getFinalQuiz } from "@/lib/courses";
+import { getCourseBySlugs, getFinalQuiz, buildCourseModuleOutline } from "@/lib/courses";
+import { KnowledgeCheckRunner } from "@/components/knowledge-check-runner";
 import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { coursePath, lessonPath, productPath, quizPath } from "@/lib/paths";
@@ -39,6 +40,18 @@ export default async function LessonPage({
   const lesson = course.lessons[lessonIndex];
 
   const finalQuiz = getFinalQuiz(course.quizzes);
+
+  const knowledgeCheckQuiz = await prisma.quiz.findFirst({
+    where: {
+      lessonId,
+      courseId: course.id,
+      status: "published",
+      type: "lesson_knowledge_check",
+    },
+    include: {
+      questions: { orderBy: { order: "asc" } },
+    },
+  });
 
   const progress = await prisma.progress.findMany({
     where: { userId: user.id, courseId: course.id },
@@ -71,6 +84,7 @@ export default async function LessonPage({
     courseTitle: course.title,
     productSlug,
     courseSlug,
+    groups: buildCourseModuleOutline(course),
     lessons: course.lessons.map((l) => ({ id: l.id, title: l.title })),
     activeLessonId: lessonId,
     completedLessonIds: completedSet,
@@ -131,6 +145,37 @@ export default async function LessonPage({
           <div className="mt-6">
             <LessonContent content={lesson.content} />
           </div>
+
+          {knowledgeCheckQuiz && knowledgeCheckQuiz.questions.length > 0 && (
+            <section className="mt-10" aria-labelledby="knowledge-check-heading">
+              <h2
+                id="knowledge-check-heading"
+                className="text-lg font-semibold tracking-tight"
+              >
+                Check your understanding
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Optional. Does not affect your badge or course completion.
+              </p>
+              <div className="mt-4">
+                <KnowledgeCheckRunner
+                  quizId={knowledgeCheckQuiz.id}
+                  courseId={course.id}
+                  courseSlug={course.slug}
+                  lessonId={lesson.id}
+                  ecosystemProjectId={course.product.id}
+                  ecosystemProjectSlug={course.product.slug}
+                  passThreshold={knowledgeCheckQuiz.passThreshold}
+                  questions={knowledgeCheckQuiz.questions.map((q) => ({
+                    id: q.id,
+                    prompt: q.prompt,
+                    answerOptions: q.answerOptions,
+                  }))}
+                  lessonPath={lessonPagePath}
+                />
+              </div>
+            </section>
+          )}
 
           <Separator className="my-8" />
 

@@ -6,8 +6,14 @@ import { CourseCard } from "@/components/course-card";
 import { ProductRowLink } from "@/components/product-row-link";
 import { HomeCatalogError } from "@/components/home-catalog-error";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
+import { ContinueLearningCard } from "@/components/continue-learning-card";
 import { getPublishedCourses } from "@/lib/courses";
 import { getPublishedProducts } from "@/lib/products";
+import {
+  getLearnerCourseProgressList,
+  getMostRecentInProgress,
+} from "@/lib/learner-progress";
+import { getCurrentUser } from "@/lib/session";
 
 const HOW_IT_WORKS = [
   {
@@ -29,6 +35,11 @@ const stepTitleClassName =
   "font-medium leading-snug underline-offset-4 hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 rounded-sm";
 
 export default async function HomePage() {
+  const user = await getCurrentUser();
+  let continueCourse: Awaited<
+    ReturnType<typeof getMostRecentInProgress>
+  > = null;
+
   let courses: Awaited<ReturnType<typeof getPublishedCourses>> = [];
   let products: Awaited<ReturnType<typeof getPublishedProducts>> = [];
   let coursesLoadError = false;
@@ -44,6 +55,15 @@ export default async function HomePage() {
     products = await getPublishedProducts();
   } catch {
     productsLoadError = true;
+  }
+
+  if (user) {
+    try {
+      const progress = await getLearnerCourseProgressList(user.id);
+      continueCourse = getMostRecentInProgress(progress);
+    } catch {
+      // Home catalog still works if progress fails to load.
+    }
   }
 
   const catalogFullyFailed = coursesLoadError && productsLoadError;
@@ -82,6 +102,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {continueCourse && <ContinueLearningCard course={continueCourse} />}
 
       {/* How it works */}
       <section
@@ -172,6 +194,7 @@ export default async function HomePage() {
                       title: c.title,
                       summary: c.summary,
                       level: c.level,
+                      courseType: c.courseType,
                       thumbnailUrl: c.thumbnailUrl,
                       estimatedDuration: c.estimatedDuration,
                       lessonCount: c._count.lessons,

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Loader2, Play, CheckCircle2, Wallet } from "lucide-react";
+import { ArrowRight, Loader2, Play, CheckCircle2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { startCourse } from "@/app/actions/learn";
 import { trackClientEvent } from "@/app/actions/tracking";
@@ -75,8 +75,8 @@ export function CourseStartPanel({
 
   if (!isAuthed) {
     return (
-      <div className="rounded-lg border border-dashed bg-muted/40 p-4 text-center">
-        <Wallet className="mx-auto size-5 text-muted-foreground" />
+      <div className="rounded-lg border border-warning/30 bg-warning/8 p-4 text-center">
+        <Lock className="mx-auto size-5 text-warning" />
         <p className="mt-2 text-sm font-medium">Connect your wallet to start</p>
         <p className="mt-1 text-xs text-muted-foreground">
           Use “Connect wallet” at the top right to track progress, take quizzes,

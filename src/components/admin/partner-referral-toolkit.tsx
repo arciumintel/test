@@ -1,9 +1,8 @@
 "use client";
 
-import * as React from "react";
-import { Check, Copy, Link2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Link2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { CopyLinkButton } from "@/components/copy-link-button";
 import { absoluteUrl } from "@/lib/site";
 import { coursePath, productPath } from "@/lib/paths";
 
@@ -18,27 +17,6 @@ type Props = {
   partnerName: string | null;
   courses: CourseLink[];
 };
-
-function CopyButton({ text, label }: { text: string; label: string }) {
-  const [copied, setCopied] = React.useState(false);
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard may be unavailable
-    }
-  }
-
-  return (
-    <Button type="button" variant="outline" size="sm" onClick={copy}>
-      {copied ? <Check /> : <Copy />}
-      {copied ? "Copied" : label}
-    </Button>
-  );
-}
 
 export function PartnerReferralToolkit({
   productName,
@@ -61,7 +39,7 @@ export function PartnerReferralToolkit({
         </div>
         <p className="text-sm text-muted-foreground">
           Stable URLs and copy for partners to link from docs, onboarding, or
-          campaigns. Share manually. There is no partner dashboard in V1.
+          campaigns.
         </p>
 
         <div className="space-y-2">
@@ -71,7 +49,7 @@ export function PartnerReferralToolkit({
           <p className="break-all rounded-md border bg-muted/30 px-3 py-2 font-mono text-xs">
             {projectUrl}
           </p>
-          <CopyButton text={projectUrl} label="Copy URL" />
+          <CopyLinkButton text={projectUrl} label="Copy URL" />
         </div>
 
         {courses.length > 0 && (
@@ -88,7 +66,7 @@ export function PartnerReferralToolkit({
                     {url}
                   </p>
                   <div className="mt-2">
-                    <CopyButton text={url} label="Copy course URL" />
+                    <CopyLinkButton text={url} label="Copy course URL" />
                   </div>
                 </div>
               );
@@ -103,7 +81,7 @@ export function PartnerReferralToolkit({
           <p className="rounded-md border bg-muted/30 px-3 py-2 text-sm">
             {suggestedCopy}
           </p>
-          <CopyButton text={suggestedCopy} label="Copy suggested copy" />
+          <CopyLinkButton text={suggestedCopy} label="Copy suggested copy" />
         </div>
 
         <div className="space-y-2">
@@ -113,7 +91,7 @@ export function PartnerReferralToolkit({
           <p className="rounded-md border bg-muted/30 px-3 py-2 text-sm">
             {partnerLine}
           </p>
-          <CopyButton text={partnerLine} label="Copy positioning line" />
+          <CopyLinkButton text={partnerLine} label="Copy positioning line" />
         </div>
       </CardContent>
     </Card>

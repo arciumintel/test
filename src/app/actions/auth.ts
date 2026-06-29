@@ -26,20 +26,28 @@ function staffWallets(): Set<string> {
 export async function requestNonce(
   walletAddress: string
 ): Promise<{ message: string } | { error: string }> {
-  if (!isValidSolanaAddress(walletAddress)) {
-    return { error: "Invalid Solana wallet address." };
+  try {
+    if (!isValidSolanaAddress(walletAddress)) {
+      return { error: "Invalid Solana wallet address." };
+    }
+
+    const nonce = randomBytes(24).toString("hex");
+    await prisma.authNonce.create({
+      data: {
+        walletAddress,
+        nonce,
+        expiresAt: new Date(Date.now() + NONCE_TTL_MS),
+      },
+    });
+
+    return { message: buildSignInMessage(nonce) };
+  } catch (error) {
+    console.error("[auth] requestNonce failed:", error);
+    return {
+      error:
+        "Could not reach the database. Check DATABASE_URL and your network, then try again.",
+    };
   }
-
-  const nonce = randomBytes(24).toString("hex");
-  await prisma.authNonce.create({
-    data: {
-      walletAddress,
-      nonce,
-      expiresAt: new Date(Date.now() + NONCE_TTL_MS),
-    },
-  });
-
-  return { message: buildSignInMessage(nonce) };
 }
 
 /** Step 2: verify the signature, upsert the user, and start a session. */
@@ -48,58 +56,67 @@ export async function verifySignature(
   signature: string,
   message: string
 ): Promise<{ ok: true; role: string } | { error: string }> {
-  if (!isValidSolanaAddress(walletAddress)) {
-    return { error: "Invalid Solana wallet address." };
-  }
+  try {
+    if (!isValidSolanaAddress(walletAddress)) {
+      return { error: "Invalid Solana wallet address." };
+    }
 
-  const nonceMatch = message.match(/Nonce:\s*([a-f0-9]+)/);
-  const nonce = nonceMatch?.[1];
-  if (!nonce) return { error: "Malformed sign-in message." };
+    const nonceMatch = message.match(/Nonce:\s*([a-f0-9]+)/);
+    const nonce = nonceMatch?.[1];
+    if (!nonce) return { error: "Malformed sign-in message." };
 
-  const record = await prisma.authNonce.findUnique({ where: { nonce } });
-  if (!record || record.walletAddress !== walletAddress) {
-    return { error: "Sign-in challenge not found. Please try again." };
-  }
-  if (record.expiresAt < new Date()) {
+    const record = await prisma.authNonce.findUnique({ where: { nonce } });
+    if (!record || record.walletAddress !== walletAddress) {
+      return { error: "Sign-in challenge not found. Please try again." };
+    }
+    if (record.expiresAt < new Date()) {
+      await prisma.authNonce.delete({ where: { id: record.id } }).catch(() => {});
+      return { error: "Sign-in challenge expired. Please try again." };
+    }
+
+    if (!verifyWalletSignature(walletAddress, message, signature)) {
+      return { error: "Signature verification failed." };
+    }
+
+    // One-time use.
     await prisma.authNonce.delete({ where: { id: record.id } }).catch(() => {});
-    return { error: "Sign-in challenge expired. Please try again." };
+
+    const shouldBeStaff = staffWallets().has(walletAddress);
+
+    const user = await prisma.user.upsert({
+      where: { walletAddress },
+      update: shouldBeStaff ? { role: "staff_admin" } : {},
+      create: {
+        walletAddress,
+        role: shouldBeStaff ? "staff_admin" : "learner",
+      },
+    });
+
+    await createSession({
+      userId: user.id,
+      walletAddress: user.walletAddress,
+      role: user.role,
+    });
+
+    trackEventFireAndForget({
+      eventName: "wallet_connected",
+      source: "server_action",
+      path: "/",
+      userId: user.id,
+      walletAddress: user.walletAddress,
+      metadata: { role: user.role },
+    });
+
+    revalidatePath("/", "layout");
+    return { ok: true, role: user.role };
+  } catch (error) {
+    console.error("[auth] verifySignature failed:", error);
+    const message =
+      error instanceof Error && error.message
+        ? error.message
+        : "Database connection failed. Check DATABASE_URL and try again.";
+    return { error: message };
   }
-
-  if (!verifyWalletSignature(walletAddress, message, signature)) {
-    return { error: "Signature verification failed." };
-  }
-
-  // One-time use.
-  await prisma.authNonce.delete({ where: { id: record.id } }).catch(() => {});
-
-  const shouldBeStaff = staffWallets().has(walletAddress);
-
-  const user = await prisma.user.upsert({
-    where: { walletAddress },
-    update: shouldBeStaff ? { role: "staff_admin" } : {},
-    create: {
-      walletAddress,
-      role: shouldBeStaff ? "staff_admin" : "learner",
-    },
-  });
-
-  await createSession({
-    userId: user.id,
-    walletAddress: user.walletAddress,
-    role: user.role,
-  });
-
-  trackEventFireAndForget({
-    eventName: "wallet_connected",
-    source: "server_action",
-    path: "/",
-    userId: user.id,
-    walletAddress: user.walletAddress,
-    metadata: { role: user.role },
-  });
-
-  revalidatePath("/", "layout");
-  return { ok: true, role: user.role };
 }
 
 export async function signOut(): Promise<void> {

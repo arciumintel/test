@@ -10,6 +10,8 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { TrackView } from "@/components/analytics/track-view";
 import { ProductReferralLinks } from "@/components/analytics/product-referral-links";
 import { getProductBySlug } from "@/lib/products";
+import { getPublishedLearningPaths } from "@/lib/learning-paths";
+import { LearningPathTimeline } from "@/components/learning-path-timeline";
 import { productPath } from "@/lib/paths";
 
 export async function generateMetadata({
@@ -32,6 +34,8 @@ export default async function ProductPage({
   const { productSlug } = await params;
   const product = await getProductBySlug(productSlug);
   if (!product || product.status !== "published") notFound();
+
+  const learningPaths = await getPublishedLearningPaths(productSlug);
 
   const pagePath = productPath(product.slug);
 
@@ -102,20 +106,43 @@ export default async function ProductPage({
       </section>
 
       <section className="mt-12">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight">Courses</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Start with the official learning paths for {product.name}.
-            </p>
+        {learningPaths.length > 0 ? (
+          <>
+            <LearningPathTimeline paths={learningPaths} productSlug={product.slug} />
+            <div className="mt-12">
+              <h2 className="text-2xl font-semibold tracking-tight">All courses</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Browse every published course for {product.name}.
+              </p>
+            </div>
+          </>
+        ) : (
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold tracking-tight">Courses</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Start with the official learning paths for {product.name}.
+              </p>
+            </div>
+            <Button variant="ghost" asChild>
+              <Link href="/courses">
+                View all courses
+                <ArrowRight />
+              </Link>
+            </Button>
           </div>
-          <Button variant="ghost" asChild>
-            <Link href="/courses">
-              View all courses
-              <ArrowRight />
-            </Link>
-          </Button>
-        </div>
+        )}
+
+        {learningPaths.length > 0 && (
+          <div className="mb-6 mt-4 flex justify-end">
+            <Button variant="ghost" asChild>
+              <Link href="/courses">
+                View all courses
+                <ArrowRight />
+              </Link>
+            </Button>
+          </div>
+        )}
 
         {product.courses.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -129,6 +156,7 @@ export default async function ProductPage({
                   title: course.title,
                   summary: course.summary,
                   level: course.level,
+                  courseType: course.courseType,
                   thumbnailUrl: course.thumbnailUrl,
                   estimatedDuration: course.estimatedDuration,
                   lessonCount: course._count.lessons,

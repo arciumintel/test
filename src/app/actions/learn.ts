@@ -229,30 +229,46 @@ export async function submitQuiz(
     },
   });
 
+  const isLessonCheck = Boolean(quiz.lessonId);
+  const lessonPagePath =
+    quiz.lessonId != null
+      ? `${coursePath(quiz.course.product.slug, quiz.course.slug)}/lessons/${quiz.lessonId}`
+      : coursePath(quiz.course.product.slug, quiz.course.slug) + "/quiz";
+
   let completed = false;
   let newBadge = false;
   let verificationSlug: string | undefined;
-  if (passed) {
+  if (passed && !isLessonCheck) {
     const result = await evaluateCourseCompletion(user.id, quiz.courseId);
     completed = result.completed;
     newBadge = result.newlyAwarded;
     verificationSlug = result.verificationSlug;
   }
 
-  const quizPath = coursePath(quiz.course.product.slug, quiz.course.slug) + "/quiz";
   const baseEvent = {
     source: "server_action" as const,
-    path: quizPath,
+    path: lessonPagePath,
     userId: user.id,
     courseId: quiz.courseId,
     courseSlug: quiz.course.slug,
     ecosystemProjectId: quiz.course.product.id,
     ecosystemProjectSlug: quiz.course.product.slug,
     quizId,
+    lessonId: quiz.lessonId,
   };
 
+  const submittedEventName = isLessonCheck
+    ? "lesson_knowledge_check_submitted"
+    : "quiz_submitted";
+  const passedEventName = isLessonCheck
+    ? "lesson_knowledge_check_passed"
+    : "quiz_passed";
+  const failedEventName = isLessonCheck
+    ? "lesson_knowledge_check_submitted"
+    : "quiz_failed";
+
   trackEventFireAndForget({
-    eventName: "quiz_submitted",
+    eventName: submittedEventName,
     ...baseEvent,
     metadata: {
       quizAttemptId: attempt.id,
@@ -265,12 +281,13 @@ export async function submitQuiz(
       incorrectCount: quiz.questions.length - correctCount,
       courseCompleted: completed,
       badgeAwarded: newBadge,
+      isLessonKnowledgeCheck: isLessonCheck,
     },
   });
 
   if (passed) {
     trackEventFireAndForget({
-      eventName: "quiz_passed",
+      eventName: passedEventName,
       ...baseEvent,
       metadata: {
         quizAttemptId: attempt.id,
@@ -279,11 +296,12 @@ export async function submitQuiz(
         attemptNumber,
         courseCompleted: completed,
         badgeAwarded: newBadge,
+        isLessonKnowledgeCheck: isLessonCheck,
       },
     });
-  } else {
+  } else if (!isLessonCheck) {
     trackEventFireAndForget({
-      eventName: "quiz_failed",
+      eventName: failedEventName,
       ...baseEvent,
       metadata: {
         quizAttemptId: attempt.id,

@@ -1,9 +1,21 @@
 import "dotenv/config";
+import { neonConfig } from "@neondatabase/serverless";
+import ws from "ws";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient, type CourseLevel } from "@prisma/client";
 
+neonConfig.webSocketConstructor = ws;
+
+function databaseUrl(): string {
+  const url = process.env.DATABASE_URL?.trim();
+  if (!url) throw new Error("DATABASE_URL is not set");
+  if (url.includes("connect_timeout=")) return url;
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}connect_timeout=30`;
+}
+
 const adapter = new PrismaNeon({
-  connectionString: process.env.DATABASE_URL!,
+  connectionString: databaseUrl(),
 });
 const prisma = new PrismaClient({ adapter });
 
@@ -26,6 +38,10 @@ type SeedCourse = {
   passThreshold: number;
   questions: SeedQuestion[];
   badge: { name: string; description: string };
+  lessonKnowledgeCheck?: {
+    lessonIndex: number;
+    questions: SeedQuestion[];
+  };
 };
 
 const COURSES: SeedCourse[] = [
@@ -108,6 +124,35 @@ const COURSES: SeedCourse[] = [
     badge: {
       name: "Arcium Foundations",
       description: "Awarded for completing Welcome to Arcium.",
+    },
+    lessonKnowledgeCheck: {
+      lessonIndex: 0,
+      questions: [
+        {
+          prompt: "What is a sealed calculator a metaphor for?",
+          answerOptions: [
+            "Public blockchains",
+            "Private computation on hidden data",
+            "Social media feeds",
+            "Email encryption only",
+          ],
+          correctAnswer: 1,
+          explanation:
+            "Arcium lets programs compute on data without exposing the inputs.",
+        },
+        {
+          prompt: "Why is privacy-preserving computation hard on normal computers?",
+          answerOptions: [
+            "Computers are too slow",
+            "Most systems need to see data to process it",
+            "The internet is unreliable",
+            "Users dislike passwords",
+          ],
+          correctAnswer: 1,
+          explanation:
+            "Traditional computation typically requires access to plaintext data.",
+        },
+      ],
     },
   },
   {
@@ -251,6 +296,35 @@ async function seedCourse(productId: string, c: SeedCourse) {
     })),
   });
 
+  if (c.lessonKnowledgeCheck) {
+    const targetLesson = await prisma.lesson.findFirst({
+      where: { courseId: course.id, order: c.lessonKnowledgeCheck.lessonIndex },
+      select: { id: true },
+    });
+    if (targetLesson) {
+      const checkQuiz = await prisma.quiz.create({
+        data: {
+          courseId: course.id,
+          lessonId: targetLesson.id,
+          title: "Knowledge check",
+          passThreshold: 70,
+          status: "published",
+          type: "lesson_knowledge_check",
+        },
+      });
+      await prisma.question.createMany({
+        data: c.lessonKnowledgeCheck.questions.map((q, i) => ({
+          quizId: checkQuiz.id,
+          prompt: q.prompt,
+          answerOptions: q.answerOptions,
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation ?? null,
+          order: i,
+        })),
+      });
+    }
+  }
+
   const quiz = await prisma.quiz.create({
     data: {
       courseId: course.id,
@@ -312,6 +386,59 @@ async function main() {
 
   for (const c of COURSES) {
     await seedCourse(product.id, c);
+  }
+
+  const publishedCourses = await prisma.course.findMany({
+    where: { productId: product.id, status: "published" },
+    orderBy: { title: "asc" },
+    select: { id: true, slug: true, title: true },
+  });
+
+  if (publishedCourses.length >= 2) {
+    const path = await prisma.learningPath.upsert({
+      where: {
+        productId_slug: {
+          productId: product.id,
+          slug: "getting-started",
+        },
+      },
+      update: {
+        title: "Getting started with Arcium",
+        description:
+          "Follow this official path from foundations to building your first private app.",
+        status: "published",
+        order: 0,
+      },
+      create: {
+        productId: product.id,
+        slug: "getting-started",
+        title: "Getting started with Arcium",
+        description:
+          "Follow this official path from foundations to building your first private app.",
+        status: "published",
+        order: 0,
+      },
+    });
+
+    await prisma.learningPathCourse.deleteMany({ where: { pathId: path.id } });
+    const ordered =
+      publishedCourses.find((c) => c.slug === "welcome-to-arcium") ??
+      publishedCourses[0];
+    const second =
+      publishedCourses.find((c) => c.slug === "getting-started-with-private-apps") ??
+      publishedCourses.find((c) => c.id !== ordered.id);
+    const pathCourseIds = [ordered, second].filter(
+      (c): c is (typeof publishedCourses)[number] => Boolean(c)
+    );
+
+    await prisma.learningPathCourse.createMany({
+      data: pathCourseIds.map((course, order) => ({
+        pathId: path.id,
+        courseId: course.id,
+        order,
+      })),
+    });
+    console.log(`✓ Seeded learning path: ${path.title}`);
   }
 
   const staffWallets = (process.env.STAFF_ADMIN_WALLETS ?? "")

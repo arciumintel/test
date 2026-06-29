@@ -22,6 +22,7 @@ import type { QuizStatus } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import {
   upsertFinalQuiz,
+  upsertLessonKnowledgeCheck,
   createQuestion,
   updateQuestion,
   deleteQuestion,
@@ -57,15 +58,22 @@ export function QuizManager({
   variant = "admin",
   partnerProductId,
   readOnly = false,
+  scope = "final",
+  lessonId,
 }: {
   courseId: string;
   quiz: AdminQuiz;
   variant?: "admin" | "partner";
   partnerProductId?: string;
   readOnly?: boolean;
+  scope?: "final" | "lesson";
+  lessonId?: string;
 }) {
+  const isLessonScope = scope === "lesson";
   const router = useRouter();
-  const [title, setTitle] = React.useState(quiz?.title ?? "Course Quiz");
+  const [title, setTitle] = React.useState(
+    quiz?.title ?? (isLessonScope ? "Knowledge check" : "Course Quiz")
+  );
   const [description, setDescription] = React.useState(quiz?.description ?? "");
   const [status, setStatus] = React.useState<QuizStatus>(
     quiz?.status ?? (variant === "partner" ? "draft" : "published")
@@ -80,20 +88,18 @@ export function QuizManager({
   async function saveQuiz() {
     setSavingQuiz(true);
     setQuizError(null);
+    const payload = {
+      title,
+      passThreshold: Number(threshold),
+      description: description || null,
+      status,
+    };
     const res =
-      variant === "partner" && partnerProductId
-        ? await upsertPartnerFinalQuiz(partnerProductId, courseId, {
-            title,
-            passThreshold: Number(threshold),
-            description: description || null,
-            status,
-          })
-        : await upsertFinalQuiz(courseId, {
-            title,
-            passThreshold: Number(threshold),
-            description: description || null,
-            status,
-          });
+      isLessonScope && lessonId
+        ? await upsertLessonKnowledgeCheck(courseId, lessonId, payload)
+        : variant === "partner" && partnerProductId
+          ? await upsertPartnerFinalQuiz(partnerProductId, courseId, payload)
+          : await upsertFinalQuiz(courseId, payload);
     setSavingQuiz(false);
     if ("error" in res) {
       setQuizError(res.error);
@@ -107,8 +113,9 @@ export function QuizManager({
       <Card>
         <CardContent className="space-y-4 py-5">
           <p className="text-sm text-muted-foreground">
-            The final quiz must be passed to complete the course and earn the
-            badge.
+            {isLessonScope
+              ? "Optional knowledge check for this lesson. It does not block course completion or badge awards."
+              : "The final quiz must be passed to complete the course and earn the badge."}
           </p>
           <div className="grid gap-4 sm:grid-cols-[1fr_180px]">
             <div className="grid gap-2">

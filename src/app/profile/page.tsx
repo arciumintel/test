@@ -16,25 +16,20 @@ import { DisplayNameForm } from "@/components/display-name-form";
 import { DiscordProfileSection } from "@/components/discord-profile-section";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { ProfileConnectPrompt } from "@/components/profile-connect-prompt";
+import { PageHeader } from "@/components/page-header";
 import { TrackView } from "@/components/analytics/track-view";
 import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
-import { coursePath, badgeVerificationPath } from "@/lib/paths";
+import {
+  getInProgressCourses,
+  getLearnerCourseProgressList,
+} from "@/lib/learner-progress";
+import { badgeVerificationPath } from "@/lib/paths";
 import { shortWallet, formatDate } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "My learning",
   description: "Track course progress and badges you earn on Arcademy.",
-};
-
-type CourseAgg = {
-  slug: string;
-  productSlug: string;
-  title: string;
-  totalLessons: number;
-  completedLessons: number;
-  finalQuizId: string | null;
-  completed: boolean;
 };
 
 export default async function ProfilePage({
@@ -46,19 +41,12 @@ export default async function ProfilePage({
 
   if (!user) {
     return (
-      <div className="mx-auto min-w-0 max-w-5xl px-4 py-10 sm:px-6">
-        <header className="mb-8 max-w-2xl">
-          <h1
-            id="profile-heading"
-            className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl"
-          >
-            My learning
-          </h1>
-          <p className="mt-2 text-pretty leading-relaxed text-muted-foreground">
-            Connect your wallet to save lesson progress, quiz scores, and badges
-            in one place.
-          </p>
-        </header>
+      <div className="mx-auto min-w-0 max-w-5xl px-4 pb-10 sm:px-6">
+        <PageHeader
+          headingId="profile-heading"
+          title="My learning"
+          description="Connect your wallet to save lesson progress, quiz scores, and badges in one place."
+        />
         <section aria-labelledby="profile-heading">
           <ProfileConnectPrompt />
         </section>
@@ -85,28 +73,7 @@ export default async function ProfilePage({
       }>
     >
   > = [];
-  let progressRows: Awaited<
-    ReturnType<
-      typeof prisma.progress.findMany<{
-        include: {
-          course: {
-            select: {
-              id: true;
-              slug: true;
-              title: true;
-              status: true;
-              product: { select: { slug: true } };
-              _count: {
-                select: { lessons: { where: { status: "published" } } };
-              };
-              quizzes: { where: { lessonId: null }; select: { id: true } };
-            };
-          };
-        };
-      }>
-    >
-  > = [];
-  let passedAttempts: { quizId: string }[] = [];
+  let courses: Awaited<ReturnType<typeof getLearnerCourseProgressList>> = [];
   let discordAccount: Awaited<
     ReturnType<typeof prisma.discordAccount.findUnique>
   > = null;
@@ -127,8 +94,7 @@ export default async function ProfilePage({
   > = [];
 
   try {
-    [awards, progressRows, passedAttempts, discordAccount, grantFailures] =
-      await Promise.all([
+    [awards, courses, discordAccount, grantFailures] = await Promise.all([
         prisma.badgeAward.findMany({
           where: { userId: user.id },
           orderBy: { awardedAt: "desc" },
@@ -143,28 +109,7 @@ export default async function ProfilePage({
             },
           },
         }),
-        prisma.progress.findMany({
-          where: { userId: user.id },
-          include: {
-            course: {
-              select: {
-                id: true,
-                slug: true,
-                title: true,
-                status: true,
-                product: { select: { slug: true } },
-                _count: {
-                  select: { lessons: { where: { status: "published" } } },
-                },
-                quizzes: { where: { lessonId: null }, select: { id: true } },
-              },
-            },
-          },
-        }),
-        prisma.quizAttempt.findMany({
-          where: { userId: user.id, passed: true },
-          select: { quizId: true },
-        }),
+        getLearnerCourseProgressList(user.id),
         prisma.discordAccount.findUnique({ where: { userId: user.id } }),
         prisma.discordRoleGrant.findMany({
           where: {
@@ -197,42 +142,11 @@ export default async function ProfilePage({
     profileLoadError = true;
   }
 
-  const passedQuizIds = new Set(passedAttempts.map((a) => a.quizId));
-  const awardedCourseIds = new Set(awards.map((a) => a.courseId));
-
-  const byCourse = new Map<string, CourseAgg>();
-  for (const row of progressRows) {
-    const c = row.course;
-    if (c.status !== "published") continue;
-    let agg = byCourse.get(c.id);
-    if (!agg) {
-      agg = {
-        slug: c.slug,
-        productSlug: c.product.slug,
-        title: c.title,
-        totalLessons: c._count.lessons,
-        completedLessons: 0,
-        finalQuizId: c.quizzes[0]?.id ?? null,
-        completed: awardedCourseIds.has(c.id),
-      };
-      byCourse.set(c.id, agg);
-    }
-    if (row.completed) agg.completedLessons += 1;
-  }
-
-  const courses = [...byCourse.values()].map((c) => {
-    const quizDone = c.finalQuizId ? passedQuizIds.has(c.finalQuizId) : true;
-    const totalSteps = c.totalLessons + (c.finalQuizId ? 1 : 0);
-    const doneSteps = c.completedLessons + (quizDone && c.finalQuizId ? 1 : 0);
-    const pct = totalSteps > 0 ? Math.round((doneSteps / totalSteps) * 100) : 0;
-    return { ...c, pct };
-  });
-
-  const inProgress = courses.filter((c) => !c.completed && c.pct < 100);
+  const inProgress = getInProgressCourses(courses);
   const completed = courses.filter((c) => c.completed || c.pct >= 100);
 
   return (
-    <div className="mx-auto min-w-0 max-w-5xl px-4 py-10 sm:px-6">
+    <div className="mx-auto min-w-0 max-w-5xl px-4 pb-10 sm:px-6">
       {!profileLoadError && (
         <TrackView
           eventName="profile_viewed"
@@ -245,7 +159,7 @@ export default async function ProfilePage({
         />
       )}
 
-      <header className="mb-8 min-w-0">
+      <PageHeader innerClassName="min-w-0 max-w-none">
         <div className="flex min-w-0 items-start gap-4">
           <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
             <GraduationCap className="size-7" aria-hidden />
@@ -257,7 +171,7 @@ export default async function ProfilePage({
             </p>
           </div>
         </div>
-      </header>
+      </PageHeader>
 
       {profileLoadError ? (
         <HomeSectionLoadError
@@ -419,20 +333,18 @@ export default async function ProfilePage({
 }
 
 function CourseProgressRow({
-  slug,
-  productSlug,
   title,
   pct,
   completed,
+  resumeHref,
 }: {
-  slug: string;
-  productSlug: string;
   title: string;
   pct: number;
   completed: boolean;
+  resumeHref: string;
 }) {
   return (
-    <Link href={coursePath(productSlug, slug)} className="block min-w-0">
+    <Link href={resumeHref} className="block min-w-0">
       <Card className="min-w-0 overflow-hidden transition-colors hover:bg-muted/30">
         <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:gap-4">
           <div className="min-w-0 flex-1">
@@ -447,7 +359,7 @@ function CourseProgressRow({
             </div>
             <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
               <Progress value={pct} className="w-full sm:max-w-xs" />
-              <span className="shrink-0 text-xs text-muted-foreground">{pct}%</span>
+              <span className="shrink-0 text-xs font-medium text-xp">{pct}%</span>
             </div>
           </div>
           <ArrowRight

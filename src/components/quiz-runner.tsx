@@ -19,6 +19,8 @@ import { cn } from "@/lib/utils";
 import { coursePath, badgeVerificationPath } from "@/lib/paths";
 import { submitQuiz } from "@/app/actions/learn";
 import { trackClientEvent } from "@/app/actions/tracking";
+import { CourseCompletionNextSteps } from "@/components/course-completion-next-steps";
+import type { PostCompletionRecommendations } from "@/lib/courses";
 import {
   getBrowserReferrer,
   getTrackingAnonymousId,
@@ -55,6 +57,7 @@ type Props = {
   quizPath: string;
   discordRoleUnlockAvailable?: boolean;
   discordLinked?: boolean;
+  nextSteps?: PostCompletionRecommendations;
 };
 
 export function QuizRunner({
@@ -70,6 +73,7 @@ export function QuizRunner({
   quizPath,
   discordRoleUnlockAvailable = false,
   discordLinked = false,
+  nextSteps,
 }: Props) {
   const router = useRouter();
   const [answers, setAnswers] = React.useState<(number | null)[]>(
@@ -247,6 +251,10 @@ export function QuizRunner({
           </CardContent>
         </Card>
 
+        {result.passed && result.courseCompleted && nextSteps && (
+          <CourseCompletionNextSteps recommendations={nextSteps} />
+        )}
+
         <div className="space-y-4">
           <h3 className="font-semibold">Review your answers</h3>
           {questions.map((q, i) => {
@@ -326,7 +334,7 @@ export function QuizRunner({
                     className={cn(
                       "flex items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm transition-colors cursor-pointer",
                       selected
-                        ? "border-primary bg-primary/5 ring-1 ring-primary"
+                        ? "border-info bg-info/5 ring-1 ring-info"
                         : "hover:bg-muted/50"
                     )}
                   >
@@ -334,7 +342,7 @@ export function QuizRunner({
                       className={cn(
                         "flex size-5 shrink-0 items-center justify-center rounded-full border text-xs",
                         selected
-                          ? "border-primary bg-primary text-primary-foreground"
+                          ? "border-info bg-info text-info-foreground"
                           : "text-muted-foreground"
                       )}
                     >

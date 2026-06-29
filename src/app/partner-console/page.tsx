@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { PartnerConnectPrompt } from "@/components/partner-connect-prompt";
+import { PageHeader } from "@/components/page-header";
 import { getMyPartnerApplicationStatus } from "@/app/actions/partner-application";
 import { getCurrentUser } from "@/lib/session";
 import { getManagedProducts } from "@/lib/project-admin";
@@ -39,19 +40,12 @@ export default async function PartnerConsolePage({
 
   if (!user) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <header className="mb-8 max-w-2xl">
-          <h1
-            id="partner-console-heading"
-            className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl"
-          >
-            Partner console
-          </h1>
-          <p className="mt-2 text-pretty leading-relaxed text-muted-foreground">
-            Manage project settings, course drafts, partner materials, and
-            Discord role grants for projects you administer.
-          </p>
-        </header>
+      <div className="mx-auto max-w-3xl px-4 pb-10 sm:px-6">
+        <PageHeader
+          headingId="partner-console-heading"
+          title="Partner console"
+          description="Manage project settings, course drafts, partner materials, and Discord role grants for projects you administer."
+        />
         <section aria-labelledby="partner-console-heading">
           <PartnerConnectPrompt returnPath={returnPath} />
         </section>
@@ -111,20 +105,22 @@ export default async function PartnerConsolePage({
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <h1 className="text-balance text-2xl font-semibold tracking-tight">
-        Partner console
-      </h1>
-      <p className="mt-1 text-pretty text-sm text-muted-foreground">
-        Choose a project to manage. Start with course drafts or self-service
-        materials, then configure Discord when you are ready.{" "}
-        <Link
-          href="/partners/docs"
-          className="font-medium text-primary underline-offset-4 hover:underline"
-        >
-          Partner handbook
-        </Link>
-      </p>
+    <div className="mx-auto max-w-4xl px-4 pb-10 sm:px-6">
+      <PageHeader>
+        <h1 className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl">
+          Partner console
+        </h1>
+        <p className="mt-2 text-pretty leading-relaxed text-muted-foreground">
+          Choose a project to manage. Start with course drafts or self-service
+          materials, then configure Discord when you are ready.{" "}
+          <Link
+            href="/partners/docs"
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            Partner handbook
+          </Link>
+        </p>
+      </PageHeader>
 
       {access === "denied" && (
         <Alert variant="destructive" className="mt-6">

@@ -6,10 +6,6 @@ import {
   BookOpen,
   Award,
   Wallet,
-  CheckCircle2,
-  Circle,
-  Lock,
-  HelpCircle,
   Check,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,13 +14,17 @@ import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { LevelBadge } from "@/components/level-badge";
 import { CourseStartPanel } from "@/components/course-start-panel";
+import { CoursePrerequisites } from "@/components/course-prerequisites";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { TrackView } from "@/components/analytics/track-view";
 import { formatDuration } from "@/lib/utils";
+import { CourseModuleOutline } from "@/components/course-module-outline";
 import {
   getCourseBySlugs,
   getFinalQuiz,
   getLearnerCourseState,
+  getPublishedCoursePrerequisites,
+  buildCourseModuleOutline,
 } from "@/lib/courses";
 import { getCurrentUser } from "@/lib/session";
 import { productPath, coursePath } from "@/lib/paths";
@@ -49,6 +49,10 @@ export default async function CourseDetailPage({
   const course = await getCourseBySlugs(productSlug, courseSlug);
   if (!course || course.status !== "published") notFound();
 
+  const prerequisites = await getPublishedCoursePrerequisites(
+    course.prerequisiteCourseIds
+  );
+
   const user = await getCurrentUser();
   const finalQuiz = getFinalQuiz(course.quizzes);
 
@@ -68,6 +72,7 @@ export default async function CourseDetailPage({
     course.lessons[0];
 
   const pagePath = coursePath(productSlug, courseSlug);
+  const moduleGroups = buildCourseModuleOutline(course);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
@@ -84,6 +89,7 @@ export default async function CourseDetailPage({
           lessonCount: course.lessons.length,
           hasFinalQuiz: Boolean(finalQuiz),
           hasBadge: Boolean(course.badge),
+          prerequisiteCount: prerequisites.length,
         }}
       />
       <Breadcrumbs
@@ -118,12 +124,14 @@ export default async function CourseDetailPage({
               {course.lessons.length === 1 ? "" : "s"}
             </Badge>
             {course.badge && (
-              <Badge variant="default">
+              <Badge variant="warning">
                 <Award />
                 Earns a badge
               </Badge>
             )}
           </div>
+
+          <CoursePrerequisites prerequisites={prerequisites} />
 
           {course.description && (
             <div className="mt-8">
@@ -150,51 +158,22 @@ export default async function CourseDetailPage({
 
           <div className="mt-10">
             <h2 className="text-lg font-semibold">Course content</h2>
-            <div className="mt-3 overflow-hidden rounded-xl border">
-              {course.lessons.map((lesson, i) => {
-                const done = state?.completedLessonIds.has(lesson.id);
-                const locked = !user;
-                return (
-                  <div
-                    key={lesson.id}
-                    className="flex items-center gap-3 border-b px-4 py-3 last:border-b-0"
-                  >
-                    {done ? (
-                      <CheckCircle2 className="size-5 shrink-0 text-success" />
-                    ) : locked ? (
-                      <Lock className="size-5 shrink-0 text-muted-foreground" />
-                    ) : (
-                      <Circle className="size-5 shrink-0 text-muted-foreground" />
-                    )}
-                    <span className="flex-1 text-sm">
-                      <span className="text-muted-foreground">
-                        Lesson {i + 1}:{" "}
-                      </span>
-                      {lesson.title}
+            <div className="mt-3">
+              <CourseModuleOutline
+                groups={moduleGroups}
+                completedLessonIds={state?.completedLessonIds ?? new Set()}
+                finalQuiz={finalQuiz}
+                finalQuizPassed={state?.finalQuizPassed}
+                locked={!user}
+                renderLessonLabel={(lesson, index) => (
+                  <>
+                    <span className="text-muted-foreground">
+                      Lesson {index + 1}:{" "}
                     </span>
-                  </div>
-                );
-              })}
-              {finalQuiz && (
-                <div className="flex items-center gap-3 bg-muted/40 px-4 py-3">
-                  {state?.finalQuizPassed ? (
-                    <CheckCircle2 className="size-5 shrink-0 text-success" />
-                  ) : (
-                    <HelpCircle className="size-5 shrink-0 text-primary" />
-                  )}
-                  <span className="flex-1 text-sm font-medium">
-                    Final quiz
-                    <span className="ml-2 font-normal text-muted-foreground">
-                      Pass at {finalQuiz.passThreshold}% to complete
-                    </span>
-                  </span>
-                </div>
-              )}
-              {course.lessons.length === 0 && (
-                <div className="px-4 py-6 text-center text-sm text-muted-foreground">
-                  Lessons are being prepared for this course.
-                </div>
-              )}
+                    {lesson.title}
+                  </>
+                )}
+              />
             </div>
           </div>
         </div>
@@ -222,7 +201,7 @@ export default async function CourseDetailPage({
                   <div>
                     <div className="mb-1.5 flex items-center justify-between text-xs">
                       <span className="font-medium">Your progress</span>
-                      <span className="text-muted-foreground">{pct}%</span>
+                      <span className="font-medium text-xp">{pct}%</span>
                     </div>
                     <Progress value={pct} />
                   </div>
@@ -271,7 +250,7 @@ export default async function CourseDetailPage({
                     <li className="flex min-w-0 items-center justify-between gap-3">
                       <span className="shrink-0 text-muted-foreground">Reward</span>
                       <span className="flex min-w-0 items-center gap-1 truncate font-medium">
-                        <Award className="size-4 shrink-0 text-primary" />
+                        <Award className="size-4 shrink-0 text-warning" />
                         <span className="truncate">{course.badge.name}</span>
                       </span>
                     </li>

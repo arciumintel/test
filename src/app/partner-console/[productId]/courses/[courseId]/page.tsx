@@ -137,6 +137,7 @@ export default async function PartnerCourseEditorPage({
           mediaUrl: l.mediaUrl,
           required: l.required,
           estimatedDuration: l.estimatedDuration,
+          moduleId: l.moduleId,
         }))}
         quiz={
           finalQuiz

@@ -8,6 +8,11 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { CourseAnalytics } from "@/lib/analytics";
+import type {
+  AttemptsBeforePassBucket,
+  QuizQuestionDiagnostic,
+} from "@/lib/quiz-diagnostics";
+import { QuizDiagnosticsPanel } from "@/components/analytics/quiz-diagnostics-panel";
 
 function formatOptionalPercent(value: number | null): string {
   return value === null ? "n/a" : `${value}%`;
@@ -105,10 +110,14 @@ export function CourseAnalyticsView({
   data,
   variant = "default",
   compactExtra,
+  quizDiagnostics,
+  attemptsBeforePass,
 }: {
   data: CourseAnalytics;
   variant?: "default" | "compact";
   compactExtra?: string;
+  quizDiagnostics?: QuizQuestionDiagnostic[];
+  attemptsBeforePass?: AttemptsBeforePassBucket[];
 }) {
   const completionRate =
     data.starts > 0 ? Math.round((data.completions / data.starts) * 100) : 0;
@@ -216,6 +225,13 @@ export function CourseAnalyticsView({
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {quizDiagnostics && (
+        <QuizDiagnosticsPanel
+          diagnostics={quizDiagnostics}
+          attemptsBeforePass={attemptsBeforePass}
+        />
       )}
     </div>
   );

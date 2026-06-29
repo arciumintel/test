@@ -2,7 +2,8 @@
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CourseDetailsForm } from "@/components/admin/course-details-form";
-import { LessonsManager, type AdminLesson } from "@/components/admin/lessons-manager";
+import { LessonsManager, type AdminLesson, type AdminLessonQuiz } from "@/components/admin/lessons-manager";
+import type { AdminModule } from "@/components/admin/module-manager";
 import { QuizManager, type AdminQuiz } from "@/components/admin/quiz-manager";
 import { BadgeForm } from "@/components/admin/badge-form";
 import { AnalyticsPanel } from "@/components/admin/analytics-panel";
@@ -47,9 +48,13 @@ type PrerequisiteOption = {
 export function CourseEditorTabs({
   course,
   lessons,
+  modules = [],
+  lessonQuizzes = {},
   quiz,
   badge,
   analytics,
+  quizDiagnostics,
+  attemptsBeforePass,
   products,
   prerequisiteOptions = [],
   variant = "admin",
@@ -58,9 +63,13 @@ export function CourseEditorTabs({
 }: {
   course: CourseInitial;
   lessons: AdminLesson[];
+  modules?: AdminModule[];
+  lessonQuizzes?: Record<string, AdminLessonQuiz>;
   quiz: AdminQuiz;
   badge: BadgeInitial;
   analytics: CourseAnalytics;
+  quizDiagnostics?: import("@/lib/quiz-diagnostics").QuizQuestionDiagnostic[];
+  attemptsBeforePass?: import("@/lib/quiz-diagnostics").AttemptsBeforePassBucket[];
   products: ProductOption[];
   prerequisiteOptions?: PrerequisiteOption[];
   variant?: "admin" | "partner";
@@ -108,6 +117,8 @@ export function CourseEditorTabs({
         <LessonsManager
           courseId={course.id}
           lessons={lessons}
+          modules={modules}
+          lessonQuizzes={lessonQuizzes}
           variant={variant}
           partnerProductId={partnerProductId}
           readOnly={readOnly}
@@ -136,7 +147,11 @@ export function CourseEditorTabs({
 
       {variant === "admin" && (
         <TabsContent value="analytics">
-          <AnalyticsPanel data={analytics} />
+          <AnalyticsPanel
+            data={analytics}
+            quizDiagnostics={quizDiagnostics}
+            attemptsBeforePass={attemptsBeforePass}
+          />
         </TabsContent>
       )}
     </Tabs>

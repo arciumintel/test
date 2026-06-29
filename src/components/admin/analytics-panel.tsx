@@ -1,6 +1,24 @@
 import { CourseAnalyticsView } from "@/components/analytics/course-analytics-view";
 import type { CourseAnalytics } from "@/lib/analytics";
+import type {
+  AttemptsBeforePassBucket,
+  QuizQuestionDiagnostic,
+} from "@/lib/quiz-diagnostics";
 
-export function AnalyticsPanel({ data }: { data: CourseAnalytics }) {
-  return <CourseAnalyticsView data={data} />;
+export function AnalyticsPanel({
+  data,
+  quizDiagnostics,
+  attemptsBeforePass,
+}: {
+  data: CourseAnalytics;
+  quizDiagnostics?: QuizQuestionDiagnostic[];
+  attemptsBeforePass?: AttemptsBeforePassBucket[];
+}) {
+  return (
+    <CourseAnalyticsView
+      data={data}
+      quizDiagnostics={quizDiagnostics}
+      attemptsBeforePass={attemptsBeforePass}
+    />
+  );
 }

@@ -1,10 +1,36 @@
 import * as React from "react";
+import {
+  LESSON_INLINE_PATTERN,
+  LESSON_LINK_PATTERN,
+  parseLessonBlocks,
+} from "@/lib/lesson-markdown";
 
-/** Renders inline **bold**, *italic*, and `code`. */
-function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
-  const tokens = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
+/** Renders inline **bold**, *italic*, `code`, and [links](url). */
+function renderLessonInline(
+  text: string,
+  keyPrefix: string
+): React.ReactNode[] {
+  const tokens = text.split(LESSON_INLINE_PATTERN);
   return tokens.filter(Boolean).map((tok, i) => {
     const key = `${keyPrefix}-${i}`;
+    const linkMatch = LESSON_LINK_PATTERN.exec(tok);
+    if (linkMatch) {
+      const [, label, url] = linkMatch;
+      if (url.startsWith("javascript:")) {
+        return <React.Fragment key={key}>{label}</React.Fragment>;
+      }
+      return (
+        <a
+          key={key}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-primary underline underline-offset-2"
+        >
+          {label}
+        </a>
+      );
+    }
     if (tok.startsWith("**") && tok.endsWith("**")) {
       return (
         <strong key={key} className="font-semibold text-foreground">
@@ -29,68 +55,71 @@ function renderInline(text: string, keyPrefix: string): React.ReactNode[] {
   });
 }
 
-/**
- * Minimal, dependency-free Markdown-ish renderer for lesson content:
- * headings (#, ##, ###), bullet lists (-), and paragraphs.
- */
+/** Renders lesson markdown: headings, lists, links, code blocks, blockquotes. */
 export function LessonContent({ content }: { content: string }) {
-  const lines = content.replace(/\r\n/g, "\n").split("\n");
-  const blocks: React.ReactNode[] = [];
-  let listItems: string[] = [];
-  let key = 0;
+  const blocks = parseLessonBlocks(content);
 
-  const flushList = () => {
-    if (listItems.length === 0) return;
-    const items = [...listItems];
-    blocks.push(
-      <ul key={`ul-${key++}`} className="my-4 list-disc space-y-1.5 pl-6">
-        {items.map((item, i) => (
-          <li key={i}>{renderInline(item, `li-${key}-${i}`)}</li>
-        ))}
-      </ul>
-    );
-    listItems = [];
-  };
-
-  for (const raw of lines) {
-    const line = raw.trimEnd();
-    if (line.trim() === "") {
-      flushList();
-      continue;
-    }
-    if (line.startsWith("### ")) {
-      flushList();
-      blocks.push(
-        <h3 key={`h3-${key++}`} className="mt-6 mb-2 text-lg font-semibold">
-          {renderInline(line.slice(4), `h3-${key}`)}
-        </h3>
-      );
-    } else if (line.startsWith("## ")) {
-      flushList();
-      blocks.push(
-        <h2 key={`h2-${key++}`} className="mt-8 mb-3 text-xl font-semibold">
-          {renderInline(line.slice(3), `h2-${key}`)}
-        </h2>
-      );
-    } else if (line.startsWith("# ")) {
-      flushList();
-      blocks.push(
-        <h1 key={`h1-${key++}`} className="mt-8 mb-3 text-2xl font-semibold">
-          {renderInline(line.slice(2), `h1-${key}`)}
-        </h1>
-      );
-    } else if (/^[-*]\s+/.test(line)) {
-      listItems.push(line.replace(/^[-*]\s+/, ""));
-    } else {
-      flushList();
-      blocks.push(
-        <p key={`p-${key++}`} className="my-4 leading-7 text-foreground/90">
-          {renderInline(line, `p-${key}`)}
-        </p>
-      );
-    }
-  }
-  flushList();
-
-  return <div className="break-words text-[0.95rem]">{blocks}</div>;
+  return (
+    <div className="break-words text-[0.95rem]">
+      {blocks.map((block, index) => {
+        const key = `${block.type}-${index}`;
+        switch (block.type) {
+          case "h1":
+            return (
+              <h1 key={key} className="mt-8 mb-3 text-2xl font-semibold">
+                {renderLessonInline(block.text, key)}
+              </h1>
+            );
+          case "h2":
+            return (
+              <h2 key={key} className="mt-8 mb-3 text-xl font-semibold">
+                {renderLessonInline(block.text, key)}
+              </h2>
+            );
+          case "h3":
+            return (
+              <h3 key={key} className="mt-6 mb-2 text-lg font-semibold">
+                {renderLessonInline(block.text, key)}
+              </h3>
+            );
+          case "p":
+            return (
+              <p key={key} className="my-4 leading-7 text-foreground/90">
+                {renderLessonInline(block.text, key)}
+              </p>
+            );
+          case "ul":
+            return (
+              <ul key={key} className="my-4 list-disc space-y-1.5 pl-6">
+                {block.items.map((item, itemIndex) => (
+                  <li key={`${key}-${itemIndex}`}>
+                    {renderLessonInline(item, `${key}-li-${itemIndex}`)}
+                  </li>
+                ))}
+              </ul>
+            );
+          case "blockquote":
+            return (
+              <blockquote
+                key={key}
+                className="my-4 border-l-4 border-primary/30 pl-4 italic text-muted-foreground"
+              >
+                {renderLessonInline(block.text, key)}
+              </blockquote>
+            );
+          case "code":
+            return (
+              <pre
+                key={key}
+                className="my-4 overflow-x-auto rounded-lg bg-muted p-4 font-mono text-sm"
+              >
+                <code>{block.code}</code>
+              </pre>
+            );
+          default:
+            return null;
+        }
+      })}
+    </div>
+  );
 }

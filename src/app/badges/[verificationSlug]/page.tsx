@@ -4,12 +4,14 @@ import { notFound } from "next/navigation";
 import { Award, CheckCircle2, ExternalLink } from "lucide-react";
 import { BadgeMedallion } from "@/components/badge-medallion";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { CopyLinkButton } from "@/components/copy-link-button";
 import { TrackView } from "@/components/analytics/track-view";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { getBadgeAwardByVerificationSlug } from "@/lib/badges";
 import { badgeVerificationPath, coursePath, productPath } from "@/lib/paths";
+import { absoluteUrl } from "@/lib/site";
 import { formatDate } from "@/lib/utils";
 
 export async function generateMetadata({
@@ -20,9 +22,29 @@ export async function generateMetadata({
   const { verificationSlug } = await params;
   const award = await getBadgeAwardByVerificationSlug(verificationSlug);
   if (!award) return { title: "Badge verification" };
+  const title = `${award.badge.name} — Verified`;
+  const description = `Verification for ${award.badge.name}, awarded for completing ${award.course.title}.`;
   return {
-    title: `${award.badge.name} — Verified`,
-    description: `Verification for ${award.badge.name}, awarded for completing ${award.course.title}.`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      images: [
+        {
+          url: `/badges/${verificationSlug}/opengraph-image`,
+          width: 1200,
+          height: 630,
+          alt: `${award.badge.name} verified badge`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
   };
 }
 
@@ -41,6 +63,9 @@ export default async function BadgeVerificationPage({
   const issuer = badge.issuer ?? "Arcademy";
   const coursePublished = course.status === "published";
   const projectPublished = course.product.status === "published";
+  const shareUrl = absoluteUrl(badgeVerificationPath(verificationSlug));
+  const shareText = `I earned the "${badge.name}" badge on Arcademy for completing ${course.title}.`;
+  const twitterShareHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
@@ -171,12 +196,25 @@ export default async function BadgeVerificationPage({
         </CardContent>
       </Card>
 
-      <div className="mt-6 flex items-start gap-2 rounded-lg border bg-muted/30 p-4 text-xs text-muted-foreground">
-        <Award className="mt-0.5 size-4 shrink-0 text-primary" />
-        <span>
-          Share this page to verify completion. Only badge, course, wallet, and
-          award date are shown — no private account details.
-        </span>
+      <div className="mt-6 space-y-4">
+        <div className="flex flex-wrap gap-3">
+          <CopyLinkButton text={shareUrl} label="Copy verification link" />
+          <a
+            href={twitterShareHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-8 items-center justify-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium transition-colors hover:bg-muted/60"
+          >
+            Share on X
+          </a>
+        </div>
+        <div className="flex items-start gap-2 rounded-lg border bg-muted/30 p-4 text-xs text-muted-foreground">
+          <Award className="mt-0.5 size-4 shrink-0 text-warning" />
+          <span>
+            Share this page to verify completion. Only badge, course, wallet, and
+            award date are shown — no private account details.
+          </span>
+        </div>
       </div>
     </div>
   );

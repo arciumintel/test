@@ -10,6 +10,10 @@ import { PublishReadinessPanel } from "@/components/admin/publish-readiness-pane
 import { CourseEditorTabs } from "@/components/admin/course-editor-tabs";
 import { prisma } from "@/lib/prisma";
 import { getCourseAnalytics } from "@/lib/analytics";
+import {
+  getAttemptsBeforePass,
+  getQuizDiagnostics,
+} from "@/lib/quiz-diagnostics";
 import { getCoursePublishReadiness } from "@/lib/publish-readiness";
 import { coursePath } from "@/lib/paths";
 import { formatCourseStatus } from "@/lib/course-status";
@@ -40,6 +44,9 @@ export default async function CourseEditorPage({
   let readiness;
   let analytics;
   let prerequisiteOptions;
+  let lessonQuizzes;
+  let quizDiagnostics;
+  let attemptsBeforePass;
 
   try {
     [course, products, readiness] = await Promise.all([
@@ -48,6 +55,7 @@ export default async function CourseEditorPage({
         include: {
           product: true,
           lessons: { orderBy: { order: "asc" } },
+          modules: { orderBy: { order: "asc" } },
           badge: true,
           quizzes: {
             where: { lessonId: null },
@@ -83,13 +91,20 @@ export default async function CourseEditorPage({
   if (!course) notFound();
 
   try {
-    [analytics, prerequisiteOptions] = await Promise.all([
+    [analytics, prerequisiteOptions, lessonQuizzes, quizDiagnostics, attemptsBeforePass] =
+      await Promise.all([
       getCourseAnalytics(course.id),
       prisma.course.findMany({
         where: { productId: course.productId, id: { not: course.id } },
         orderBy: { title: "asc" },
         select: { id: true, title: true },
       }),
+      prisma.quiz.findMany({
+        where: { courseId: course.id, lessonId: { not: null } },
+        include: { questions: { orderBy: { order: "asc" } } },
+      }),
+      getQuizDiagnostics(course.id),
+      getAttemptsBeforePass(course.id),
     ]);
   } catch {
     return (
@@ -110,6 +125,27 @@ export default async function CourseEditorPage({
   }
 
   const finalQuiz = course.quizzes[0] ?? null;
+  const lessonQuizMap = Object.fromEntries(
+    (lessonQuizzes ?? [])
+      .filter((q) => q.lessonId)
+      .map((q) => [
+        q.lessonId as string,
+        {
+          id: q.id,
+          title: q.title,
+          passThreshold: q.passThreshold,
+          description: q.description,
+          status: q.status,
+          questions: q.questions.map((question) => ({
+            id: question.id,
+            prompt: question.prompt,
+            answerOptions: question.answerOptions,
+            correctAnswer: question.correctAnswer,
+            explanation: question.explanation,
+          })),
+        },
+      ])
+  );
 
   return (
     <>
@@ -201,7 +237,15 @@ export default async function CourseEditorPage({
           mediaUrl: l.mediaUrl,
           required: l.required,
           estimatedDuration: l.estimatedDuration,
+          moduleId: l.moduleId,
         }))}
+        modules={course.modules.map((m) => ({
+          id: m.id,
+          title: m.title,
+          description: m.description,
+          order: m.order,
+        }))}
+        lessonQuizzes={lessonQuizMap}
         quiz={
           finalQuiz
             ? {
@@ -233,6 +277,8 @@ export default async function CourseEditorPage({
             : null
         }
         analytics={analytics}
+        quizDiagnostics={quizDiagnostics}
+        attemptsBeforePass={attemptsBeforePass}
         products={products}
         prerequisiteOptions={prerequisiteOptions}
       />

@@ -50,6 +50,12 @@ enum CourseType {
 
 enum QuizType {
   final_course_quiz
+  lesson_knowledge_check
+}
+
+enum LearningPathStatus {
+  draft
+  published
 }
 
 enum QuizStatus {
@@ -120,6 +126,7 @@ model Product {
   partnerIntakes          PartnerIntake[]
   projectAdmins           ProjectAdmin[]
   projectDiscordIntegration ProjectDiscordIntegration?
+  learningPaths           LearningPath[]
 
   @@index([status])
 }
@@ -144,6 +151,7 @@ model User {
   coursesSubmittedForReview Course[] @relation("CourseReviewRequestedBy")
   coursesReviewed           Course[] @relation("CourseReviewedBy")
   partnerIntakeApplications PartnerIntake[] @relation("PartnerIntakeApplicant")
+  notifications             Notification[]
 }
 
 /// One-time challenge used to verify wallet ownership during sign-in.
@@ -184,20 +192,40 @@ model Course {
   reviewRequestedBy   User?   @relation("CourseReviewRequestedBy", fields: [reviewRequestedByUserId], references: [id], onDelete: SetNull)
   reviewedBy          User?   @relation("CourseReviewedBy", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
   lessons     Lesson[]
+  modules     Module[]
   quizzes     Quiz[]
   progress    Progress[]
   badge       Badge?
   badgeAwards BadgeAward[]
+  pathCourses LearningPathCourse[]
 
   @@unique([productId, slug])
   @@index([status])
   @@index([productId])
 }
 
+/// Groups lessons inside a course (optional; flat lessons when absent).
+model Module {
+  id          String   @id @default(cuid())
+  courseId    String
+  title       String
+  description String?
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  @@unique([courseId, order])
+  @@index([courseId])
+}
+
 /// One ordered learning unit inside a course.
 model Lesson {
   id                String       @id @default(cuid())
   courseId          String
+  moduleId          String?
   title             String
   order             Int
   content           String // rich text / markdown
@@ -209,11 +237,13 @@ model Lesson {
   updatedAt         DateTime     @updatedAt
 
   course   Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  module   Module?    @relation(fields: [moduleId], references: [id], onDelete: SetNull)
   quizzes  Quiz[]
   progress Progress[]
 
   @@unique([courseId, order])
   @@index([courseId])
+  @@index([moduleId])
 }
 
 /// An assessment for a course (final quiz) or a specific lesson.
@@ -236,6 +266,57 @@ model Quiz {
 
   @@index([courseId])
   @@index([lessonId])
+  @@unique([lessonId])
+}
+
+/// Curated multi-course sequence for an ecosystem product.
+model LearningPath {
+  id          String              @id @default(cuid())
+  productId   String
+  title       String
+  slug        String
+  description String?
+  order       Int                 @default(0)
+  status      LearningPathStatus  @default(draft)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  product Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  courses LearningPathCourse[]
+
+  @@unique([productId, slug])
+  @@index([productId])
+}
+
+model LearningPathCourse {
+  id       String @id @default(cuid())
+  pathId   String
+  courseId String
+  order    Int
+
+  path   LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  course Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([pathId, courseId])
+  @@unique([pathId, order])
+  @@index([courseId])
+}
+
+/// In-app notification for a learner.
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String?
+  actionUrl String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
 }
 
 /// One multiple-choice quiz question.

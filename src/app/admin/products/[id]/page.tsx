@@ -11,9 +11,11 @@ import { PartnerReferralToolkit } from "@/components/admin/partner-referral-tool
 import { ProductAnalyticsPanel } from "@/components/admin/product-analytics-panel";
 import { PartnerAnalyticsNotesForm } from "@/components/admin/partner-analytics-notes-form";
 import { ProjectAdminPanel } from "@/components/admin/project-admin-panel";
+import { LearningPathManager } from "@/components/admin/learning-path-manager";
 import { prisma } from "@/lib/prisma";
 import { getProductPublishReadiness } from "@/lib/publish-readiness";
 import { getProductAnalytics } from "@/lib/analytics";
+import { getAdminLearningPaths } from "@/lib/learning-paths";
 import { productPath } from "@/lib/paths";
 import type { ProductStatus } from "@prisma/client";
 
@@ -53,9 +55,12 @@ export default async function ProductEditorPage({
   let readiness;
   let analytics;
   let projectAdmins;
+  let learningPaths;
+  let allCourses;
 
   try {
-    [product, readiness, analytics, projectAdmins] = await Promise.all([
+    [product, readiness, analytics, projectAdmins, learningPaths, allCourses] =
+      await Promise.all([
       prisma.product.findUnique({
         where: { id },
         include: {
@@ -75,6 +80,12 @@ export default async function ProductEditorPage({
           user: { select: { walletAddress: true, displayName: true } },
         },
         orderBy: { createdAt: "asc" },
+      }),
+      getAdminLearningPaths(id),
+      prisma.course.findMany({
+        where: { productId: id },
+        orderBy: { title: "asc" },
+        select: { id: true, title: true, status: true },
       }),
     ]);
   } catch {
@@ -189,6 +200,14 @@ export default async function ProductEditorPage({
           />
         </div>
       </div>
+
+      <section className="mt-12">
+        <LearningPathManager
+          productId={product.id}
+          paths={learningPaths}
+          productCourses={allCourses}
+        />
+      </section>
 
       {analytics && (
         <section className="mt-12">

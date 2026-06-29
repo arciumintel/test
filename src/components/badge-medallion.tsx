@@ -19,7 +19,7 @@ export function BadgeMedallion({
   return (
     <div
       className={cn(
-        "relative flex items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 ring-2 ring-primary/20",
+        "relative flex items-center justify-center rounded-full bg-gradient-to-br from-warning/25 to-warning/5 ring-2 ring-warning/25",
         dim,
         className
       )}
@@ -33,7 +33,7 @@ export function BadgeMedallion({
           className="rounded-full object-cover"
         />
       ) : (
-        <Award className={size === "md" ? "size-9 text-primary" : "size-6 text-primary"} />
+        <Award className={size === "md" ? "size-9 text-warning" : "size-6 text-warning"} />
       )}
     </div>
   );

@@ -17,6 +17,8 @@ export const ANALYTICS_EVENT_NAMES = [
   "quiz_submitted",
   "quiz_passed",
   "quiz_failed",
+  "lesson_knowledge_check_submitted",
+  "lesson_knowledge_check_passed",
   "course_completed",
   "badge_awarded",
   "badge_verification_viewed",

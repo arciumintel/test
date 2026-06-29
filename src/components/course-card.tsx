@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { LevelBadge } from "@/components/level-badge";
 import { formatDuration } from "@/lib/utils";
 import { coursePath } from "@/lib/paths";
-import type { CourseLevel } from "@prisma/client";
+import { COURSE_TYPE_LABELS } from "@/lib/course-catalog";
+import type { CourseLevel, CourseType } from "@prisma/client";
 
 export type CourseCardData = {
   productSlug: string;
@@ -15,6 +16,7 @@ export type CourseCardData = {
   title: string;
   summary: string;
   level: CourseLevel;
+  courseType?: CourseType;
   thumbnailUrl: string | null;
   estimatedDuration: number | null;
   lessonCount: number;
@@ -27,7 +29,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
       href={coursePath(course.productSlug, course.slug)}
       className="group block min-w-0"
     >
-      <Card className="h-full min-w-0 gap-0 overflow-hidden p-0 transition-all hover:-translate-y-0.5 hover:shadow-md">
+      <Card className="h-full min-w-0 gap-0 overflow-hidden p-0 motion-safe:transition-all motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-md">
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-gradient-to-br from-primary/15 via-accent to-secondary">
           {course.thumbnailUrl ? (
             <Image
@@ -35,7 +37,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
               alt={course.title}
               fill
               sizes="(max-width: 768px) 100vw, 33vw"
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              className="object-cover motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-105"
             />
           ) : (
             <div className="flex h-full items-center justify-center">
@@ -57,6 +59,11 @@ export function CourseCard({ course }: { course: CourseCardData }) {
             <span className="max-w-full truncate font-medium text-foreground/80">
               {course.productName}
             </span>
+            {course.courseType && (
+              <Badge variant="muted" className="max-w-full truncate">
+                {COURSE_TYPE_LABELS[course.courseType]}
+              </Badge>
+            )}
             <span className="inline-flex items-center gap-1">
               <BookOpen className="size-3.5" />
               {course.lessonCount} lesson{course.lessonCount === 1 ? "" : "s"}
@@ -66,7 +73,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
               {formatDuration(course.estimatedDuration)}
             </span>
             {course.hasBadge && (
-              <Badge variant="muted">
+              <Badge variant="warning">
                 <Award />
                 Badge
               </Badge>

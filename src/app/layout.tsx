@@ -5,6 +5,7 @@ import { AppRootProvider } from "@/components/app-root-provider";
 import { ProvidersLoader } from "@/components/providers-loader";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { DevAgentationToolbar } from "@/components/dev-agentation-toolbar";
 import { logDeploymentWarnings } from "@/lib/env";
 
 logDeploymentWarnings();
@@ -45,6 +46,7 @@ export default function RootLayout({
             <SiteHeader />
             <main className="min-w-0 flex-1">{children}</main>
             <SiteFooter />
+            <DevAgentationToolbar />
           </ProvidersLoader>
         </AppRootProvider>
       </body>
