@@ -1,10 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, Save } from "lucide-react";
+import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  FormField,
+  FormHelperText,
+  FormLabel,
+} from "@/components/ui/form-field";
+import { FormSection } from "@/components/ui/form-section";
 import { updatePartnerAnalyticsNotes } from "@/app/actions/partner-analytics";
 
 export function PartnerAnalyticsNotesForm({
@@ -33,29 +38,33 @@ export function PartnerAnalyticsNotesForm({
   }
 
   return (
-    <div className="space-y-3">
-      <div>
-        <Label htmlFor="partner-analytics-notes">Partner analytics notes</Label>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Optional narrative shown to project admins on their analytics dashboard and exports.
-        </p>
-      </div>
-      <Textarea
-        id="partner-analytics-notes"
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        rows={4}
-        maxLength={4000}
-        placeholder="e.g. Completion dipped after Lesson 3 was expanded — staff is reviewing a shorter revision."
-      />
-      <div className="flex items-center gap-3">
-        <Button size="sm" onClick={handleSave} disabled={busy}>
-          {busy ? <Loader2 className="animate-spin" /> : <Save />}
-          Save notes
-        </Button>
-        {saved && <span className="text-sm text-muted-foreground">Saved.</span>}
-        {error && <span className="text-sm text-destructive">{error}</span>}
-      </div>
-    </div>
+    <FormSection
+      title="Partner analytics notes"
+      description="Optional narrative shown to project admins on their analytics dashboard and exports."
+    >
+      <FormField>
+        <FormLabel htmlFor="partner-analytics-notes">Notes</FormLabel>
+        <Textarea
+          id="partner-analytics-notes"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={4}
+          maxLength={4000}
+          placeholder="Summarize trends, context, or recommended follow-ups for partners"
+        />
+        <div className="flex flex-wrap items-center gap-3 pt-2">
+          <Button size="sm" onClick={handleSave} disabled={busy}>
+            <Save />
+            Save notes
+          </Button>
+          {saved ? (
+            <FormHelperText className="text-success">Saved.</FormHelperText>
+          ) : null}
+          {error ? (
+            <FormHelperText className="text-destructive">{error}</FormHelperText>
+          ) : null}
+        </div>
+      </FormField>
+    </FormSection>
   );
 }

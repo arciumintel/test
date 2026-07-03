@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { coursePath, lessonPath, quizPath } from "@/lib/paths";
+import { coursePath, lessonPath, productPath, quizPath } from "@/lib/paths";
+import type { ProductProgressState } from "@/lib/product-catalog";
 
 export type LearnerCourseProgress = {
   courseId: string;
@@ -143,4 +144,42 @@ export function getMostRecentInProgress(
   courses: LearnerCourseProgress[]
 ): LearnerCourseProgress | null {
   return getInProgressCourses(courses)[0] ?? null;
+}
+
+export function buildProductProgressMap(
+  courses: LearnerCourseProgress[]
+): Record<string, ProductProgressState> {
+  const byProduct = new Map<string, LearnerCourseProgress[]>();
+
+  for (const course of courses) {
+    if (course.pct <= 0 && !course.completed) continue;
+    const list = byProduct.get(course.productSlug) ?? [];
+    list.push(course);
+    byProduct.set(course.productSlug, list);
+  }
+
+  const result: Record<string, ProductProgressState> = {};
+
+  for (const [productSlug, productCourses] of byProduct) {
+    const completed = productCourses.every((course) => course.completed);
+    const pct = completed
+      ? 100
+      : Math.round(
+          productCourses.reduce((sum, course) => sum + course.pct, 0) /
+            productCourses.length
+        );
+    const resumeCourse =
+      getInProgressCourses(productCourses)[0] ??
+      productCourses.sort(
+        (a, b) => b.lastActivityAt.getTime() - a.lastActivityAt.getTime()
+      )[0];
+
+    result[productSlug] = {
+      pct,
+      completed,
+      resumeHref: resumeCourse?.resumeHref ?? productPath(productSlug),
+    };
+  }
+
+  return result;
 }

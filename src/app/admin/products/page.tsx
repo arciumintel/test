@@ -3,9 +3,8 @@ import Link from "next/link";
 import { PackageOpen, Pencil, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/badge";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
-import { ProductStatusControls } from "@/components/admin/product-status-controls";
 import { prisma } from "@/lib/prisma";
 import type { ProductStatus } from "@prisma/client";
 
@@ -102,12 +101,12 @@ export default async function AdminProductsPage() {
                       >
                         {product.name}
                       </Link>
-                      <Badge
+                      <StatusBadge
                         variant={STATUS_VARIANT[product.status]}
                         className="capitalize"
                       >
                         {product.status}
-                      </Badge>
+                      </StatusBadge>
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
                       /products/{product.slug} · {product._count.courses}{" "}
@@ -121,10 +120,6 @@ export default async function AdminProductsPage() {
                         Edit
                       </Link>
                     </Button>
-                    <ProductStatusControls
-                      productId={product.id}
-                      status={product.status}
-                    />
                   </div>
                 </CardContent>
               </Card>

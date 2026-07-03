@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge, StatusBadge } from "@/components/ui/badge";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { PartnerIntakeForm } from "@/components/admin/partner-intake-form";
 import { PartnerApplicationApprovalPanel } from "@/components/admin/partner-application-approval-panel";
@@ -88,12 +88,12 @@ export default async function PartnerIntakeDetailPage({
         {intake.applicantUserId && !intake.productId && (
           <Badge variant="default">Partner application</Badge>
         )}
-        <Badge
+        <StatusBadge
           variant={STATUS_VARIANT[intake.reviewStatus]}
           className="capitalize"
         >
           {intake.reviewStatus.replace(/_/g, " ")}
-        </Badge>
+        </StatusBadge>
       </div>
       {intake.product && (
         <p className="mt-1 text-pretty text-sm text-muted-foreground">

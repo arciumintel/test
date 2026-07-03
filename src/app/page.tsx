@@ -17,9 +17,9 @@ import { getCurrentUser } from "@/lib/session";
 
 const HOW_IT_WORKS = [
   {
-    title: "Open a course and read the lessons",
-    body: "Pick any course and start reading. No wallet required.",
-    href: "/courses" as const,
+    title: "Start with Arcium foundations",
+    body: "Learn what Arcium is and why it matters — no wallet required.",
+    href: "/start" as const,
   },
   {
     title: "Connect a wallet to save progress",
@@ -52,7 +52,7 @@ export default async function HomePage() {
   }
 
   try {
-    products = await getPublishedProducts();
+    products = await getPublishedProducts({ role: "ecosystem" });
   } catch {
     productsLoadError = true;
   }
@@ -67,8 +67,19 @@ export default async function HomePage() {
   }
 
   const catalogFullyFailed = coursesLoadError && productsLoadError;
-  const featured = courses.slice(0, 3);
-  const featuredProducts = products.slice(0, 4);
+
+  const foundationalCourses = courses.filter(
+    (c) =>
+      c.courseType === "foundational" && c.product.role === "foundation"
+  );
+  const otherCourses = courses.filter(
+    (c) =>
+      !(
+        c.courseType === "foundational" && c.product.role === "foundation"
+      )
+  );
+  const featured = [...foundationalCourses, ...otherCourses].slice(0, 3);
+  const ecosystemProducts = products.slice(0, 4);
 
   return (
     <div>
@@ -90,15 +101,18 @@ export default async function HomePage() {
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button size="lg" asChild>
-                <Link href="/courses">
-                  Browse courses
+                <Link href="/start">
+                  Start with Arcium
                   <ArrowRight />
                 </Link>
               </Button>
-              <span className="text-sm text-muted-foreground">
-                You can read courses without a wallet.
-              </span>
+              <Button size="lg" variant="outline" asChild>
+                <Link href="/products">Browse ecosystem projects</Link>
+              </Button>
             </div>
+            <p className="mt-4 text-sm text-muted-foreground">
+              You can read courses without a wallet.
+            </p>
           </div>
         </div>
       </section>
@@ -230,10 +244,10 @@ export default async function HomePage() {
                     id="projects-heading"
                     className="text-lg font-semibold tracking-tight"
                   >
-                    Browse by project
+                    Ecosystem projects
                   </h2>
                   <p className="mt-1.5 text-sm text-muted-foreground">
-                    Each project is an app or tool in Arcium with its own course
+                    Apps and tools built on Arcium, each with its own course
                     list.
                   </p>
                 </div>
@@ -245,7 +259,7 @@ export default async function HomePage() {
                     className="self-start sm:self-auto"
                   >
                     <Link href="/products">
-                      View all projects
+                      View all ecosystem projects
                       <ArrowRight />
                     </Link>
                   </Button>
@@ -257,9 +271,9 @@ export default async function HomePage() {
                   title="Projects did not load"
                   description="The project list is unavailable right now. Refresh the page, or browse courses above if they loaded."
                 />
-              ) : featuredProducts.length > 0 ? (
+              ) : ecosystemProducts.length > 0 ? (
                 <div className="overflow-hidden rounded-xl border bg-card divide-y">
-                  {featuredProducts.map((product) => (
+                  {ecosystemProducts.map((product) => (
                     <ProductRowLink
                       key={product.id}
                       product={{

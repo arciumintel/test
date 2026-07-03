@@ -2,13 +2,25 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Plus, Trash2, Save, Check } from "lucide-react";
+import { Plus, Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { CloudinaryUpload } from "@/components/cloudinary-upload";
+import {
+  FormActions,
+  FormSaveStatus,
+  FormSubmitButton,
+} from "@/components/ui/form-actions";
+import {
+  FormField,
+  FormFieldGroup,
+  FormHelperText,
+  FormLabel,
+} from "@/components/ui/form-field";
+import { FormLayout } from "@/components/ui/form-layout";
+import { FormSection } from "@/components/ui/form-section";
 import { createCourse, updateCourse } from "@/app/actions/admin";
 import {
   createPartnerCourse,
@@ -142,203 +154,226 @@ export function CourseDetailsForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid gap-2">
-        <Label htmlFor="title">Title</Label>
-        <Input
-          id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Welcome to Arcium"
-          maxLength={L.courseTitle}
-          required
-        />
-      </div>
+    <FormLayout onSubmit={handleSubmit}>
+      <FormSection
+        title="General information"
+        description="Core details shown on course cards and the course landing page."
+      >
+        <FormFieldGroup>
+          <FormField>
+            <FormLabel htmlFor="title">Title</FormLabel>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Enter a clear, learner-friendly course title"
+              maxLength={L.courseTitle}
+              required
+            />
+          </FormField>
 
-      <div className="grid gap-2 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="product">Project</Label>
-          <Select
-            id="product"
-            value={productId}
-            onChange={(e) => setProductId(e.target.value)}
-            required
-            disabled={variant === "partner"}
-          >
-            {products.map((product) => (
-              <option key={product.id} value={product.id}>
-                {product.name}
-                {product.status !== "published" ? ` (${product.status})` : ""}
-              </option>
-            ))}
-          </Select>
-          {products.length === 0 && (
-            <p className="text-xs text-destructive">
-              Create a project before creating courses.
-            </p>
-          )}
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="duration">Estimated duration (minutes)</Label>
-          <Input
-            id="duration"
-            type="number"
-            min={0}
-            value={estimatedDuration}
-            onChange={(e) => setEstimatedDuration(e.target.value)}
-            placeholder="30"
-          />
-        </div>
-      </div>
+          <FormField>
+            <FormLabel htmlFor="summary">Summary</FormLabel>
+            <Textarea
+              id="summary"
+              value={summary}
+              onChange={(e) => setSummary(e.target.value)}
+              placeholder="Describe what learners will gain in one or two sentences"
+              maxLength={L.courseSummary}
+              required
+              rows={3}
+            />
+            <FormHelperText>
+              Shown on course cards in the catalog.
+            </FormHelperText>
+          </FormField>
 
-      <div className="grid gap-2 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="level">Difficulty</Label>
-          <Select
-            id="level"
-            value={level}
-            onChange={(e) => setLevel(e.target.value as CourseLevel)}
-          >
-            <option value="beginner">Beginner</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="advanced">Advanced</option>
-          </Select>
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="courseType">Course type</Label>
-          <Select
-            id="courseType"
-            value={courseType}
-            onChange={(e) => setCourseType(e.target.value as CourseType)}
-          >
-            <option value="foundational">Foundational</option>
-            <option value="product_onboarding">Project onboarding</option>
-            <option value="builder_intro">Builder intro</option>
-          </Select>
-        </div>
-      </div>
+          <FormField>
+            <FormLabel htmlFor="description">
+              About this course{" "}
+              <span className="font-normal text-muted-foreground/80">(optional)</span>
+            </FormLabel>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Explain what the course covers and who it is for"
+              maxLength={L.courseDescription}
+              rows={5}
+            />
+          </FormField>
+        </FormFieldGroup>
+      </FormSection>
 
-      {prerequisiteOptions.length > 0 && (
-        <div className="grid gap-2">
-          <Label>Prerequisite courses</Label>
-          <p className="text-xs text-muted-foreground">
-            Optional. Learners should complete these before starting this course.
-          </p>
-          <div className="space-y-2 rounded-lg border bg-muted/20 p-3">
-            {prerequisiteOptions.map((course) => (
-              <label
-                key={course.id}
-                className="flex min-w-0 cursor-pointer items-center gap-2 text-sm"
+      <FormSection
+        title="Classification"
+        description="How this course is organized and filtered in the catalog."
+      >
+        <FormFieldGroup>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <FormField>
+              <FormLabel htmlFor="product">Project</FormLabel>
+              <Select
+                id="product"
+                value={productId}
+                onChange={(e) => setProductId(e.target.value)}
+                required
+                disabled={variant === "partner"}
               >
-                <input
-                  type="checkbox"
-                  checked={prerequisiteCourseIds.includes(course.id)}
-                  onChange={(e) => {
-                    setPrerequisiteCourseIds((prev) =>
-                      e.target.checked
-                        ? [...prev, course.id]
-                        : prev.filter((id) => id !== course.id)
-                    );
-                  }}
-                  className="size-4 shrink-0 rounded border-input"
+                {products.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.name}
+                    {product.status !== "published" ? ` (${product.status})` : ""}
+                  </option>
+                ))}
+              </Select>
+              {products.length === 0 && (
+                <FormHelperText className="text-destructive">
+                  Create a project before creating courses.
+                </FormHelperText>
+              )}
+            </FormField>
+
+            <FormField>
+              <FormLabel htmlFor="duration">Estimated duration</FormLabel>
+              <Input
+                id="duration"
+                type="number"
+                min={0}
+                value={estimatedDuration}
+                onChange={(e) => setEstimatedDuration(e.target.value)}
+                placeholder="30"
+              />
+              <FormHelperText>Approximate completion time in minutes.</FormHelperText>
+            </FormField>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2">
+            <FormField>
+              <FormLabel htmlFor="level">Difficulty</FormLabel>
+              <Select
+                id="level"
+                value={level}
+                onChange={(e) => setLevel(e.target.value as CourseLevel)}
+              >
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </Select>
+            </FormField>
+
+            <FormField>
+              <FormLabel htmlFor="courseType">Course type</FormLabel>
+              <Select
+                id="courseType"
+                value={courseType}
+                onChange={(e) => setCourseType(e.target.value as CourseType)}
+              >
+                <option value="foundational">Foundational</option>
+                <option value="product_onboarding">Project onboarding</option>
+                <option value="builder_intro">Builder intro</option>
+              </Select>
+              <FormHelperText>Used for filtering and recommendations.</FormHelperText>
+            </FormField>
+          </div>
+
+          {prerequisiteOptions.length > 0 && (
+            <FormField>
+              <FormLabel>Prerequisite courses</FormLabel>
+              <FormHelperText>
+                Optional. Learners should complete these before starting this course.
+              </FormHelperText>
+              <div className="space-y-2 rounded-xl border bg-input-background/50 p-4">
+                {prerequisiteOptions.map((course) => (
+                  <label
+                    key={course.id}
+                    className="flex min-w-0 cursor-pointer items-center gap-3 rounded-lg px-1 py-1.5 text-sm text-foreground"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={prerequisiteCourseIds.includes(course.id)}
+                      onChange={(e) => {
+                        setPrerequisiteCourseIds((prev) =>
+                          e.target.checked
+                            ? [...prev, course.id]
+                            : prev.filter((id) => id !== course.id)
+                        );
+                      }}
+                      className="size-4 shrink-0 rounded-md border-input"
+                    />
+                    <span className="min-w-0 break-words">{course.title}</span>
+                  </label>
+                ))}
+              </div>
+            </FormField>
+          )}
+        </FormFieldGroup>
+      </FormSection>
+
+      <FormSection
+        title="Learning outcomes"
+        description="What learners will be able to do after completing this course."
+      >
+        <FormField>
+          <div className="space-y-3">
+            {outcomes.map((outcome, i) => (
+              <div key={i} className="flex min-w-0 items-center gap-2">
+                <Input
+                  value={outcome}
+                  onChange={(e) =>
+                    setOutcomes((prev) =>
+                      prev.map((o, idx) => (idx === i ? e.target.value : o))
+                    )
+                  }
+                  placeholder={`Describe outcome ${i + 1}`}
+                  maxLength={L.learningOutcome}
+                  className="min-w-0"
                 />
-                <span className="min-w-0 break-words">{course.title}</span>
-              </label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() =>
+                    setOutcomes((prev) => prev.filter((_, idx) => idx !== i))
+                  }
+                  aria-label={`Remove outcome ${i + 1}`}
+                >
+                  <Trash2 className="text-muted-foreground" />
+                </Button>
+              </div>
             ))}
           </div>
-        </div>
-      )}
-
-      <div className="grid gap-2">
-        <Label htmlFor="summary">Summary</Label>
-        <Textarea
-          id="summary"
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
-          placeholder="A short, plain-language description shown on course cards."
-          maxLength={L.courseSummary}
-          required
-          rows={2}
-        />
-      </div>
-
-      <div className="grid gap-2">
-        <Label htmlFor="description">
-          About this course <span className="text-muted-foreground">(optional)</span>
-        </Label>
-        <Textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="A fuller explanation of what the course covers and who it's for."
-          maxLength={L.courseDescription}
-          rows={5}
-        />
-      </div>
-
-      <div className="grid gap-2">
-        <Label>What you&apos;ll learn</Label>
-        <div className="space-y-2">
-          {outcomes.map((outcome, i) => (
-            <div key={i} className="flex min-w-0 items-center gap-2">
-              <Input
-                value={outcome}
-                onChange={(e) =>
-                  setOutcomes((prev) =>
-                    prev.map((o, idx) => (idx === i ? e.target.value : o))
-                  )
-                }
-                placeholder={`Outcome ${i + 1}`}
-                maxLength={L.learningOutcome}
-                className="min-w-0"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() =>
-                  setOutcomes((prev) => prev.filter((_, idx) => idx !== i))
-                }
-              >
-                <Trash2 className="text-muted-foreground" />
-              </Button>
-            </div>
-          ))}
-        </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="w-fit"
-          onClick={() => setOutcomes((prev) => [...prev, ""])}
-        >
-          <Plus />
-          Add outcome
-        </Button>
-      </div>
-
-      <CloudinaryUpload
-        label="Course thumbnail"
-        value={thumbnailUrl}
-        onChange={setThumbnailUrl}
-        productId={variant === "partner" ? partnerProductId : undefined}
-      />
-
-      <div className="flex items-center gap-3">
-        {!readOnly && (
-          <Button type="submit" disabled={busy || products.length === 0}>
-            {busy ? <Loader2 className="animate-spin" /> : <Save />}
-            {isEdit ? "Save changes" : "Create course"}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-4 w-fit"
+            onClick={() => setOutcomes((prev) => [...prev, ""])}
+          >
+            <Plus />
+            Add outcome
           </Button>
-        )}
-        {saved && (
-          <span className="flex items-center gap-1 text-sm text-success">
-            <Check className="size-4" />
-            Saved
-          </span>
-        )}
-        {error && <span className="text-sm text-destructive">{error}</span>}
-      </div>
-    </form>
+        </FormField>
+      </FormSection>
+
+      <FormSection title="Media">
+        <CloudinaryUpload
+          label="Course thumbnail"
+          value={thumbnailUrl}
+          onChange={setThumbnailUrl}
+          productId={variant === "partner" ? partnerProductId : undefined}
+        />
+      </FormSection>
+
+      {!readOnly && (
+        <FormActions sticky>
+          <FormSubmitButton busy={busy} disabled={products.length === 0}>
+            <Save />
+            {isEdit ? "Save changes" : "Create course"}
+          </FormSubmitButton>
+          <FormSaveStatus saved={saved} error={error} />
+        </FormActions>
+      )}
+    </FormLayout>
   );
 }

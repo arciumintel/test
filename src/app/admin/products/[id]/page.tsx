@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Eye, MessageCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { ProductForm } from "@/components/admin/product-form";
-import { ProductStatusControls } from "@/components/admin/product-status-controls";
-import { PublishReadinessPanel } from "@/components/admin/publish-readiness-panel";
+import { PublishWorkflowPanel } from "@/components/admin/publish-workflow-panel";
 import { PartnerReferralToolkit } from "@/components/admin/partner-referral-toolkit";
 import { ProductAnalyticsPanel } from "@/components/admin/product-analytics-panel";
 import { PartnerAnalyticsNotesForm } from "@/components/admin/partner-analytics-notes-form";
@@ -121,15 +120,15 @@ export default async function ProductEditorPage({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-balance text-2xl font-semibold tracking-tight">
+            <h1 className="text-balance text-[1.875rem] font-semibold leading-tight tracking-tight sm:text-[2rem]">
               {product.name}
             </h1>
-            <Badge
+            <StatusBadge
               variant={STATUS_VARIANT[product.status]}
               className="capitalize"
             >
               {product.status}
-            </Badge>
+            </StatusBadge>
           </div>
           <p className="mt-1 font-mono text-xs text-muted-foreground">
             /products/{product.slug} · {product._count.courses} course
@@ -161,32 +160,34 @@ export default async function ProductEditorPage({
               <span className="hidden sm:inline">Preview</span>
             </Link>
           </Button>
-          <ProductStatusControls
-            productId={product.id}
-            status={product.status}
-          />
         </div>
       </div>
 
-      <PublishReadinessPanel
-        report={readiness}
+      <PublishWorkflowPanel
+        entityType="product"
+        entityId={product.id}
         status={product.status}
-        entityLabel="project"
+        report={readiness}
       />
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
-        <div className="max-w-3xl">
-          <h2 className="text-lg font-semibold">Details</h2>
-          <div className="mt-4">
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight">Details</h2>
+          <div className="mt-6">
             <ProductForm
               initial={{
                 id: product.id,
                 name: product.name,
                 description: product.description,
                 logoUrl: product.logoUrl,
+                bannerUrl: product.bannerUrl,
                 category: product.category,
                 partnerName: product.partnerName,
                 links: normalizeLinks(product.links),
+                learningOutcomes: product.learningOutcomes,
+                featured: product.featured,
+                featuredOrder: product.featuredOrder,
+                role: product.role,
               }}
             />
           </div>

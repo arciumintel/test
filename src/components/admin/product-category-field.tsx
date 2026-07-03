@@ -2,8 +2,12 @@
 
 import * as React from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import {
+  FormField,
+  FormHelperText,
+  FormLabel,
+} from "@/components/ui/form-field";
 import {
   isPredefinedCategory,
   PROJECT_CATEGORIES,
@@ -63,8 +67,8 @@ export function ProductCategoryField({
       : value;
 
   return (
-    <div className="grid gap-2">
-      <Label htmlFor={id}>Category</Label>
+    <FormField>
+      <FormLabel htmlFor={id}>Category</FormLabel>
       <Select
         id={id}
         value={selectValue}
@@ -86,14 +90,14 @@ export function ProductCategoryField({
           id={`${id}-custom`}
           value={customValue}
           onChange={(e) => handleCustomChange(e.target.value)}
-          placeholder="e.g. Privacy Infrastructure"
+          placeholder="Enter a custom category label"
           maxLength={80}
           aria-label="Custom category"
         />
       )}
-      <p className="text-xs text-muted-foreground">
+      <FormHelperText>
         Choose a common category or enter your own if none fit.
-      </p>
-    </div>
+      </FormHelperText>
+    </FormField>
   );
 }

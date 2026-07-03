@@ -38,6 +38,7 @@ export default async function ProductPage({
   const learningPaths = await getPublishedLearningPaths(productSlug);
 
   const pagePath = productPath(product.slug);
+  const isFoundation = product.role === "foundation";
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
@@ -50,7 +51,9 @@ export default async function ProductPage({
       />
       <Breadcrumbs
         items={[
-          { label: "Ecosystem Projects", href: "/products" },
+          isFoundation
+            ? { label: "Learn Arcium", href: "/start" }
+            : { label: "Ecosystem Projects", href: "/products" },
           { label: product.name },
         ]}
       />
@@ -58,8 +61,10 @@ export default async function ProductPage({
       <section className="grid gap-8 rounded-2xl border bg-card p-6 shadow-sm md:grid-cols-[1fr_280px] md:p-8">
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-2">
-            <Badge variant="default">Ecosystem Project</Badge>
-            {product.category && (
+            <Badge variant="default">
+              {isFoundation ? "Core learning" : "Ecosystem Project"}
+            </Badge>
+            {!isFoundation && product.category && (
               <Badge variant="muted">{product.category}</Badge>
             )}
           </div>

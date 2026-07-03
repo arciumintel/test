@@ -1,12 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Eye } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
-import { CourseStatusControls } from "@/components/admin/course-status-controls";
-import { StaffPartnerReviewControls } from "@/components/admin/staff-partner-review-controls";
-import { PublishReadinessPanel } from "@/components/admin/publish-readiness-panel";
+import { PublishWorkflowPanel } from "@/components/admin/publish-workflow-panel";
 import { CourseEditorTabs } from "@/components/admin/course-editor-tabs";
 import { prisma } from "@/lib/prisma";
 import { getCourseAnalytics } from "@/lib/analytics";
@@ -160,12 +158,12 @@ export default async function CourseEditorPage({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-balance text-2xl font-semibold tracking-tight">
+            <h1 className="text-balance text-[1.875rem] font-semibold leading-tight tracking-tight sm:text-[2rem]">
               {course.title}
             </h1>
-            <Badge variant={STATUS_VARIANT[course.status]}>
+            <StatusBadge variant={STATUS_VARIANT[course.status]}>
               {formatCourseStatus(course.status)}
-            </Badge>
+            </StatusBadge>
           </div>
           <p className="mt-1 font-mono text-xs text-muted-foreground">
             /products/{course.product.slug}/courses/{course.slug}
@@ -181,11 +179,6 @@ export default async function CourseEditorPage({
               <span className="hidden sm:inline">Preview</span>
             </Link>
           </Button>
-          <StaffPartnerReviewControls
-            courseId={course.id}
-            status={course.status}
-          />
-          <CourseStatusControls courseId={course.id} status={course.status} />
         </div>
       </div>
 
@@ -208,10 +201,11 @@ export default async function CourseEditorPage({
           </p>
         )}
 
-      <PublishReadinessPanel
-        report={readiness}
+      <PublishWorkflowPanel
+        entityType="course"
+        entityId={course.id}
         status={course.status}
-        entityLabel="course"
+        report={readiness}
       />
 
       <CourseEditorTabs

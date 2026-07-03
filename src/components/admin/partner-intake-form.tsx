@@ -2,12 +2,22 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Check, Loader2, Save } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Save } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import {
+  FormActions,
+  FormSaveStatus,
+  FormSubmitButton,
+} from "@/components/ui/form-actions";
+import {
+  FormField,
+  FormFieldGroup,
+  FormLabel,
+} from "@/components/ui/form-field";
+import { FormLayout } from "@/components/ui/form-layout";
+import { FormSection } from "@/components/ui/form-section";
 import {
   createPartnerIntake,
   updatePartnerIntake,
@@ -110,149 +120,161 @@ export function PartnerIntakeForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <p className="text-sm text-muted-foreground">
+    <FormLayout onSubmit={handleSubmit}>
+      <p className="text-[15px] leading-relaxed text-muted-foreground">
         Internal intake tracking for partner-assisted publishing. Contact details
         stay staff-only and are not shown on public pages.
       </p>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="intake-partner">Partner / team name</Label>
-          <Input
-            id="intake-partner"
-            value={partnerName}
-            onChange={(e) => setPartnerName(e.target.value)}
-            required
-          />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="intake-status">Review status</Label>
-          <Select
-            id="intake-status"
-            value={reviewStatus}
-            onChange={(e) =>
-              setReviewStatus(e.target.value as PartnerIntakeReviewStatus)
-            }
-          >
-            {(Object.keys(STATUS_LABELS) as PartnerIntakeReviewStatus[]).map(
-              (status) => (
-                <option key={status} value={status}>
-                  {STATUS_LABELS[status]}
+      <FormSection title="Intake overview">
+        <FormFieldGroup>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <FormField>
+              <FormLabel htmlFor="intake-partner">Partner / team name</FormLabel>
+              <Input
+                id="intake-partner"
+                value={partnerName}
+                onChange={(e) => setPartnerName(e.target.value)}
+                required
+                placeholder="Partner or team name"
+              />
+            </FormField>
+            <FormField>
+              <FormLabel htmlFor="intake-status">Review status</FormLabel>
+              <Select
+                id="intake-status"
+                value={reviewStatus}
+                onChange={(e) =>
+                  setReviewStatus(e.target.value as PartnerIntakeReviewStatus)
+                }
+              >
+                {(Object.keys(STATUS_LABELS) as PartnerIntakeReviewStatus[]).map(
+                  (status) => (
+                    <option key={status} value={status}>
+                      {STATUS_LABELS[status]}
+                    </option>
+                  )
+                )}
+              </Select>
+            </FormField>
+          </div>
+
+          <FormField>
+            <FormLabel htmlFor="intake-product">
+              Linked project{" "}
+              <span className="font-normal text-muted-foreground/80">(optional)</span>
+            </FormLabel>
+            <Select
+              id="intake-product"
+              value={productId}
+              onChange={(e) => setProductId(e.target.value)}
+            >
+              <option value="">Not linked yet</option>
+              {products.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
                 </option>
-              )
-            )}
-          </Select>
-        </div>
-      </div>
+              ))}
+            </Select>
+          </FormField>
+        </FormFieldGroup>
+      </FormSection>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="intake-project-name">
-            Project name{" "}
-            <span className="text-muted-foreground">(applications)</span>
-          </Label>
-          <Input
-            id="intake-project-name"
-            value={projectName}
-            onChange={(e) => setProjectName(e.target.value)}
-          />
-        </div>
-        <div className="grid gap-2 sm:col-span-2">
-          <Label htmlFor="intake-project-desc">Project description</Label>
+      <FormSection title="Project details">
+        <FormFieldGroup>
+          <FormField>
+            <FormLabel htmlFor="intake-project-name">
+              Project name{" "}
+              <span className="font-normal text-muted-foreground/80">(applications)</span>
+            </FormLabel>
+            <Input
+              id="intake-project-name"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              placeholder="Project name from the application"
+            />
+          </FormField>
+
+          <FormField>
+            <FormLabel htmlFor="intake-project-desc">Project description</FormLabel>
+            <Textarea
+              id="intake-project-desc"
+              value={projectDescription}
+              onChange={(e) => setProjectDescription(e.target.value)}
+              rows={4}
+              placeholder="Summary from the partner application"
+            />
+          </FormField>
+        </FormFieldGroup>
+      </FormSection>
+
+      <FormSection title="Contact & resources">
+        <FormFieldGroup>
+          <div className="grid gap-6 sm:grid-cols-2">
+            <FormField>
+              <FormLabel htmlFor="intake-contact">Contact name</FormLabel>
+              <Input
+                id="intake-contact"
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                placeholder="Primary contact"
+              />
+            </FormField>
+            <FormField>
+              <FormLabel htmlFor="intake-email">Contact email</FormLabel>
+              <Input
+                id="intake-email"
+                type="email"
+                value={contactEmail}
+                onChange={(e) => setContactEmail(e.target.value)}
+                placeholder="contact@example.com"
+              />
+            </FormField>
+          </div>
+
+          <FormField>
+            <FormLabel htmlFor="intake-source">Source material URL</FormLabel>
+            <Input
+              id="intake-source"
+              type="url"
+              value={sourceMaterialUrl}
+              onChange={(e) => setSourceMaterialUrl(e.target.value)}
+              placeholder="https://docs.example.com/onboarding"
+            />
+          </FormField>
+
+          <FormField>
+            <FormLabel htmlFor="intake-topic">Requested course topic</FormLabel>
+            <Input
+              id="intake-topic"
+              value={requestedCourseTopic}
+              onChange={(e) => setRequestedCourseTopic(e.target.value)}
+              placeholder="Describe the requested course topic"
+            />
+          </FormField>
+        </FormFieldGroup>
+      </FormSection>
+
+      <FormSection title="Staff notes">
+        <FormField>
+          <FormLabel htmlFor="intake-notes">Internal notes</FormLabel>
           <Textarea
-            id="intake-project-desc"
-            value={projectDescription}
-            onChange={(e) => setProjectDescription(e.target.value)}
-            rows={3}
+            id="intake-notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={6}
+            placeholder="Intake summary, review feedback, publish blockers..."
           />
-        </div>
-      </div>
+        </FormField>
+      </FormSection>
 
-      <div className="grid gap-2">
-        <Label htmlFor="intake-product">
-          Linked project{" "}
-          <span className="text-muted-foreground">(optional)</span>
-        </Label>
-        <Select
-          id="intake-product"
-          value={productId}
-          onChange={(e) => setProductId(e.target.value)}
-        >
-          <option value="">Not linked yet</option>
-          {products.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </Select>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="intake-contact">Contact name</Label>
-          <Input
-            id="intake-contact"
-            value={contactName}
-            onChange={(e) => setContactName(e.target.value)}
-          />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="intake-email">Contact email</Label>
-          <Input
-            id="intake-email"
-            type="email"
-            value={contactEmail}
-            onChange={(e) => setContactEmail(e.target.value)}
-          />
-        </div>
-      </div>
-
-      <div className="grid gap-2">
-        <Label htmlFor="intake-source">Source material URL</Label>
-        <Input
-          id="intake-source"
-          type="url"
-          value={sourceMaterialUrl}
-          onChange={(e) => setSourceMaterialUrl(e.target.value)}
-          placeholder="https://docs.example.com/onboarding"
-        />
-      </div>
-
-      <div className="grid gap-2">
-        <Label htmlFor="intake-topic">Requested course topic</Label>
-        <Input
-          id="intake-topic"
-          value={requestedCourseTopic}
-          onChange={(e) => setRequestedCourseTopic(e.target.value)}
-          placeholder="Getting started with..."
-        />
-      </div>
-
-      <div className="grid gap-2">
-        <Label htmlFor="intake-notes">Staff notes</Label>
-        <Textarea
-          id="intake-notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          rows={6}
-          placeholder="Intake summary, review feedback, publish blockers..."
-        />
-      </div>
-
-      <div className="flex items-center gap-3">
-        <Button type="submit" disabled={busy}>
-          {busy ? <Loader2 className="animate-spin" /> : <Save />}
+      <FormActions sticky>
+        <FormSubmitButton busy={busy}>
+          <Save />
           {isEdit ? "Save intake" : "Create intake"}
-        </Button>
-        {saved && (
-          <span className="flex items-center gap-1 text-sm text-success">
-            <Check className="size-4" />
-            Saved
-          </span>
-        )}
-        {error && <span className="text-sm text-destructive">{error}</span>}
-      </div>
-    </form>
+        </FormSubmitButton>
+        <FormSaveStatus saved={saved} error={error} />
+      </FormActions>
+    </FormLayout>
   );
 }

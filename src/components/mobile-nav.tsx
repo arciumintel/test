@@ -12,10 +12,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-export type NavLink = {
-  href: string;
-  label: string;
-};
+import type { NavLink } from "@/lib/site-nav";
+
+export type { NavLink };
 
 export function MobileNav({ links }: { links: NavLink[] }) {
   const [open, setOpen] = React.useState(false);

@@ -45,15 +45,19 @@ export async function getCoursePublishReadiness(
     );
   }
 
-  const publishedLessons = course.lessons.filter((l) => l.status === "published");
-  if (publishedLessons.length === 0) {
-    blockers.push("Add at least one published lesson.");
+  const lessonsGoingLive = course.lessons.filter(
+    (l) => l.status === "published" || l.required
+  );
+  if (lessonsGoingLive.length === 0) {
+    blockers.push("Add at least one required lesson.");
   }
 
-  const draftLessons = course.lessons.filter((l) => l.status === "draft");
-  if (draftLessons.length > 0) {
+  const optionalHiddenLessons = course.lessons.filter(
+    (l) => l.status === "draft" && !l.required
+  );
+  if (optionalHiddenLessons.length > 0) {
     warnings.push(
-      `${draftLessons.length} lesson${draftLessons.length === 1 ? "" : "s"} still in draft.`
+      `${optionalHiddenLessons.length} optional lesson${optionalHiddenLessons.length === 1 ? "" : "s"} hidden from learners.`
     );
   }
 
@@ -61,9 +65,6 @@ export async function getCoursePublishReadiness(
   if (!finalQuiz) {
     blockers.push("Create a final course quiz.");
   } else {
-    if (finalQuiz.status !== "published") {
-      blockers.push("Publish the final quiz.");
-    }
     if (finalQuiz.questions.length === 0) {
       blockers.push("Add at least one question to the final quiz.");
     }
@@ -79,8 +80,10 @@ export async function getCoursePublishReadiness(
   if (!course.badge) {
     blockers.push("Create a completion badge for this course.");
   } else {
-    if (course.badge.status !== "published") {
-      blockers.push("Publish the completion badge.");
+    if (course.badge.status === "archived") {
+      blockers.push(
+        "The completion badge is archived. Restore it before publishing."
+      );
     }
     if (!course.badge.criteria?.trim()) {
       warnings.push("Badge criteria is empty — add criteria for clearer verification pages.");
@@ -105,6 +108,45 @@ export async function getCoursePublishReadiness(
     blockers,
     warnings,
   };
+}
+
+/** Publishes required lessons, the final quiz, and the badge when a course goes live. */
+export async function cascadeRequiredPublishContent(
+  courseId: string
+): Promise<void> {
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    include: {
+      lessons: { where: { required: true, status: "draft" }, select: { id: true } },
+      quizzes: {
+        where: { lessonId: null, status: "draft" },
+        select: { id: true },
+      },
+      badge: { select: { id: true, status: true } },
+    },
+  });
+  if (!course) return;
+
+  await prisma.$transaction(async (tx) => {
+    for (const lesson of course.lessons) {
+      await tx.lesson.update({
+        where: { id: lesson.id },
+        data: { status: "published" },
+      });
+    }
+    for (const quiz of course.quizzes) {
+      await tx.quiz.update({
+        where: { id: quiz.id },
+        data: { status: "published" },
+      });
+    }
+    if (course.badge?.status === "draft") {
+      await tx.badge.update({
+        where: { id: course.badge.id },
+        data: { status: "published" },
+      });
+    }
+  });
 }
 
 export async function getProductPublishReadiness(

@@ -1,24 +1,23 @@
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
-import { getMyPartnerApplicationStatus } from "@/app/actions/partner-application";
 import { getCurrentUser } from "@/lib/session";
-import { getManagedProducts } from "@/lib/project-admin";
 import { prisma } from "@/lib/prisma";
 import { isDiscordConfigured } from "@/lib/discord";
 import { WalletAuth } from "@/components/auth/wallet-auth";
 import { DiscordAuth } from "@/components/auth/discord-auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { NotificationBell } from "@/components/notification-bell";
-import { MobileNav, type NavLink } from "@/components/mobile-nav";
+import { MobileNav } from "@/components/mobile-nav";
 import {
   getRecentNotifications,
   getUnreadNotificationCount,
 } from "@/lib/notifications";
+import { getHeaderNavLinks, getSiteNavContext } from "@/lib/site-nav";
 import { Button } from "@/components/ui/button";
 
 export async function SiteHeader() {
-  const user = await getCurrentUser();
-  const isStaff = user?.role === "staff_admin";
+  const navContext = await getSiteNavContext();
+  const { user } = navContext;
 
   const discordAccount = user
     ? await prisma.discordAccount.findUnique({
@@ -26,20 +25,6 @@ export async function SiteHeader() {
         select: { username: true, globalName: true },
       })
     : null;
-
-  const managedProjects =
-    user && !isStaff ? await getManagedProducts(user.id, false) : [];
-  const showPartnerConsole = isStaff || managedProjects.length > 0;
-
-  const partnerStatus =
-    user && !isStaff && !showPartnerConsole
-      ? await getMyPartnerApplicationStatus()
-      : null;
-  const showBecomePartner =
-    Boolean(user) &&
-    !isStaff &&
-    !showPartnerConsole &&
-    !partnerStatus?.pendingApplication;
 
   const discordEnabled = isDiscordConfigured();
 
@@ -50,23 +35,7 @@ export async function SiteHeader() {
       ])
     : [[], 0];
 
-  const navLinks: NavLink[] = [
-    { href: "/courses", label: "Courses" },
-    { href: "/products", label: "Projects" },
-    { href: "/partners", label: "Partners" },
-  ];
-  if (user) {
-    navLinks.push({ href: "/profile", label: "My learning" });
-  }
-  if (showPartnerConsole) {
-    navLinks.push({ href: "/partner-console", label: "Partner console" });
-  }
-  if (showBecomePartner) {
-    navLinks.push({ href: "/partners/apply", label: "Become a partner" });
-  }
-  if (isStaff) {
-    navLinks.push({ href: "/admin", label: "Admin" });
-  }
+  const navLinks = getHeaderNavLinks(navContext);
 
   return (
     <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur-md">

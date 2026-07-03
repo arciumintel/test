@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors w-fit whitespace-nowrap [&_svg]:size-3",
+  "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors w-fit whitespace-nowrap [&_svg]:size-3",
   {
     variants: {
       variant: {
@@ -12,7 +12,7 @@ const badgeVariants = cva(
         success: "border-transparent bg-success/12 text-success",
         warning: "border-transparent bg-warning/12 text-warning",
         info: "border-transparent bg-info/12 text-info",
-        outline: "text-foreground",
+        outline: "border-border/80 text-foreground bg-background",
         destructive: "border-transparent bg-destructive/12 text-destructive",
         muted: "border-transparent bg-muted text-muted-foreground",
       },
@@ -37,4 +37,51 @@ function Badge({
   );
 }
 
-export { Badge, badgeVariants };
+function StatusDot({
+  className,
+  variant = "default",
+}: {
+  className?: string;
+  variant?: VariantProps<typeof badgeVariants>["variant"];
+}) {
+  const dotColor: Record<NonNullable<typeof variant>, string> = {
+    default: "bg-primary",
+    secondary: "bg-muted-foreground",
+    success: "bg-success",
+    warning: "bg-warning",
+    info: "bg-info",
+    outline: "bg-foreground/50",
+    destructive: "bg-destructive",
+    muted: "bg-muted-foreground",
+  };
+
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "size-1.5 shrink-0 rounded-full",
+        dotColor[variant ?? "default"],
+        className
+      )}
+    />
+  );
+}
+
+function StatusBadge({
+  children,
+  variant = "secondary",
+  className,
+  dotClassName,
+}: React.ComponentProps<"span"> &
+  VariantProps<typeof badgeVariants> & {
+    dotClassName?: string;
+  }) {
+  return (
+    <Badge variant={variant} className={className}>
+      <StatusDot variant={variant} className={dotClassName} />
+      {children}
+    </Badge>
+  );
+}
+
+export { Badge, badgeVariants, StatusBadge, StatusDot };

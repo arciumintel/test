@@ -5,6 +5,12 @@ import Image from "next/image";
 import { Upload, Loader2, X, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  FormError,
+  FormField,
+  FormHelperText,
+  FormLabel,
+} from "@/components/ui/form-field";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -64,16 +70,16 @@ export function CloudinaryUpload({ value, onChange, label, className, productId 
   }
 
   return (
-    <div className={cn("space-y-2", className)}>
-      {label && <p className="text-sm font-medium">{label}</p>}
+    <FormField className={className}>
+      {label ? <FormLabel>{label}</FormLabel> : null}
 
       {value ? (
-        <div className="relative aspect-[16/9] w-full max-w-sm overflow-hidden rounded-lg border bg-muted">
+        <div className="relative aspect-[16/9] w-full max-w-sm overflow-hidden rounded-xl border bg-input-background">
           <Image src={value} alt="Uploaded asset" fill className="object-cover" />
           <button
             type="button"
             onClick={() => onChange("")}
-            className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-background/90 text-foreground shadow hover:bg-background cursor-pointer"
+            className="absolute right-3 top-3 flex size-8 items-center justify-center rounded-full bg-background/95 text-foreground transition-colors hover:bg-background cursor-pointer"
             aria-label="Remove image"
           >
             <X className="size-4" />
@@ -84,7 +90,7 @@ export function CloudinaryUpload({ value, onChange, label, className, productId 
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={busy}
-          className="flex aspect-[16/9] w-full max-w-sm flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/30 text-muted-foreground transition-colors hover:bg-muted/50 disabled:opacity-60 cursor-pointer"
+          className="flex aspect-[16/9] w-full max-w-sm flex-col items-center justify-center gap-2 rounded-xl border border-dashed bg-input-background/50 text-muted-foreground transition-colors hover:border-foreground/25 hover:bg-input-background disabled:opacity-60 cursor-pointer"
         >
           {busy ? (
             <Loader2 className="size-6 animate-spin" />
@@ -97,7 +103,7 @@ export function CloudinaryUpload({ value, onChange, label, className, productId 
         </button>
       )}
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-3">
         <Button
           type="button"
           variant="outline"
@@ -108,7 +114,7 @@ export function CloudinaryUpload({ value, onChange, label, className, productId 
           <Upload />
           {value ? "Replace" : "Upload"}
         </Button>
-        <span className="text-xs text-muted-foreground">or paste a URL below</span>
+        <FormHelperText>or paste a URL below</FormHelperText>
       </div>
 
       <Input
@@ -129,7 +135,7 @@ export function CloudinaryUpload({ value, onChange, label, className, productId 
         }}
       />
 
-      {error && <p className="text-xs text-destructive">{error}</p>}
-    </div>
+      {error ? <FormError>{error}</FormError> : null}
+    </FormField>
   );
 }

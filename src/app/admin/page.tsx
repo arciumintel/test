@@ -3,9 +3,8 @@ import Link from "next/link";
 import { Plus, BookOpen, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Badge, StatusBadge } from "@/components/ui/badge";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
-import { CourseStatusControls } from "@/components/admin/course-status-controls";
 import { prisma } from "@/lib/prisma";
 import { getPlatformSummary } from "@/lib/analytics";
 import { formatCourseStatus } from "@/lib/course-status";
@@ -131,9 +130,9 @@ export default async function AdminDashboard() {
                         >
                           {course.title}
                         </Link>
-                        <Badge variant={STATUS_VARIANT[course.status]}>
+                        <StatusBadge variant={STATUS_VARIANT[course.status]}>
                           {formatCourseStatus(course.status)}
-                        </Badge>
+                        </StatusBadge>
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {course._count.lessons} lessons ·{" "}
@@ -148,10 +147,6 @@ export default async function AdminDashboard() {
                           Edit
                         </Link>
                       </Button>
-                      <CourseStatusControls
-                        courseId={course.id}
-                        status={course.status}
-                      />
                     </div>
                   </CardContent>
                 </Card>

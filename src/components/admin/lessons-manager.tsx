@@ -18,8 +18,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { Badge, StatusBadge } from "@/components/ui/badge";
 import { CloudinaryUpload } from "@/components/cloudinary-upload";
+import { LearnerVisibilityField } from "@/components/admin/learner-visibility-field";
+import {
+  formatLearnerVisibility,
+  isVisibleToLearners,
+  visibilityToStatus,
+} from "@/lib/learner-visibility";
 import {
   ModuleManager,
   ModuleForm,
@@ -534,9 +540,13 @@ function LessonRow({
         </span>
       </div>
       <div className="flex flex-wrap items-center justify-end gap-2 sm:shrink-0">
-        <Badge variant={lesson.status === "published" ? "success" : "secondary"}>
-          {lesson.status}
-        </Badge>
+        <StatusBadge variant={lesson.status === "published" ? "success" : "secondary"}>
+          {variant === "partner"
+            ? lesson.status === "published"
+              ? "Live"
+              : "Draft"
+            : formatLearnerVisibility(lesson.status)}
+        </StatusBadge>
         {!lesson.required && <Badge variant="muted">Optional</Badge>}
         {!readOnly && (
           <>
@@ -578,8 +588,8 @@ function LessonForm({
   const [title, setTitle] = React.useState(lesson?.title ?? "");
   const [content, setContent] = React.useState(lesson?.content ?? "");
   const [mediaUrl, setMediaUrl] = React.useState(lesson?.mediaUrl ?? "");
-  const [status, setStatus] = React.useState<LessonStatus>(
-    lesson?.status ?? "draft"
+  const [visibleToLearners, setVisibleToLearners] = React.useState(
+    isVisibleToLearners(lesson?.status ?? "draft")
   );
   const [required, setRequired] = React.useState(lesson?.required ?? true);
   const [estimatedDuration, setEstimatedDuration] = React.useState(
@@ -597,7 +607,7 @@ function LessonForm({
       title,
       content,
       mediaUrl: mediaUrl || null,
-      status,
+      status: variant === "partner" ? "draft" : visibilityToStatus(visibleToLearners),
       required,
       estimatedDuration: estimatedDuration ? Number(estimatedDuration) : null,
       moduleId: moduleId || null,
@@ -657,17 +667,14 @@ function LessonForm({
         productId={variant === "partner" ? partnerProductId : undefined}
       />
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="grid gap-2">
-          <Label htmlFor="lesson-status">Status</Label>
-          <Select
-            id="lesson-status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as LessonStatus)}
-          >
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-          </Select>
-        </div>
+        {variant === "admin" && (
+          <LearnerVisibilityField
+            id="lesson-visibility"
+            visible={visibleToLearners}
+            onChange={setVisibleToLearners}
+            description="Optional lessons can stay hidden until you choose to show them."
+          />
+        )}
         <div className="grid gap-2">
           <Label htmlFor="lesson-duration">Estimated duration (minutes)</Label>
           <Input

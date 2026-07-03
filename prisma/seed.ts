@@ -243,8 +243,8 @@ const ARCIUM_PRODUCT = {
   slug: "arcium",
   description:
     "Arcium is a network for private computation. Programs can use sensitive data to produce results without exposing the underlying data itself.",
-  category: "Consumer Apps",
   partnerName: "Arcium",
+  role: "foundation" as const,
   links: [
     { label: "Website", url: "https://arcium.com" },
     { label: "Docs", url: "https://docs.arcium.com" },
@@ -372,13 +372,19 @@ async function main() {
     update: {
       name: ARCIUM_PRODUCT.name,
       description: ARCIUM_PRODUCT.description,
-      category: ARCIUM_PRODUCT.category,
+      role: ARCIUM_PRODUCT.role,
+      category: null,
       partnerName: ARCIUM_PRODUCT.partnerName,
       links: ARCIUM_PRODUCT.links,
+      featured: false,
+      featuredOrder: null,
       status: "published",
     },
     create: {
       ...ARCIUM_PRODUCT,
+      category: null,
+      featured: false,
+      featuredOrder: null,
       status: "published",
     },
   });

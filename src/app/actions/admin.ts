@@ -6,7 +6,10 @@ import { badgeSchema } from "@/lib/course-schemas";
 import { FIELD_LIMITS as L } from "@/lib/field-limits";
 import { prisma } from "@/lib/prisma";
 import { coursePath, productPath } from "@/lib/paths";
-import { getCoursePublishReadiness } from "@/lib/publish-readiness";
+import {
+  cascadeRequiredPublishContent,
+  getCoursePublishReadiness,
+} from "@/lib/publish-readiness";
 import { requireStaff } from "@/lib/session";
 import { trackEventFireAndForget } from "@/lib/analytics-events";
 
@@ -191,6 +194,10 @@ export async function setCourseStatus(
     },
   });
   if (!current) return { error: "Course not found." };
+
+  if (status === "published" && current.status !== "published") {
+    await cascadeRequiredPublishContent(id);
+  }
 
   const course = await prisma.course.update({
     where: { id },

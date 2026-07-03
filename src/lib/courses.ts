@@ -36,6 +36,7 @@ export async function getPublishedCourseFilterOptions() {
     prisma.product.findMany({
       where: {
         status: "published",
+        role: "ecosystem",
         courses: { some: { status: "published" } },
       },
       orderBy: { name: "asc" },

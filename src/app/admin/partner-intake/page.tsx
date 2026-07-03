@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Plus, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Badge, StatusBadge } from "@/components/ui/badge";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { prisma } from "@/lib/prisma";
 import type { PartnerIntakeReviewStatus } from "@prisma/client";
@@ -128,12 +128,12 @@ export default async function PartnerIntakeListPage() {
                       {isPendingApplication(intake) && (
                         <Badge variant="default">Partner application</Badge>
                       )}
-                      <Badge
+                      <StatusBadge
                         variant={STATUS_VARIANT[intake.reviewStatus]}
                         className="capitalize"
                       >
                         {intake.reviewStatus.replace(/_/g, " ")}
-                      </Badge>
+                      </StatusBadge>
                     </div>
                     <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
                       {intake.projectName ||

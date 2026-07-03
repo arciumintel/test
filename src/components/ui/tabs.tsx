@@ -51,7 +51,7 @@ function TabsList({ className, ...props }: React.ComponentProps<"div">) {
     <div
       role="tablist"
       className={cn(
-        "inline-flex items-center gap-1 rounded-lg bg-muted p-1 text-muted-foreground",
+        "inline-flex items-center gap-1 rounded-xl bg-muted/70 p-1.5 text-muted-foreground",
         className
       )}
       {...props}
@@ -73,10 +73,11 @@ function TabsTrigger({
       aria-selected={active}
       onClick={() => ctx.setValue(value)}
       className={cn(
-        "inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-all cursor-pointer",
+        "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all cursor-pointer",
+        "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25",
         active
-          ? "bg-background text-foreground shadow-sm"
-          : "hover:text-foreground",
+          ? "bg-background text-primary shadow-none ring-1 ring-border/80"
+          : "hover:bg-background/60 hover:text-foreground",
         className
       )}
       {...props}
@@ -91,7 +92,7 @@ function TabsContent({
 }: React.ComponentProps<"div"> & { value: string }) {
   const ctx = useTabs();
   if (ctx.value !== value) return null;
-  return <div role="tabpanel" className={cn("mt-4", className)} {...props} />;
+  return <div role="tabpanel" className={cn("mt-8", className)} {...props} />;
 }
 
 export { Tabs, TabsList, TabsTrigger, TabsContent };

@@ -37,6 +37,11 @@ enum ProductStatus {
   archived
 }
 
+enum ProductRole {
+  foundation
+  ecosystem
+}
+
 enum LessonStatus {
   draft
   published
@@ -113,7 +118,12 @@ model Product {
   slug        String        @unique
   description String
   logoUrl     String?
+  bannerUrl   String?
   category    String?
+  role        ProductRole   @default(ecosystem)
+  learningOutcomes String[] @default([])
+  featured    Boolean       @default(false)
+  featuredOrder Int?
   links       Json          @default("[]")
   partnerName             String?
   referralUrl             String?

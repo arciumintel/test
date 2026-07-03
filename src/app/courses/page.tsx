@@ -70,6 +70,21 @@ export default async function CoursesPage({ searchParams }: CoursesPageProps) {
         description="All published courses in the Arcium ecosystem. No wallet needed to read."
       />
 
+      {!coursesLoadError ? (
+        <div className="mb-6 rounded-xl border border-primary/20 bg-primary/[0.04] px-4 py-3 text-sm dark:bg-primary/[0.08]">
+          <p className="text-pretty text-muted-foreground">
+            <span className="font-medium text-foreground">New here?</span>{" "}
+            <Link
+              href="/start"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Start with Arcium
+            </Link>{" "}
+            for a guided introduction to the ecosystem.
+          </p>
+        </div>
+      ) : null}
+
       {!coursesLoadError && (
         <div className="mb-8">
           <CourseCatalogFilters

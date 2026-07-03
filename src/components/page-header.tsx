@@ -23,13 +23,13 @@ export function PageHeader({
       {title ? (
         <h1
           id={headingId}
-          className="text-balance text-2xl font-semibold tracking-tight sm:text-3xl"
+          className="text-balance text-[1.875rem] font-semibold leading-tight tracking-tight sm:text-[2rem]"
         >
           {title}
         </h1>
       ) : null}
       {description ? (
-        <p className="mt-2 text-pretty leading-relaxed text-muted-foreground">
+        <p className="mt-2 text-pretty text-[15px] leading-relaxed text-muted-foreground">
           {description}
         </p>
       ) : null}

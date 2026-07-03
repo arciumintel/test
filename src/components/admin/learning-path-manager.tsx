@@ -7,8 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/badge";
+import { LearnerVisibilityField } from "@/components/admin/learner-visibility-field";
+import {
+  formatPathVisibility,
+  isVisibleToLearners,
+  visibilityToStatus,
+} from "@/lib/learner-visibility";
 import {
   createLearningPath,
   updateLearningPath,
@@ -92,11 +97,11 @@ export function LearningPathManager({
               <div>
                 <div className="flex items-center gap-2">
                   <h4 className="font-medium">{path.title}</h4>
-                  <Badge
+                  <StatusBadge
                     variant={path.status === "published" ? "success" : "secondary"}
                   >
-                    {path.status}
-                  </Badge>
+                    {formatPathVisibility(path.status)}
+                  </StatusBadge>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {path.courses.length} courses in path
@@ -148,8 +153,8 @@ function PathForm({
   const [title, setTitle] = React.useState(path?.title ?? "");
   const [slug, setSlug] = React.useState(path?.slug ?? "");
   const [description, setDescription] = React.useState(path?.description ?? "");
-  const [status, setStatus] = React.useState<LearningPathStatus>(
-    path?.status ?? "draft"
+  const [visibleOnProductPage, setVisibleOnProductPage] = React.useState(
+    isVisibleToLearners(path?.status ?? "draft")
   );
   const [selectedCourses, setSelectedCourses] = React.useState<string[]>(
     path?.courses.map((c) => c.courseId) ?? []
@@ -174,7 +179,7 @@ function PathForm({
       title,
       slug: slug || undefined,
       description: description || null,
-      status,
+      status: visibilityToStatus(visibleOnProductPage),
     };
 
     const res = path
@@ -231,17 +236,14 @@ function PathForm({
           rows={2}
         />
       </div>
-      <div className="grid gap-2">
-        <Label htmlFor="path-status">Status</Label>
-        <Select
-          id="path-status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value as LearningPathStatus)}
-        >
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-        </Select>
-      </div>
+      <LearnerVisibilityField
+        id="path-visibility"
+        visible={visibleOnProductPage}
+        onChange={setVisibleOnProductPage}
+        label="Product page visibility"
+        checkboxLabel="Visible on product page"
+        description="Published paths appear on the project landing page."
+      />
       <div className="grid gap-2">
         <Label>Courses in order</Label>
         <div className="space-y-2 rounded-lg border p-3">

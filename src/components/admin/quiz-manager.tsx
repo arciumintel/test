@@ -16,10 +16,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import type { QuizStatus } from "@prisma/client";
 import { cn } from "@/lib/utils";
+import { LearnerVisibilityField } from "@/components/admin/learner-visibility-field";
+import {
+  isVisibleToLearners,
+  visibilityToStatus,
+} from "@/lib/learner-visibility";
 import {
   upsertFinalQuiz,
   upsertLessonKnowledgeCheck,
@@ -75,8 +79,10 @@ export function QuizManager({
     quiz?.title ?? (isLessonScope ? "Knowledge check" : "Course Quiz")
   );
   const [description, setDescription] = React.useState(quiz?.description ?? "");
-  const [status, setStatus] = React.useState<QuizStatus>(
-    quiz?.status ?? (variant === "partner" ? "draft" : "published")
+  const [visibleToLearners, setVisibleToLearners] = React.useState(
+    isVisibleToLearners(
+      quiz?.status ?? (variant === "partner" ? "draft" : "published")
+    )
   );
   const [threshold, setThreshold] = React.useState(
     String(quiz?.passThreshold ?? 70)
@@ -92,7 +98,8 @@ export function QuizManager({
       title,
       passThreshold: Number(threshold),
       description: description || null,
-      status,
+      status:
+        variant === "partner" ? "draft" : visibilityToStatus(visibleToLearners),
     };
     const res =
       isLessonScope && lessonId
@@ -152,18 +159,22 @@ export function QuizManager({
               placeholder="Explain what this quiz checks."
             />
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="quiz-status">Status</Label>
-            <Select
-              id="quiz-status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value as QuizStatus)}
-              className="max-w-xs"
-            >
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-            </Select>
-          </div>
+          {variant === "admin" && !isLessonScope && (
+            <LearnerVisibilityField
+              id="quiz-visibility"
+              visible={visibleToLearners}
+              onChange={setVisibleToLearners}
+              description="The final quiz goes live when you publish the course if it is still hidden."
+            />
+          )}
+          {variant === "admin" && isLessonScope && (
+            <LearnerVisibilityField
+              id="quiz-visibility"
+              visible={visibleToLearners}
+              onChange={setVisibleToLearners}
+              description="Optional knowledge checks can stay hidden from learners."
+            />
+          )}
           <div className="flex items-center gap-3">
             {!readOnly && (
               <Button onClick={saveQuiz} disabled={savingQuiz} size="sm">

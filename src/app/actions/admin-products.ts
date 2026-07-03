@@ -52,9 +52,14 @@ const productSchema = z.object({
   name: z.string().min(2, "Name is required").max(120),
   description: z.string().min(2, "Description is required").max(800),
   logoUrl: z.string().optional().nullable(),
+  bannerUrl: z.string().optional().nullable(),
   category: z.string().max(80).optional().nullable(),
   partnerName: z.string().max(120).optional().nullable(),
   links: z.array(productLinkSchema).max(8).optional(),
+  learningOutcomes: z.array(z.string().max(280)).max(8).optional(),
+  featured: z.boolean().optional(),
+  featuredOrder: z.number().int().min(0).max(999).optional().nullable(),
+  role: z.enum(["foundation", "ecosystem"]).optional(),
 });
 
 export async function createProduct(
@@ -65,6 +70,11 @@ export async function createProduct(
   const parsed = productSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const data = parsed.data;
+  const role = data.role ?? "ecosystem";
+  const category = role === "foundation" ? null : normalizeCategory(data.category);
+  const featured = role === "foundation" ? false : (data.featured ?? false);
+  const featuredOrder =
+    role === "foundation" || !featured ? null : (data.featuredOrder ?? null);
 
   const product = await prisma.product.create({
     data: {
@@ -72,9 +82,14 @@ export async function createProduct(
       slug: await uniqueSlug(data.name),
       description: data.description,
       logoUrl: data.logoUrl || null,
-      category: normalizeCategory(data.category),
+      bannerUrl: data.bannerUrl || null,
+      category,
+      role,
       partnerName: data.partnerName?.trim() || null,
       links: data.links ?? [],
+      learningOutcomes: (data.learningOutcomes ?? []).filter(Boolean),
+      featured,
+      featuredOrder,
     },
   });
 
@@ -94,6 +109,7 @@ export async function createProduct(
   revalidatePath("/admin");
   revalidatePath("/admin/products");
   revalidatePath("/products");
+  revalidatePath("/start");
   return { ok: true, id: product.id };
 }
 
@@ -113,6 +129,11 @@ export async function updateProduct(
     slugify(data.name) === current.slug
       ? current.slug
       : await uniqueSlug(data.name, id);
+  const role = data.role ?? current.role;
+  const category = role === "foundation" ? null : normalizeCategory(data.category);
+  const featured = role === "foundation" ? false : (data.featured ?? false);
+  const featuredOrder =
+    role === "foundation" || !featured ? null : (data.featuredOrder ?? null);
 
   await prisma.product.update({
     where: { id },
@@ -121,9 +142,14 @@ export async function updateProduct(
       slug: nextSlug,
       description: data.description,
       logoUrl: data.logoUrl || null,
-      category: normalizeCategory(data.category),
+      bannerUrl: data.bannerUrl || null,
+      category,
+      role,
       partnerName: data.partnerName?.trim() || null,
       links: data.links ?? [],
+      learningOutcomes: (data.learningOutcomes ?? []).filter(Boolean),
+      featured,
+      featuredOrder,
     },
   });
 
@@ -131,6 +157,7 @@ export async function updateProduct(
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}`);
   revalidatePath("/products");
+  revalidatePath("/start");
   revalidatePath(productPath(current.slug));
   revalidatePath(productPath(nextSlug));
   return { ok: true };
@@ -185,6 +212,7 @@ export async function setProductStatus(
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}`);
   revalidatePath("/products");
+  revalidatePath("/start");
   revalidatePath(productPath(product.slug));
   return { ok: true };
 }
@@ -206,6 +234,7 @@ export async function deleteProduct(id: string): Promise<Result> {
   revalidatePath("/admin");
   revalidatePath("/admin/products");
   revalidatePath("/products");
+  revalidatePath("/start");
   revalidatePath(productPath(product.slug));
   return { ok: true };
 }

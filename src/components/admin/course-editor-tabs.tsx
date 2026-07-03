@@ -1,5 +1,12 @@
 "use client";
 
+import {
+  Award,
+  BarChart3,
+  BookOpen,
+  ClipboardList,
+  FileText,
+} from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CourseDetailsForm } from "@/components/admin/course-details-form";
 import { LessonsManager, type AdminLesson, type AdminLessonQuiz } from "@/components/admin/lessons-manager";
@@ -84,20 +91,35 @@ export function CourseEditorTabs({
     );
 
   return (
-    <Tabs defaultValue="details" className="mt-6">
+    <Tabs defaultValue="details" className="mt-8">
       <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <TabsList className="w-max min-w-full sm:min-w-0">
-          <TabsTrigger value="details">Details</TabsTrigger>
-          <TabsTrigger value="lessons">Lessons ({lessons.length})</TabsTrigger>
-          <TabsTrigger value="quiz">Quiz</TabsTrigger>
-          <TabsTrigger value="badge">Badge</TabsTrigger>
+          <TabsTrigger value="details">
+            <FileText className="size-4" />
+            Details
+          </TabsTrigger>
+          <TabsTrigger value="lessons">
+            <BookOpen className="size-4" />
+            Lessons ({lessons.length})
+          </TabsTrigger>
+          <TabsTrigger value="quiz">
+            <ClipboardList className="size-4" />
+            Quiz
+          </TabsTrigger>
+          <TabsTrigger value="badge">
+            <Award className="size-4" />
+            Badge
+          </TabsTrigger>
           {variant === "admin" && (
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="analytics">
+              <BarChart3 className="size-4" />
+              Analytics
+            </TabsTrigger>
           )}
         </TabsList>
       </div>
 
-      <TabsContent value="details" className="max-w-3xl">
+      <TabsContent value="details">
         <CourseDetailsForm
           initial={course}
           products={products}
@@ -135,7 +157,7 @@ export function CourseEditorTabs({
         />
       </TabsContent>
 
-      <TabsContent value="badge" className="max-w-2xl">
+      <TabsContent value="badge">
         <BadgeForm
           courseId={course.id}
           initial={badge}
