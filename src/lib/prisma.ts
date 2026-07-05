@@ -24,6 +24,7 @@ function isStaleDevClient(client: PrismaClient): boolean {
     partnerIntake?: { create?: unknown };
     analyticsEvent?: { create?: unknown };
     projectDiscordIntegration?: { upsert?: unknown };
+    ecosystemDirectoryEntry?: { upsert?: unknown };
   };
   return (
     !c.partnerIntake ||
@@ -31,7 +32,9 @@ function isStaleDevClient(client: PrismaClient): boolean {
     !c.analyticsEvent ||
     typeof c.analyticsEvent.create !== "function" ||
     !c.projectDiscordIntegration ||
-    typeof c.projectDiscordIntegration.upsert !== "function"
+    typeof c.projectDiscordIntegration.upsert !== "function" ||
+    !c.ecosystemDirectoryEntry ||
+    typeof c.ecosystemDirectoryEntry.upsert !== "function"
   );
 }
 

@@ -46,7 +46,18 @@ A course is complete when **all** of the following are true:
 2. The final quiz is passed (score ≥ pass threshold).
 3. The learner has a connected Solana wallet.
 
-On completion → create a `BadgeAward`.
+On completion → create a `BadgeAward` (when a published badge exists).
+
+### Learner-facing signals
+
+| Signal | Meaning |
+|--------|---------|
+| **Requirements met** | Required lessons done + final quiz passed. Drives progress % and “course completed” UI. |
+| **Badge awarded** | A `BadgeAward` row exists. Shown in badges/profile; not the definition of “completed.” |
+
+Progress % counts required lessons and the final quiz only — optional lessons do not affect the completion path.
+
+**Code:** `src/lib/course-completion.ts` (predicates + read API); `src/lib/completion.ts` (award + side effects).
 
 ## Wallet Gating
 

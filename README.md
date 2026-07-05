@@ -41,9 +41,23 @@ Set the following in `.env`:
 | `STAFF_ADMIN_WALLETS` | Comma‑separated wallet addresses granted `staff_admin`. |
 | `NEXT_PUBLIC_APP_URL` | Public site URL for referral links and partner report exports (e.g. `https://arcademy.example.com`). |
 | `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET` | Discord OAuth app credentials (learner account linking). |
-| `DISCORD_BOT_TOKEN` | Arcademy bot token for role grants. |
+| `DISCORD_BOT_TOKEN` | Arcademy bot token for role grants and slash command follow-ups. |
+| `DISCORD_PUBLIC_KEY` | Application public key for verifying slash command interactions. |
 | `DISCORD_REDIRECT_URI` | OAuth callback URL (e.g. `https://arcademy.example.com/api/discord/callback`). |
+| `DISCORD_GUILD_ID` | Optional. When set, `pnpm discord:deploy-commands:guild` registers commands to this server instantly (dev/testing). |
+| `DISCORD_STAFF_ROLE_IDS` | Optional comma-separated Discord role IDs allowed to run `/staff` (in addition to Manage Server). |
 | `CRON_SECRET` | Bearer token for Vercel Cron (`/api/cron/discord-role-grants`). |
+
+### Discord slash commands
+
+1. In the [Discord Developer Portal](https://discord.com/developers/applications), open your app → **General Information** → copy the **Public Key** into `DISCORD_PUBLIC_KEY`.
+2. Under **Bot**, set **Interactions Endpoint URL** to `https://<your-app>/api/discord/interactions` (must respond to Discord’s verification ping).
+3. Register commands (not on bot startup):
+
+```bash
+pnpm discord:deploy-commands:guild   # instant, requires DISCORD_GUILD_ID
+pnpm discord:deploy-commands           # global (may take up to ~1 hour)
+```
 
 Generate a secret:
 

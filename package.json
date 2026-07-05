@@ -12,6 +12,8 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
+    "discord:deploy-commands": "tsx scripts/discord/deploy-commands.ts",
+    "discord:deploy-commands:guild": "tsx scripts/discord/deploy-commands.ts --guild",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -28,7 +30,9 @@
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.10.0",
     "clsx": "^2.1.1",
+    "discord-interactions": "^4.4.0",
     "dotenv": "^17.4.2",
+    "framer-motion": "^12.42.2",
     "fumadocs-core": "^16.10.5",
     "fumadocs-mdx": "^15.0.12",
     "fumadocs-ui": "^16.10.5",
@@ -45,9 +49,12 @@
     "tailwind-merge": "^3.6.0",
     "tweetnacl": "^1.0.3",
     "ws": "^8.21.0",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@discordjs/builders": "^1.14.1",
+    "@discordjs/rest": "^2.6.1",
     "@tailwindcss/postcss": "^4",
     "@types/mdx": "^2.0.14",
     "@types/node": "^20",

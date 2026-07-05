@@ -2,6 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import {
+  ensureEcosystemDirectoryOnProductPublish,
+  syncEcosystemDirectoryFromProduct,
+} from "@/lib/ecosystem-directory";
 import { prisma } from "@/lib/prisma";
 import { productPath } from "@/lib/paths";
 import { getProductPublishReadiness } from "@/lib/publish-readiness";
@@ -153,10 +157,15 @@ export async function updateProduct(
     },
   });
 
+  if (current.status === "published") {
+    await syncEcosystemDirectoryFromProduct(id, { syncIdentity: true });
+  }
+
   revalidatePath("/admin");
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}`);
   revalidatePath("/products");
+  revalidatePath("/ecosystem");
   revalidatePath("/start");
   revalidatePath(productPath(current.slug));
   revalidatePath(productPath(nextSlug));
@@ -208,10 +217,15 @@ export async function setProductStatus(
     }
   }
 
+  if (status === "published") {
+    await ensureEcosystemDirectoryOnProductPublish(id);
+  }
+
   revalidatePath("/admin");
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}`);
   revalidatePath("/products");
+  revalidatePath("/ecosystem");
   revalidatePath("/start");
   revalidatePath(productPath(product.slug));
   return { ok: true };

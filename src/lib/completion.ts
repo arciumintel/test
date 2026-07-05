@@ -8,6 +8,12 @@ import {
   trackEventFireAndForget,
 } from "@/lib/analytics-events";
 import { coursePath } from "@/lib/paths";
+import {
+  buildCourseRequirementsSnapshot,
+  buildLearnerCompletionSnapshot,
+  evaluateCourseRequirements,
+  isCompletableCourse,
+} from "@/lib/course-completion";
 
 export type CompletionResult = {
   completed: boolean;
@@ -32,10 +38,14 @@ export async function evaluateCourseCompletion(
       where: { id: courseId },
       include: {
         lessons: {
-          where: { status: "published", required: true },
-          select: { id: true },
+          where: { status: "published" },
+          select: { id: true, required: true },
         },
-        quizzes: { where: { lessonId: null }, select: { id: true } },
+        quizzes: {
+          where: { lessonId: null, status: "published" },
+          select: { id: true },
+          take: 1,
+        },
         badge: true,
         product: { select: { id: true, slug: true } },
       },
@@ -48,35 +58,49 @@ export async function evaluateCourseCompletion(
 
   if (!course || !user) return { completed: false, newlyAwarded: false };
 
-  const requiredLessonIds = course.lessons.map((l) => l.id);
-  const finalQuiz = course.quizzes[0] ?? null;
+  const finalQuizId = course.quizzes[0]?.id ?? null;
+  const requirements = buildCourseRequirementsSnapshot({
+    lessons: course.lessons,
+    finalQuizId,
+  });
 
-  // Guard against an empty course (no required lessons and no quiz) so a
-  // contentless course can never auto-award a badge.
-  if (requiredLessonIds.length === 0 && !finalQuiz) {
+  if (!isCompletableCourse(requirements)) {
     return { completed: false, newlyAwarded: false };
   }
 
-  // 1. All required published lessons complete (vacuously true when none).
-  const completedCount =
+  const requiredLessonIds = requirements.requiredLessonIds;
+
+  const [completedProgress, passedAttempt] = await Promise.all([
     requiredLessonIds.length === 0
-      ? 0
-      : await prisma.progress.count({
-          where: { userId, lessonId: { in: requiredLessonIds }, completed: true },
-        });
-  const allRequiredDone = completedCount === requiredLessonIds.length;
+      ? Promise.resolve([])
+      : prisma.progress.findMany({
+          where: {
+            userId,
+            lessonId: { in: requiredLessonIds },
+            completed: true,
+          },
+          select: { lessonId: true },
+        }),
+    finalQuizId
+      ? prisma.quizAttempt.findFirst({
+          where: { userId, quizId: finalQuizId, passed: true },
+        })
+      : Promise.resolve(null),
+  ]);
 
-  // 2. Final quiz passed (only required if a final quiz exists).
-  let finalQuizPassed = true;
-  if (finalQuiz) {
-    const passed = await prisma.quizAttempt.findFirst({
-      where: { userId, quizId: finalQuiz.id, passed: true },
-    });
-    finalQuizPassed = Boolean(passed);
-  }
+  const completedLessonIds = new Set(
+    completedProgress.map((row) => row.lessonId)
+  );
+  const learner = buildLearnerCompletionSnapshot({
+    completedLessonIds,
+    finalQuizId,
+    finalQuizPassed: Boolean(passedAttempt),
+  });
 
-  const completed = allRequiredDone && finalQuizPassed;
+  const completed = evaluateCourseRequirements(requirements, learner);
   if (!completed) return { completed: false, newlyAwarded: false };
+
+  const completedCount = completedLessonIds.size;
 
   const path = coursePath(course.product.slug, course.slug);
   const alreadyLogged = await hasAnalyticsEvent("course_completed", {
@@ -96,12 +120,12 @@ export async function evaluateCourseCompletion(
       metadata: {
         completedLessonCount: completedCount,
         totalRequiredLessonCount: requiredLessonIds.length,
-        quizId: finalQuiz?.id ?? null,
+        quizId: finalQuizId,
       },
     });
   }
 
-  // 3. Award the badge (idempotent).
+  // Award the badge (idempotent).
   if (!course.badge || course.badge.status !== "published") {
     return { completed: true, newlyAwarded: false };
   }

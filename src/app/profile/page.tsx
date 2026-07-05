@@ -143,7 +143,7 @@ export default async function ProfilePage({
   }
 
   const inProgress = getInProgressCourses(courses);
-  const completed = courses.filter((c) => c.completed || c.pct >= 100);
+  const completed = courses.filter((c) => c.completed);
 
   return (
     <div className="mx-auto min-w-0 max-w-5xl px-4 pb-10 sm:px-6">

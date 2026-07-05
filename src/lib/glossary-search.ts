@@ -1,11 +1,11 @@
-import Fuse from "fuse.js";
+import Fuse, { type IFuseOptions } from "fuse.js";
 import {
   getGlossaryLetter,
   sortGlossaryTerms,
   type GlossaryTerm,
 } from "@/lib/glossary";
 
-const fuseOptions: Fuse.IFuseOptions<GlossaryTerm> = {
+const fuseOptions: IFuseOptions<GlossaryTerm> = {
   keys: ["term", "definition", "aliases"],
   threshold: 0.35,
   ignoreLocation: true,

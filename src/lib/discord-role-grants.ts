@@ -379,20 +379,21 @@ export async function processPendingDiscordRoleGrants(
   return { processed: grants.length, granted, failed };
 }
 
+const RETRIABLE_GRANT_STATUSES: DiscordRoleGrantStatus[] = [
+  "failed_user_not_in_server",
+  "failed_missing_bot_permission",
+  "failed_role_hierarchy",
+  "failed_rate_limited",
+  "failed_unknown",
+];
+
 export async function retryDiscordRoleGrant(grantId: string, userId: string): Promise<boolean> {
   const grant = await prisma.discordRoleGrant.findFirst({
     where: { id: grantId, userId },
   });
   if (!grant) return false;
 
-  const retriable: DiscordRoleGrantStatus[] = [
-    "failed_user_not_in_server",
-    "failed_missing_bot_permission",
-    "failed_role_hierarchy",
-    "failed_rate_limited",
-    "failed_unknown",
-  ];
-  if (!retriable.includes(grant.status)) return false;
+  if (!RETRIABLE_GRANT_STATUSES.includes(grant.status)) return false;
 
   await prisma.discordRoleGrant.update({
     where: { id: grantId },
@@ -417,5 +418,41 @@ export async function retryDiscordRoleGrant(grantId: string, userId: string): Pr
 
   triggerGrantProcessor();
 
+  return true;
+}
+
+/** Staff-only retry scoped to a guild (Discord slash command). */
+export async function retryDiscordRoleGrantForGuild(
+  grantId: string,
+  guildId: string
+): Promise<boolean> {
+  const grant = await prisma.discordRoleGrant.findFirst({
+    where: { id: grantId, guildId },
+  });
+  if (!grant) return false;
+  if (!RETRIABLE_GRANT_STATUSES.includes(grant.status)) return false;
+
+  await prisma.discordRoleGrant.update({
+    where: { id: grantId },
+    data: {
+      status: "pending",
+      lastErrorCode: null,
+      lastErrorMessage: null,
+    },
+  });
+
+  trackEventFireAndForget({
+    eventName: "discord_role_grant_retried",
+    source: "route_handler",
+    userId: grant.userId,
+    badgeAwardId: grant.badgeAwardId,
+    metadata: {
+      discordRoleRuleId: grant.discordRoleRuleId,
+      guildId: grant.guildId,
+      roleId: grant.roleId,
+    },
+  });
+
+  triggerGrantProcessor();
   return true;
 }

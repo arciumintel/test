@@ -39,6 +39,7 @@ export function getHeaderNavLinks({ user }: SiteNavContext): NavLink[] {
   const links: NavLink[] = [
     { href: "/start", label: "Start" },
     { href: "/courses", label: "Courses" },
+    { href: "/ecosystem", label: "Ecosystem" },
     { href: "/products", label: "Projects" },
   ];
 
@@ -53,6 +54,7 @@ export function getFooterLearnLinks(): NavLink[] {
   return [
     { href: "/start", label: "Start" },
     { href: "/courses", label: "Courses" },
+    { href: "/ecosystem", label: "Ecosystem" },
     { href: "/products", label: "Projects" },
     { href: "/glossary", label: "Glossary" },
   ];

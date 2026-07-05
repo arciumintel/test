@@ -32,6 +32,27 @@ Field definitions and relationships: [docs/PRD.md#core-data-model](docs/PRD.md#c
 
 Course complete when: all required lessons done + final quiz passed + wallet connected → create `BadgeAward`.
 
+**Implementation:** `src/lib/course-completion.ts` is the source of truth for completion *predicates* and read paths. `src/lib/completion.ts` handles badge awarding (side effects still inline — #7 pending). Learner-facing `completed` = requirements met; `badgeAwarded` is separate.
+
+## V1 architecture refactor (in progress)
+
+Pre-V1 deepening pass ([improve-codebase-architecture](https://github.com)). User wants all items done before V1.
+
+| # | Item | Status |
+|---|------|--------|
+| 1 | Course completion module (`course-completion.ts`) | **Done** |
+| 7 | Extract completion side effects (analytics, Discord, notifications) | Pending (after #1) |
+| 6 | Wire partner login redirect (`proxy.ts` → middleware) | Pending |
+| 4 | Publish / submit readiness lifecycle | Pending |
+| 2 | Merge staff + partner course-editing actions | Pending |
+| 3 | Unified access-control guards | Pending |
+| 5 | Consolidate slug generation | Pending |
+| 8 | Dual ecosystem catalogs (`/products` vs `/ecosystem`) | Pending — clarify unify vs documented seam |
+
+**Recommended order:** #1 → #7 → #6 → #4 → #2 → #3 → #5 → #8
+
+**#1 decisions (locked):** Q1 `completed` = requirements met (badge separate); Q2 progress pct = required lessons + final quiz only; Q3 edge cases unchanged; Q4 new file `course-completion.ts`.
+
 ## Do not build (V1)
 
 Soulbound NFTs, on-chain verification, paid courses, leaderboards, social features, comments, AI lessons, multi-language, mobile app, code sandboxes, full LMS grading, partner direct publishing without staff approval.

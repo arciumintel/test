@@ -160,42 +160,6 @@ export function getLessonKnowledgeCheck<
   );
 }
 
-export type LearnerCourseState = {
-  startedAt: Date | null;
-  completedLessonIds: Set<string>;
-  finalQuizPassed: boolean;
-  badgeAwarded: boolean;
-};
-
-/** Resolves a learner's progress signals for a single course. */
-export async function getLearnerCourseState(
-  userId: string,
-  courseId: string,
-  finalQuizId: string | null
-): Promise<LearnerCourseState> {
-  const [progress, passedAttempt, award] = await Promise.all([
-    prisma.progress.findMany({
-      where: { userId, courseId },
-      orderBy: { createdAt: "asc" },
-    }),
-    finalQuizId
-      ? prisma.quizAttempt.findFirst({
-          where: { userId, quizId: finalQuizId, passed: true },
-        })
-      : Promise.resolve(null),
-    prisma.badgeAward.findFirst({ where: { userId, courseId } }),
-  ]);
-
-  return {
-    startedAt: progress[0]?.createdAt ?? null,
-    completedLessonIds: new Set(
-      progress.filter((p) => p.completed).map((p) => p.lessonId)
-    ),
-    finalQuizPassed: Boolean(passedAttempt),
-    badgeAwarded: Boolean(award),
-  };
-}
-
 export type CoursePrerequisite = {
   id: string;
   title: string;

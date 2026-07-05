@@ -229,3 +229,72 @@
   border: 1px solid var(--border);
   box-shadow: 0 8px 24px color-mix(in oklch, var(--foreground) 12%, transparent);
 }
+
+/* Ecosystem Explorer — visualization-scoped glow and glass (hybrid aesthetic) */
+[data-eco-visualization],
+.eco-shell [data-eco-visualization] {
+  --eco-glow: color-mix(in oklch, var(--primary) 35%, transparent);
+  --eco-glass: color-mix(in oklch, var(--card) 82%, transparent);
+}
+
+.eco-viz-frame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklch, var(--primary) 18%, var(--border));
+  border-radius: var(--radius-card);
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      color-mix(in oklch, var(--primary) 10%, transparent),
+      transparent 55%
+    ),
+    var(--background);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, var(--primary) 12%, transparent),
+    0 12px 40px color-mix(in oklch, var(--primary) 8%, transparent);
+}
+
+.eco-canvas {
+  display: block;
+  cursor: crosshair;
+}
+
+.eco-glass {
+  background: color-mix(in oklch, var(--card) 88%, transparent);
+  backdrop-filter: blur(12px);
+  border-color: color-mix(in oklch, var(--primary) 12%, var(--border));
+}
+
+.eco-panel {
+  background: color-mix(in oklch, var(--card) 92%, transparent);
+  backdrop-filter: blur(16px);
+}
+
+.dark .eco-viz-frame {
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      color-mix(in oklch, var(--primary) 16%, transparent),
+      transparent 60%
+    ),
+    var(--background);
+}
+
+@media (prefers-contrast: more) {
+  .eco-viz-frame {
+    border-width: 2px;
+    box-shadow: none;
+  }
+
+  .eco-glass,
+  .eco-panel {
+    backdrop-filter: none;
+    background: var(--card);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eco-canvas {
+    cursor: default;
+  }
+}

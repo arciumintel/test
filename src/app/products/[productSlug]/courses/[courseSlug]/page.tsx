@@ -22,10 +22,10 @@ import { CourseModuleOutline } from "@/components/course-module-outline";
 import {
   getCourseBySlugs,
   getFinalQuiz,
-  getLearnerCourseState,
   getPublishedCoursePrerequisites,
   buildCourseModuleOutline,
 } from "@/lib/courses";
+import { getCourseCompletionState } from "@/lib/course-completion";
 import { getCurrentUser } from "@/lib/session";
 import { productPath, coursePath } from "@/lib/paths";
 
@@ -57,15 +57,10 @@ export default async function CourseDetailPage({
   const finalQuiz = getFinalQuiz(course.quizzes);
 
   const state = user
-    ? await getLearnerCourseState(user.id, course.id, finalQuiz?.id ?? null)
+    ? await getCourseCompletionState(user.id, course.id)
     : null;
 
-  const completedCount = state
-    ? course.lessons.filter((l) => state.completedLessonIds.has(l.id)).length
-    : 0;
-  const totalSteps = course.lessons.length + (finalQuiz ? 1 : 0);
-  const doneSteps = completedCount + (state?.finalQuizPassed ? 1 : 0);
-  const pct = totalSteps > 0 ? Math.round((doneSteps / totalSteps) * 100) : 0;
+  const pct = state?.progress.pct ?? 0;
 
   const nextLesson =
     course.lessons.find((l) => !state?.completedLessonIds.has(l.id)) ??
@@ -163,7 +158,7 @@ export default async function CourseDetailPage({
                 groups={moduleGroups}
                 completedLessonIds={state?.completedLessonIds ?? new Set()}
                 finalQuiz={finalQuiz}
-                finalQuizPassed={state?.finalQuizPassed}
+                finalQuizPassed={state?.progress.finalQuizPassed}
                 locked={!user}
                 renderLessonLabel={(lesson, index) => (
                   <>
@@ -214,10 +209,7 @@ export default async function CourseDetailPage({
                   ecosystemProjectId={course.product.id}
                   isAuthed={Boolean(user)}
                   started={Boolean(state?.startedAt)}
-                  completed={
-                    Boolean(state?.badgeAwarded) ||
-                    (totalSteps > 0 && doneSteps === totalSteps)
-                  }
+                  completed={Boolean(state?.completed)}
                   nextLessonId={nextLesson?.id ?? null}
                 />
 

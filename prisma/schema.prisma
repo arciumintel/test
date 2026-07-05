@@ -42,6 +42,12 @@ enum ProductRole {
   ecosystem
 }
 
+enum DirectoryNetworkStatus {
+  mainnet
+  testnet
+  coming_soon
+}
+
 enum LessonStatus {
   draft
   published
@@ -137,8 +143,36 @@ model Product {
   projectAdmins           ProjectAdmin[]
   projectDiscordIntegration ProjectDiscordIntegration?
   learningPaths           LearningPath[]
+  ecosystemDirectoryEntry EcosystemDirectoryEntry?
 
   @@index([status])
+}
+
+/// Staff-curated Arcium ecosystem directory entry for /ecosystem.
+/// Optional link to Product supplies live learning overlay when published.
+model EcosystemDirectoryEntry {
+  id            String                 @id @default(cuid())
+  slug          String                 @unique
+  productId     String?                @unique
+  name          String
+  tagline       String                 @default("")
+  description   String
+  logoUrl       String?
+  categoryId    String
+  networkStatus DirectoryNetworkStatus @default(mainnet)
+  featured      Boolean                @default(false)
+  trending      Boolean                @default(false)
+  tags          String[]               @default([])
+  links         Json                   @default("{}")
+  relationships Json                   @default("[]")
+  addedAt       DateTime               @default(now())
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([categoryId])
+  @@index([networkStatus])
 }
 
 /// Learner / admin identity, anchored to a Solana wallet address.

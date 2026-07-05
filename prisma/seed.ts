@@ -461,7 +461,14 @@ async function main() {
     console.log(`✓ Staff admin: ${wallet}`);
   }
 
+  await seedEcosystemDirectoryStep();
+
   console.log("\nSeed complete.");
+}
+
+async function seedEcosystemDirectoryStep() {
+  const { seedEcosystemDirectory } = await import("./seed-ecosystem-directory");
+  await seedEcosystemDirectory();
 }
 
 main()

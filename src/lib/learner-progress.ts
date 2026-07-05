@@ -1,6 +1,13 @@
 import { prisma } from "@/lib/prisma";
-import { coursePath, lessonPath, productPath, quizPath } from "@/lib/paths";
+import { productPath } from "@/lib/paths";
 import type { ProductProgressState } from "@/lib/product-catalog";
+import {
+  buildCourseRequirementsSnapshot,
+  buildLearnerCompletionSnapshot,
+  computeCourseCompletionProgress,
+  computeResumeHref,
+  evaluateCourseRequirements,
+} from "@/lib/course-completion";
 
 export type LearnerCourseProgress = {
   courseId: string;
@@ -8,9 +15,12 @@ export type LearnerCourseProgress = {
   productSlug: string;
   title: string;
   productName: string;
+  /** Required lessons on the completion path. */
   totalLessons: number;
+  /** Required lessons marked complete. */
   completedLessons: number;
   pct: number;
+  /** Requirements met (required lessons + final quiz). */
   completed: boolean;
   resumeHref: string;
   lastActivityAt: Date;
@@ -22,18 +32,17 @@ type CourseAgg = {
   productSlug: string;
   title: string;
   productName: string;
-  totalLessons: number;
+  requiredLessonIds: string[];
+  publishedLessonIds: string[];
   completedLessonIds: Set<string>;
   finalQuizId: string | null;
-  lessonIds: string[];
-  completed: boolean;
   lastActivityAt: Date;
 };
 
 export async function getLearnerCourseProgressList(
   userId: string
 ): Promise<LearnerCourseProgress[]> {
-  const [progressRows, passedAttempts, awards] = await Promise.all([
+  const [progressRows, passedAttempts] = await Promise.all([
     prisma.progress.findMany({
       where: { userId },
       include: {
@@ -47,7 +56,7 @@ export async function getLearnerCourseProgressList(
             lessons: {
               where: { status: "published" },
               orderBy: { order: "asc" },
-              select: { id: true },
+              select: { id: true, required: true },
             },
             quizzes: {
               where: { lessonId: null, status: "published" },
@@ -62,15 +71,9 @@ export async function getLearnerCourseProgressList(
       where: { userId, passed: true },
       select: { quizId: true },
     }),
-    prisma.badgeAward.findMany({
-      where: { userId },
-      select: { courseId: true },
-    }),
   ]);
 
   const passedQuizIds = new Set(passedAttempts.map((a) => a.quizId));
-  const awardedCourseIds = new Set(awards.map((a) => a.courseId));
-
   const byCourse = new Map<string, CourseAgg>();
 
   for (const row of progressRows) {
@@ -85,11 +88,10 @@ export async function getLearnerCourseProgressList(
         productSlug: c.product.slug,
         title: c.title,
         productName: c.product.name,
-        totalLessons: c.lessons.length,
+        requiredLessonIds: c.lessons.filter((l) => l.required).map((l) => l.id),
+        publishedLessonIds: c.lessons.map((l) => l.id),
         completedLessonIds: new Set(),
         finalQuizId: c.quizzes[0]?.id ?? null,
-        lessonIds: c.lessons.map((l) => l.id),
-        completed: awardedCourseIds.has(c.id),
         lastActivityAt: row.updatedAt,
       };
       byCourse.set(c.id, agg);
@@ -100,21 +102,27 @@ export async function getLearnerCourseProgressList(
   }
 
   return [...byCourse.values()].map((agg) => {
-    const completedLessons = agg.completedLessonIds.size;
-    const quizDone = agg.finalQuizId ? passedQuizIds.has(agg.finalQuizId) : true;
-    const totalSteps = agg.totalLessons + (agg.finalQuizId ? 1 : 0);
-    const doneSteps = completedLessons + (agg.finalQuizId && quizDone ? 1 : 0);
-    const pct = totalSteps > 0 ? Math.round((doneSteps / totalSteps) * 100) : 0;
-
-    const nextLessonId = agg.lessonIds.find(
-      (id) => !agg.completedLessonIds.has(id)
-    );
-    let resumeHref = coursePath(agg.productSlug, agg.slug);
-    if (nextLessonId) {
-      resumeHref = lessonPath(agg.productSlug, agg.slug, nextLessonId);
-    } else if (agg.finalQuizId && !quizDone) {
-      resumeHref = quizPath(agg.productSlug, agg.slug);
-    }
+    const finalQuizId = agg.finalQuizId;
+    const finalQuizPassed = finalQuizId ? passedQuizIds.has(finalQuizId) : false;
+    const requirements = buildCourseRequirementsSnapshot({
+      lessons: agg.requiredLessonIds.map((id) => ({ id, required: true })),
+      finalQuizId,
+    });
+    const learner = buildLearnerCompletionSnapshot({
+      completedLessonIds: agg.completedLessonIds,
+      finalQuizId,
+      finalQuizPassed,
+    });
+    const progress = computeCourseCompletionProgress(requirements, learner);
+    const completed = evaluateCourseRequirements(requirements, learner);
+    const resumeHref = computeResumeHref({
+      productSlug: agg.productSlug,
+      courseSlug: agg.slug,
+      publishedLessonIds: agg.publishedLessonIds,
+      completedLessonIds: agg.completedLessonIds,
+      finalQuizId,
+      finalQuizPassed,
+    });
 
     return {
       courseId: agg.courseId,
@@ -122,10 +130,10 @@ export async function getLearnerCourseProgressList(
       productSlug: agg.productSlug,
       title: agg.title,
       productName: agg.productName,
-      totalLessons: agg.totalLessons,
-      completedLessons,
-      pct,
-      completed: agg.completed,
+      totalLessons: progress.totalRequiredLessons,
+      completedLessons: progress.completedRequiredLessons,
+      pct: progress.pct,
+      completed,
       resumeHref,
       lastActivityAt: agg.lastActivityAt,
     };
