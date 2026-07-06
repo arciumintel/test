@@ -2,6 +2,9 @@
   "mcpServers": {
     "arcium-docs": {
       "url": "https://docs.arcium.com/mcp"
+    },
+    "figma": {
+      "url": "https://mcp.figma.com/mcp"
     }
   }
 }
