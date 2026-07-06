@@ -21,11 +21,8 @@ import {
 } from "@/components/ui/form-field";
 import { FormLayout } from "@/components/ui/form-layout";
 import { FormSection } from "@/components/ui/form-section";
-import { createCourse, updateCourse } from "@/app/actions/admin";
-import {
-  createPartnerCourse,
-  updatePartnerCourse,
-} from "@/app/actions/project-courses";
+import { createCourse, updateCourse } from "@/app/actions/course-editing";
+import { courseEditorContext } from "@/lib/course-editor-context";
 import { FIELD_LIMITS as L } from "@/lib/field-limits";
 import type { CourseLevel, CourseType } from "@prisma/client";
 
@@ -126,14 +123,11 @@ export function CourseDetailsForm({
       prerequisiteCourseIds,
     };
 
+    const ctx = courseEditorContext(variant, partnerProductId);
     const res =
       isEdit && initial?.id
-        ? variant === "partner" && partnerProductId
-          ? await updatePartnerCourse(partnerProductId, initial.id, payload)
-          : await updateCourse(initial.id, payload)
-        : variant === "partner" && partnerProductId
-          ? await createPartnerCourse(partnerProductId, payload)
-          : await createCourse(payload);
+        ? await updateCourse(ctx, initial.id, payload)
+        : await createCourse(ctx, payload);
 
     setBusy(false);
     if ("error" in res) {

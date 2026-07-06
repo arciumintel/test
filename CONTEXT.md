@@ -57,7 +57,18 @@ On completion → create a `BadgeAward` (when a published badge exists).
 
 Progress % counts required lessons and the final quiz only — optional lessons do not affect the completion path.
 
-**Code:** `src/lib/course-completion.ts` (predicates + read API); `src/lib/completion.ts` (award + side effects).
+**Code:** `src/lib/course-completion.ts` (predicates + read API); `src/lib/completion.ts` (award); `src/lib/completion-side-effects.ts` (analytics, notifications, Discord). Partner submit vs staff publish readiness: `src/lib/course-lifecycle-readiness.ts`. Course content editing: `src/lib/course-editing.ts` + `src/app/actions/course-editing.ts`. URL slugs: `src/lib/slugify.ts` (pure) + `src/lib/slugs.ts` (unique slugs for products, courses, learning paths). Access checks: `src/lib/access-control.ts` (`authorizeUser`, `authorizeStaff`, `authorizeProjectAdmin` → `{ ok, user } | { ok: false, reason, message }`; server actions use `toActionError()`). **Catalog surfaces:** learning catalog (`src/lib/products.ts` → `/products`) vs ecosystem directory (`src/lib/ecosystem-catalog.ts` → `/ecosystem`); linked on product publish via `syncEcosystemDirectoryFromProduct`.
+
+## Ecosystem surfaces
+
+Arcademy has two public catalogs that answer different questions:
+
+| Surface | Routes | Question | Source of truth |
+|---------|--------|----------|-----------------|
+| **Learning catalog** | `/products`, `/courses` | Where can I learn? | Published `Product` rows and their courses |
+| **Ecosystem directory** | `/ecosystem` | What exists in the ecosystem? | `EcosystemDirectoryEntry` in Postgres |
+
+The explorer may list projects before they have courses. When a product is published, staff sync upserts a directory entry and the explorer shows a **View courses on Arcademy** link. Static data in `src/lib/ecosystem/data.ts` seeds the directory in dev/CI only — runtime reads go through `loadEcosystemExplorerProjects()` in `src/lib/ecosystem-catalog.ts`.
 
 ## Wallet Gating
 
@@ -77,7 +88,7 @@ Progress % counts required lessons and the final quiz only — optional lessons 
 - `staff_admin` — access to admin dashboard.
 - Limited partner role — access to assigned partner self-service workspace.
 
-Partner self-service is in V1, but publishing remains staff-approved. Products are staff-governed and may be partner-assisted through assigned partner workspaces.
+Partner self-service is in V1, but publishing remains staff-approved. Products are staff-governed and may be partner-assisted through assigned partner workspaces. Partner teams are trusted to mark lesson, quiz, and badge content as visible; staff still approves course publication.
 
 ## Infrastructure (Fixed for V1)
 

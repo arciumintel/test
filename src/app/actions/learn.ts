@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/lib/session";
+import { authorizeUser } from "@/lib/access-control";
 import { evaluateCourseCompletion } from "@/lib/completion";
 import { trackEventFireAndForget } from "@/lib/analytics-events";
 import { coursePath } from "@/lib/paths";
@@ -13,12 +13,9 @@ type ActionError = { error: string };
 export async function startCourse(
   courseId: string
 ): Promise<{ ok: true; firstLessonId: string | null } | ActionError> {
-  let user;
-  try {
-    user = await requireUser();
-  } catch {
-    return { error: "Connect your wallet to start this course." };
-  }
+  const auth = await authorizeUser("Connect your wallet to start this course.");
+  if (!auth.ok) return { error: auth.message };
+  const user = auth.user;
 
   const course = await prisma.course.findUnique({
     where: { id: courseId },
@@ -76,12 +73,9 @@ export async function completeLesson(
   | { ok: true; courseCompleted: boolean; newBadge: boolean; verificationSlug?: string }
   | ActionError
 > {
-  let user;
-  try {
-    user = await requireUser();
-  } catch {
-    return { error: "Connect your wallet to save your progress." };
-  }
+  const auth = await authorizeUser("Connect your wallet to save your progress.");
+  if (!auth.ok) return { error: auth.message };
+  const user = auth.user;
 
   const lesson = await prisma.lesson.findUnique({
     where: { id: lessonId },
@@ -174,12 +168,9 @@ export async function submitQuiz(
     }
   | ActionError
 > {
-  let user;
-  try {
-    user = await requireUser();
-  } catch {
-    return { error: "Connect your wallet to take this quiz." };
-  }
+  const auth = await authorizeUser("Connect your wallet to take this quiz.");
+  if (!auth.ok) return { error: auth.message };
+  const user = auth.user;
 
   const quiz = await prisma.quiz.findUnique({
     where: { id: quizId },

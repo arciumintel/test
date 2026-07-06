@@ -12,7 +12,8 @@ import {
   updateModule,
   deleteModule,
   reorderModules,
-} from "@/app/actions/admin";
+} from "@/app/actions/course-editing";
+import type { CourseEditorContext } from "@/lib/course-editor-context";
 import { FIELD_LIMITS as L } from "@/lib/field-limits";
 
 export type AdminModule = {
@@ -53,10 +54,12 @@ export function ModulesPanelHeader({
 export function ModuleManager({
   courseId,
   modules,
+  editorCtx,
   readOnly = false,
 }: {
   courseId: string;
   modules: AdminModule[];
+  editorCtx: CourseEditorContext;
   readOnly?: boolean;
 }) {
   const router = useRouter();
@@ -69,7 +72,7 @@ export function ModuleManager({
     const ids = modules.map((m) => m.id);
     [ids[index], ids[target]] = [ids[target], ids[index]];
     setReordering(true);
-    await reorderModules(courseId, ids);
+    await reorderModules(editorCtx, courseId, ids);
     setReordering(false);
     router.refresh();
   }
@@ -85,6 +88,7 @@ export function ModuleManager({
       {!readOnly && editing === "new" && (
         <ModuleForm
           courseId={courseId}
+          editorCtx={editorCtx}
           onDone={() => {
             setEditing(null);
             router.refresh();
@@ -99,6 +103,7 @@ export function ModuleManager({
             <ModuleForm
               key={mod.id}
               courseId={courseId}
+              editorCtx={editorCtx}
               module={mod}
               onDone={() => {
                 setEditing(null);
@@ -117,6 +122,7 @@ export function ModuleManager({
               onMoveDown={() => move(i, 1)}
               onEdit={() => setEditing(mod.id)}
               onDeleted={() => router.refresh()}
+              editorCtx={editorCtx}
             />
           )
         )}
@@ -142,6 +148,7 @@ export function ModuleListRow({
   onMoveDown,
   onEdit,
   onDeleted,
+  editorCtx,
 }: {
   module: AdminModule;
   readOnly?: boolean;
@@ -154,6 +161,7 @@ export function ModuleListRow({
   onMoveDown: () => void;
   onEdit: () => void;
   onDeleted: () => void;
+  editorCtx: CourseEditorContext;
 }) {
   const collapsible = onToggle !== undefined;
 
@@ -210,7 +218,11 @@ export function ModuleListRow({
           <Button variant="ghost" size="icon" onClick={onEdit} aria-label="Edit module">
             <Pencil />
           </Button>
-          <DeleteModuleButton moduleId={module.id} onDeleted={onDeleted} />
+          <DeleteModuleButton
+            moduleId={module.id}
+            editorCtx={editorCtx}
+            onDeleted={onDeleted}
+          />
         </div>
       )}
     </div>
@@ -219,11 +231,13 @@ export function ModuleListRow({
 
 export function ModuleForm({
   courseId,
+  editorCtx,
   module,
   onDone,
   onCancel,
 }: {
   courseId: string;
+  editorCtx: CourseEditorContext;
   module?: AdminModule;
   onDone: () => void;
   onCancel: () => void;
@@ -242,8 +256,8 @@ export function ModuleForm({
       description: description || null,
     };
     const res = module
-      ? await updateModule(module.id, payload)
-      : await createModule(courseId, payload);
+      ? await updateModule(editorCtx, module.id, payload)
+      : await createModule(editorCtx, courseId, payload);
     setBusy(false);
     if ("error" in res) {
       setError(res.error);
@@ -291,9 +305,11 @@ export function ModuleForm({
 
 export function DeleteModuleButton({
   moduleId,
+  editorCtx,
   onDeleted,
 }: {
   moduleId: string;
+  editorCtx: CourseEditorContext;
   onDeleted: () => void;
 }) {
   const [busy, setBusy] = React.useState(false);
@@ -304,7 +320,7 @@ export function DeleteModuleButton({
       disabled={busy}
       onClick={async () => {
         setBusy(true);
-        await deleteModule(moduleId);
+        await deleteModule(editorCtx, moduleId);
         setBusy(false);
         onDeleted();
       }}

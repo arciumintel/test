@@ -40,13 +40,8 @@ import {
   deleteLesson,
   reorderLessons,
   reorderModules,
-} from "@/app/actions/admin";
-import {
-  createPartnerLesson,
-  updatePartnerLesson,
-  deletePartnerLesson,
-  reorderPartnerLessons,
-} from "@/app/actions/project-courses";
+} from "@/app/actions/course-editing";
+import { courseEditorContext } from "@/lib/course-editor-context";
 import { FIELD_LIMITS as L } from "@/lib/field-limits";
 import type { LessonStatus } from "@prisma/client";
 
@@ -81,7 +76,7 @@ export function LessonsManager({
   partnerProductId?: string;
   readOnly?: boolean;
 }) {
-  const useGroupedModules = modules.length > 0 && variant === "admin";
+  const useGroupedModules = modules.length > 0;
 
   if (useGroupedModules) {
     return (
@@ -90,6 +85,8 @@ export function LessonsManager({
         lessons={lessons}
         modules={modules}
         lessonQuizzes={lessonQuizzes}
+        variant={variant}
+        partnerProductId={partnerProductId}
         readOnly={readOnly}
       />
     );
@@ -126,6 +123,7 @@ function FlatLessonsManager({
   readOnly: boolean;
 }) {
   const router = useRouter();
+  const editorCtx = courseEditorContext(variant, partnerProductId);
   const [editing, setEditing] = React.useState<string | "new" | null>(null);
   const [reordering, setReordering] = React.useState(false);
 
@@ -135,18 +133,19 @@ function FlatLessonsManager({
     const ids = lessons.map((l) => l.id);
     [ids[index], ids[target]] = [ids[target], ids[index]];
     setReordering(true);
-    if (variant === "partner" && partnerProductId) {
-      await reorderPartnerLessons(partnerProductId, courseId, ids);
-    } else {
-      await reorderLessons(courseId, ids);
-    }
+    await reorderLessons(editorCtx, courseId, ids);
     setReordering(false);
     router.refresh();
   }
 
   return (
     <div className="space-y-4">
-      <ModuleManager courseId={courseId} modules={modules} readOnly={readOnly} />
+      <ModuleManager
+        courseId={courseId}
+        modules={modules}
+        editorCtx={editorCtx}
+        readOnly={readOnly}
+      />
 
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
@@ -225,15 +224,20 @@ function GroupedLessonsManager({
   lessons,
   modules,
   lessonQuizzes,
+  variant,
+  partnerProductId,
   readOnly,
 }: {
   courseId: string;
   lessons: AdminLesson[];
   modules: AdminModule[];
   lessonQuizzes: Record<string, AdminLessonQuiz>;
+  variant: "admin" | "partner";
+  partnerProductId?: string;
   readOnly: boolean;
 }) {
   const router = useRouter();
+  const editorCtx = courseEditorContext(variant, partnerProductId);
   const [editingLesson, setEditingLesson] = React.useState<string | "new" | null>(
     null
   );
@@ -267,7 +271,7 @@ function GroupedLessonsManager({
     const ids = modules.map((m) => m.id);
     [ids[index], ids[target]] = [ids[target], ids[index]];
     setReorderingModules(true);
-    await reorderModules(courseId, ids);
+    await reorderModules(editorCtx, courseId, ids);
     setReorderingModules(false);
     router.refresh();
   }
@@ -287,7 +291,7 @@ function GroupedLessonsManager({
     ];
 
     setReorderingLessons(true);
-    await reorderLessons(courseId, globalIds);
+    await reorderLessons(editorCtx, courseId, globalIds);
     setReorderingLessons(false);
     router.refresh();
   }
@@ -304,7 +308,8 @@ function GroupedLessonsManager({
             lesson={lesson}
             lessonQuiz={lessonQuizzes[lesson.id] ?? null}
             modules={modules}
-            variant="admin"
+            variant={variant}
+            partnerProductId={partnerProductId}
             onDone={() => {
               setEditingLesson(null);
               router.refresh();
@@ -327,7 +332,8 @@ function GroupedLessonsManager({
           onMoveDown={() => moveLessonInGroup(groupLessonIds, lesson.id, 1)}
           onEdit={() => setEditingLesson(lesson.id)}
           onDeleted={() => router.refresh()}
-          variant="admin"
+          variant={variant}
+          partnerProductId={partnerProductId}
           nested
         />
       );
@@ -346,6 +352,7 @@ function GroupedLessonsManager({
         {!readOnly && editingModule === "new" && (
           <ModuleForm
             courseId={courseId}
+            editorCtx={editorCtx}
             onDone={() => {
               setEditingModule(null);
               router.refresh();
@@ -365,6 +372,7 @@ function GroupedLessonsManager({
                 {editingModule === mod.id ? (
                   <ModuleForm
                     courseId={courseId}
+                    editorCtx={editorCtx}
                     module={mod}
                     onDone={() => {
                       setEditingModule(null);
@@ -385,6 +393,7 @@ function GroupedLessonsManager({
                     onMoveDown={() => moveModule(i, 1)}
                     onEdit={() => setEditingModule(mod.id)}
                     onDeleted={() => router.refresh()}
+                    editorCtx={editorCtx}
                   />
                 )}
 
@@ -422,7 +431,8 @@ function GroupedLessonsManager({
         <LessonForm
           courseId={courseId}
           modules={modules}
-          variant="admin"
+          variant={variant}
+          partnerProductId={partnerProductId}
           onDone={() => {
             setEditingLesson(null);
             router.refresh();
@@ -603,23 +613,20 @@ function LessonForm({
     e.preventDefault();
     setBusy(true);
     setError(null);
+    const editorCtx = courseEditorContext(variant, partnerProductId);
     const payload = {
       title,
       content,
       mediaUrl: mediaUrl || null,
-      status: variant === "partner" ? "draft" : visibilityToStatus(visibleToLearners),
+      status: visibilityToStatus(visibleToLearners),
       required,
       estimatedDuration: estimatedDuration ? Number(estimatedDuration) : null,
       moduleId: moduleId || null,
     };
     const res =
-      lesson && variant === "partner" && partnerProductId
-        ? await updatePartnerLesson(partnerProductId, lesson.id, payload)
-        : lesson
-          ? await updateLesson(lesson.id, payload)
-          : variant === "partner" && partnerProductId
-            ? await createPartnerLesson(partnerProductId, courseId, payload)
-            : await createLesson(courseId, payload);
+      lesson
+        ? await updateLesson(editorCtx, lesson.id, payload)
+        : await createLesson(editorCtx, courseId, payload);
     setBusy(false);
     if ("error" in res) {
       setError(res.error);
@@ -667,14 +674,16 @@ function LessonForm({
         productId={variant === "partner" ? partnerProductId : undefined}
       />
       <div className="grid gap-4 sm:grid-cols-2">
-        {variant === "admin" && (
-          <LearnerVisibilityField
-            id="lesson-visibility"
-            visible={visibleToLearners}
-            onChange={setVisibleToLearners}
-            description="Optional lessons can stay hidden until you choose to show them."
-          />
-        )}
+        <LearnerVisibilityField
+          id="lesson-visibility"
+          visible={visibleToLearners}
+          onChange={setVisibleToLearners}
+          description={
+            variant === "partner"
+              ? "Published lesson content goes live when staff publishes the course."
+              : "Optional lessons can stay hidden until you choose to show them."
+          }
+        />
         <div className="grid gap-2">
           <Label htmlFor="lesson-duration">Estimated duration (minutes)</Label>
           <Input
@@ -687,7 +696,7 @@ function LessonForm({
           />
         </div>
       </div>
-      {modules.length > 0 && variant === "admin" && (
+      {modules.length > 0 && (
         <div className="grid gap-2">
           <Label htmlFor="lesson-module">Module (optional)</Label>
           <Select
@@ -756,11 +765,8 @@ function DeleteLessonButton({
 
   async function handleDelete() {
     setBusy(true);
-    if (variant === "partner" && partnerProductId) {
-      await deletePartnerLesson(partnerProductId, lessonId);
-    } else {
-      await deleteLesson(lessonId);
-    }
+    const editorCtx = courseEditorContext(variant, partnerProductId);
+    await deleteLesson(editorCtx, lessonId);
     setBusy(false);
     onDeleted();
   }

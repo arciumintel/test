@@ -1,3 +1,7 @@
+/**
+ * Maps `EcosystemDirectoryEntry` rows (and optional linked `Product` identity) to explorer UI.
+ * For the learning vs ecosystem catalog seam, see `@/lib/ecosystem-catalog`.
+ */
 import type {
   DirectoryNetworkStatus,
   EcosystemDirectoryEntry,

@@ -6,18 +6,9 @@ import { isPartnerIntakeAvailable, prisma } from "@/lib/prisma";
 import { generatePartnerReport } from "@/lib/analytics";
 import { getProductAnalytics } from "@/lib/analytics";
 import { trackEventFireAndForget } from "@/lib/analytics-events";
-import { requireStaff } from "@/lib/session";
+import { authorizeStaff, toActionError } from "@/lib/access-control";
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
-
-async function guard(): Promise<string | null> {
-  try {
-    await requireStaff();
-    return null;
-  } catch {
-    return "You must be signed in as staff to do this.";
-  }
-}
 
 const intakeSchema = z.object({
   productId: z.string().optional().nullable(),
@@ -49,8 +40,8 @@ const intakeSchema = z.object({
 export async function createPartnerIntake(
   raw: z.input<typeof intakeSchema>
 ): Promise<Result<{ id: string }>> {
-  const err = await guard();
-  if (err) return { error: err };
+  const auth = await authorizeStaff();
+  if (!auth.ok) return toActionError(auth);
   const parsed = intakeSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
@@ -115,8 +106,8 @@ export async function updatePartnerIntake(
   id: string,
   raw: z.input<typeof intakeSchema>
 ): Promise<Result> {
-  const err = await guard();
-  if (err) return { error: err };
+  const auth = await authorizeStaff();
+  if (!auth.ok) return toActionError(auth);
   const parsed = intakeSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
@@ -162,36 +153,34 @@ export async function updatePartnerIntake(
 export async function exportPartnerReport(
   productId: string
 ): Promise<Result<{ markdown: string; filename: string }>> {
-  const err = await guard();
-  if (err) return { error: err };
+  const auth = await authorizeStaff();
+  if (!auth.ok) return toActionError(auth);
 
   const report = await generatePartnerReport(productId);
   if (!report) return { error: "Ecosystem project not found." };
 
-  const staff = await requireStaff().catch(() => null);
+  const staff = auth.user;
   const analytics = await getProductAnalytics(productId);
-  if (staff) {
-    const now = new Date();
-    const periodStart = new Date(now);
-    periodStart.setDate(periodStart.getDate() - 90);
-    trackEventFireAndForget({
-      eventName: "partner_report_generated",
-      source: "admin",
-      path: `/admin/products/${productId}`,
-      userId: staff.id,
-      ecosystemProjectId: productId,
-      metadata: {
-        adminUserId: staff.id,
-        reportPeriodStart: periodStart.toISOString().slice(0, 10),
-        reportPeriodEnd: now.toISOString().slice(0, 10),
-        courseCount: analytics?.publishedCourses ?? 0,
-        courseStarts: analytics?.starts ?? 0,
-        courseCompletions: analytics?.completions ?? 0,
-        badgeAwards: analytics?.badgeAwards ?? 0,
-        format: "markdown",
-      },
-    });
-  }
+  const now = new Date();
+  const periodStart = new Date(now);
+  periodStart.setDate(periodStart.getDate() - 90);
+  trackEventFireAndForget({
+    eventName: "partner_report_generated",
+    source: "admin",
+    path: `/admin/products/${productId}`,
+    userId: staff.id,
+    ecosystemProjectId: productId,
+    metadata: {
+      adminUserId: staff.id,
+      reportPeriodStart: periodStart.toISOString().slice(0, 10),
+      reportPeriodEnd: now.toISOString().slice(0, 10),
+      courseCount: analytics?.publishedCourses ?? 0,
+      courseStarts: analytics?.starts ?? 0,
+      courseCompletions: analytics?.completions ?? 0,
+      badgeAwards: analytics?.badgeAwards ?? 0,
+      format: "markdown",
+    },
+  });
 
   return { ok: true, markdown: report.markdown, filename: report.filename };
 }

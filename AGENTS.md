@@ -32,24 +32,30 @@ Field definitions and relationships: [docs/PRD.md#core-data-model](docs/PRD.md#c
 
 Course complete when: all required lessons done + final quiz passed + wallet connected → create `BadgeAward`.
 
-**Implementation:** `src/lib/course-completion.ts` is the source of truth for completion *predicates* and read paths. `src/lib/completion.ts` handles badge awarding (side effects still inline — #7 pending). Learner-facing `completed` = requirements met; `badgeAwarded` is separate.
+**Implementation:** `src/lib/course-completion.ts` (predicates + read API); `src/lib/completion.ts` (badge award); `src/lib/completion-side-effects.ts` (analytics, notifications, Discord).
 
-## V1 architecture refactor (in progress)
+## V1 architecture refactor (complete)
 
-Pre-V1 deepening pass ([improve-codebase-architecture](https://github.com)). User wants all items done before V1.
+Pre-V1 deepening pass. User wants all items done before V1.
 
 | # | Item | Status |
 |---|------|--------|
 | 1 | Course completion module (`course-completion.ts`) | **Done** |
-| 7 | Extract completion side effects (analytics, Discord, notifications) | Pending (after #1) |
-| 6 | Wire partner login redirect (`proxy.ts` → middleware) | Pending |
-| 4 | Publish / submit readiness lifecycle | Pending |
-| 2 | Merge staff + partner course-editing actions | Pending |
-| 3 | Unified access-control guards | Pending |
-| 5 | Consolidate slug generation | Pending |
-| 8 | Dual ecosystem catalogs (`/products` vs `/ecosystem`) | Pending — clarify unify vs documented seam |
+| 7 | Extract completion side effects (`completion-side-effects.ts`) | **Done** |
+| 6 | Wire partner login redirect (`src/middleware.ts` → `proxy.ts`) | **Done** |
+| 4 | Publish / submit readiness (`course-lifecycle-readiness.ts`) | **Done** |
+| 2 | Unified course editing (`course-editing.ts` + `course-editing` actions) | **Done** |
+| 5 | Slug generation (`slugify.ts` + `slugs.ts`) | **Done** |
+| 3 | Unified access-control guards (`access-control.ts`) | **Done** |
+| 8 | Dual ecosystem catalogs (`/products` vs `/ecosystem`) | **Done** — documented seam in `ecosystem-catalog.ts` |
 
-**Recommended order:** #1 → #7 → #6 → #4 → #2 → #3 → #5 → #8
+**Recommended order:** ~~#3 → #8~~ All refactor items complete.
+
+**#8 decision (locked):** Documented seam, not full unification. **Learning catalog** (`Product` → `/products`) and **ecosystem directory** (`EcosystemDirectoryEntry` → `/ecosystem`) stay separate surfaces. Bridge: product publish syncs directory identity; optional `productId` link exposes courses in the explorer. Canonical read: `src/lib/ecosystem-catalog.ts`. Static `ecosystem/data.ts` is seed-only.
+
+**#2 decisions (locked):** Shared UI for staff + partner; partners control lesson/quiz/badge visibility (trusted teams); partners get modules; workflow actions stay separate; full merge to `course-editing.ts`.
+
+**#3:** Server actions use `authorizeUser` / `authorizeStaff` / `authorizeProjectAdmin` from `access-control.ts`. Throw-based `requireUser()` / `requireStaff()` / `requireProjectAdmin()` remain for pages/layouts that redirect on failure.
 
 **#1 decisions (locked):** Q1 `completed` = requirements met (badge separate); Q2 progress pct = required lessons + final quiz only; Q3 edge cases unchanged; Q4 new file `course-completion.ts`.
 

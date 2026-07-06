@@ -134,7 +134,7 @@ export function groupByCategory(
 
 export function getRelationshipsFor(
   project: EcosystemProject,
-  allProjects: EcosystemProject[] = ECOSYSTEM_PROJECTS
+  allProjects: EcosystemProject[]
 ): Array<ProjectRelationship & { target: EcosystemProject }> {
   const byId = new Map(allProjects.map((item) => [item.id, item]));
 

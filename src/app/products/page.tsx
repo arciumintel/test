@@ -79,6 +79,16 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         title="Ecosystem projects"
         description="Apps and tools built on Arcium. Pick a project to explore its courses and learning paths."
       />
+      <p className="-mt-4 mb-8 text-sm text-muted-foreground">
+        Want the full network map?{" "}
+        <Link
+          href="/ecosystem"
+          className="text-primary underline-offset-4 hover:underline"
+        >
+          Open the Ecosystem Explorer
+        </Link>
+        .
+      </p>
 
       {categorySlug && !activeCategory && !productsLoadError ? (
         <p className="mb-6 text-sm text-muted-foreground">

@@ -115,7 +115,7 @@ export function ProjectCard({
   onSelectRelated,
   allProjects,
 }: ProjectCardProps) {
-  const relationships = getRelationshipsFor(project, allProjects);
+  const relationships = getRelationshipsFor(project, allProjects ?? []);
 
   return (
     <article

@@ -1,114 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
-export type ReadinessReport = {
-  ready: boolean;
-  blockers: string[];
-  warnings: string[];
-};
-
-export async function getCoursePublishReadiness(
-  courseId: string
-): Promise<ReadinessReport> {
-  const course = await prisma.course.findUnique({
-    where: { id: courseId },
-    include: {
-      product: { select: { name: true, status: true } },
-      lessons: { select: { status: true, required: true } },
-      badge: {
-        select: {
-          name: true,
-          description: true,
-          imageUrl: true,
-          criteria: true,
-          status: true,
-        },
-      },
-      quizzes: {
-        where: { lessonId: null },
-        include: {
-          questions: { select: { explanation: true } },
-        },
-      },
-    },
-  });
-
-  if (!course) {
-    return { ready: false, blockers: ["Course not found."], warnings: [] };
-  }
-
-  const blockers: string[] = [];
-  const warnings: string[] = [];
-
-  if (course.product.status !== "published") {
-    blockers.push(
-      `Publish the ecosystem project "${course.product.name}" before publishing this course.`
-    );
-  }
-
-  const lessonsGoingLive = course.lessons.filter(
-    (l) => l.status === "published" || l.required
-  );
-  if (lessonsGoingLive.length === 0) {
-    blockers.push("Add at least one required lesson.");
-  }
-
-  const optionalHiddenLessons = course.lessons.filter(
-    (l) => l.status === "draft" && !l.required
-  );
-  if (optionalHiddenLessons.length > 0) {
-    warnings.push(
-      `${optionalHiddenLessons.length} optional lesson${optionalHiddenLessons.length === 1 ? "" : "s"} hidden from learners.`
-    );
-  }
-
-  const finalQuiz = course.quizzes[0] ?? null;
-  if (!finalQuiz) {
-    blockers.push("Create a final course quiz.");
-  } else {
-    if (finalQuiz.questions.length === 0) {
-      blockers.push("Add at least one question to the final quiz.");
-    }
-    const missingExplanations = finalQuiz.questions.filter((q) => !q.explanation?.trim())
-      .length;
-    if (missingExplanations > 0) {
-      warnings.push(
-        `${missingExplanations} quiz question${missingExplanations === 1 ? "" : "s"} missing an explanation.`
-      );
-    }
-  }
-
-  if (!course.badge) {
-    blockers.push("Create a completion badge for this course.");
-  } else {
-    if (course.badge.status === "archived") {
-      blockers.push(
-        "The completion badge is archived. Restore it before publishing."
-      );
-    }
-    if (!course.badge.criteria?.trim()) {
-      warnings.push("Badge criteria is empty — add criteria for clearer verification pages.");
-    }
-    if (!course.badge.imageUrl) {
-      warnings.push("Badge has no image.");
-    }
-  }
-
-  if (!course.thumbnailUrl) {
-    warnings.push("Course has no thumbnail.");
-  }
-  if (!course.description?.trim()) {
-    warnings.push("Course has no extended description.");
-  }
-  if (!course.summary?.trim()) {
-    warnings.push("Course summary is empty.");
-  }
-
-  return {
-    ready: blockers.length === 0,
-    blockers,
-    warnings,
-  };
-}
+export type { ReadinessReport } from "@/lib/course-lifecycle-readiness";
+export {
+  evaluateStaffPublishReadiness,
+  getCoursePublishReadiness,
+} from "@/lib/course-lifecycle-readiness";
 
 /** Publishes required lessons, the final quiz, and the badge when a course goes live. */
 export async function cascadeRequiredPublishContent(
@@ -151,7 +47,7 @@ export async function cascadeRequiredPublishContent(
 
 export async function getProductPublishReadiness(
   productId: string
-): Promise<ReadinessReport> {
+): Promise<import("@/lib/course-lifecycle-readiness").ReadinessReport> {
   const product = await prisma.product.findUnique({
     where: { id: productId },
     include: {

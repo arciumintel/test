@@ -3,27 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { requireStaff } from "@/lib/session";
+import { authorizeStaff, toActionError } from "@/lib/access-control";
 
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+import { suggestLearningPathSlug, uniqueLearningPathSlug } from "@/lib/slugs";
 
 type Result<T = void> = { ok: true } & (T extends void ? object : T);
 type ActionError = { error: string };
-
-async function guard(): Promise<string | null> {
-  try {
-    await requireStaff();
-    return null;
-  } catch {
-    return "Staff access required.";
-  }
-}
 
 const pathSchema = z.object({
   title: z.string().min(2).max(120),
@@ -36,15 +21,14 @@ export async function createLearningPath(
   productId: string,
   raw: z.input<typeof pathSchema>
 ): Promise<Result<{ id: string }> | ActionError> {
-  const err = await guard();
-  if (err) return { error: err };
+  const auth = await authorizeStaff();
+  if (!auth.ok) return toActionError(auth);
   const parsed = pathSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
-  const slug =
-    parsed.data.slug?.trim() ||
-    slugify(parsed.data.title) ||
-    `path-${Date.now()}`;
+  const slug = parsed.data.slug?.trim()
+    ? await uniqueLearningPathSlug(parsed.data.slug.trim(), productId)
+    : await suggestLearningPathSlug(parsed.data.title, productId);
 
   const last = await prisma.learningPath.findFirst({
     where: { productId },
@@ -72,8 +56,8 @@ export async function updateLearningPath(
   pathId: string,
   raw: z.input<typeof pathSchema>
 ): Promise<Result | ActionError> {
-  const err = await guard();
-  if (err) return { error: err };
+  const auth = await authorizeStaff();
+  if (!auth.ok) return toActionError(auth);
   const parsed = pathSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
@@ -96,8 +80,8 @@ export async function updateLearningPath(
 export async function deleteLearningPath(
   pathId: string
 ): Promise<Result | ActionError> {
-  const err = await guard();
-  if (err) return { error: err };
+  const auth = await authorizeStaff();
+  if (!auth.ok) return toActionError(auth);
 
   const path = await prisma.learningPath.delete({
     where: { id: pathId },
@@ -113,8 +97,8 @@ export async function setLearningPathCourses(
   pathId: string,
   courseIds: string[]
 ): Promise<Result | ActionError> {
-  const err = await guard();
-  if (err) return { error: err };
+  const auth = await authorizeStaff();
+  if (!auth.ok) return toActionError(auth);
 
   const path = await prisma.learningPath.findUnique({
     where: { id: pathId },

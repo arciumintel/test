@@ -3,10 +3,6 @@ import {
   backfillBadgeAwardMetadata,
   generateVerificationSlug,
 } from "@/lib/badges";
-import {
-  hasAnalyticsEvent,
-  trackEventFireAndForget,
-} from "@/lib/analytics-events";
 import { coursePath } from "@/lib/paths";
 import {
   buildCourseRequirementsSnapshot,
@@ -14,6 +10,10 @@ import {
   evaluateCourseRequirements,
   isCompletableCourse,
 } from "@/lib/course-completion";
+import {
+  emitBadgeAwardedSideEffects,
+  emitCourseCompletedSideEffects,
+} from "@/lib/completion-side-effects";
 
 export type CompletionResult = {
   completed: boolean;
@@ -100,32 +100,19 @@ export async function evaluateCourseCompletion(
   const completed = evaluateCourseRequirements(requirements, learner);
   if (!completed) return { completed: false, newlyAwarded: false };
 
-  const completedCount = completedLessonIds.size;
-
   const path = coursePath(course.product.slug, course.slug);
-  const alreadyLogged = await hasAnalyticsEvent("course_completed", {
+  await emitCourseCompletedSideEffects({
     userId,
     courseId,
+    courseSlug: course.slug,
+    path,
+    productId: course.product.id,
+    productSlug: course.product.slug,
+    completedLessonCount: completedLessonIds.size,
+    totalRequiredLessonCount: requiredLessonIds.length,
+    finalQuizId,
   });
-  if (!alreadyLogged) {
-    trackEventFireAndForget({
-      eventName: "course_completed",
-      source: "server_action",
-      path,
-      userId,
-      courseId,
-      courseSlug: course.slug,
-      ecosystemProjectId: course.product.id,
-      ecosystemProjectSlug: course.product.slug,
-      metadata: {
-        completedLessonCount: completedCount,
-        totalRequiredLessonCount: requiredLessonIds.length,
-        quizId: finalQuizId,
-      },
-    });
-  }
 
-  // Award the badge (idempotent).
   if (!course.badge || course.badge.status !== "published") {
     return { completed: true, newlyAwarded: false };
   }
@@ -173,34 +160,20 @@ export async function evaluateCourseCompletion(
     select: { id: true },
   });
 
-  trackEventFireAndForget({
-    eventName: "badge_awarded",
-    source: "server_action",
-    path,
-    userId,
-    courseId,
-    courseSlug: course.slug,
-    badgeId: course.badge.id,
-    badgeAwardId: award?.id,
-    verificationSlug: slug,
-    ecosystemProjectId: course.product.id,
-    ecosystemProjectSlug: course.product.slug,
-  });
-
-  const { createNotification } = await import("@/lib/notifications");
-  void createNotification({
-    userId,
-    type: "badge_awarded",
-    title: `Badge earned: ${course.badge.name}`,
-    body: `You completed ${course.title}.`,
-    actionUrl: `/verify/${slug}`,
-  });
-
   if (award?.id) {
-    const { queueDiscordRoleGrantsForBadgeAward } = await import(
-      "@/lib/discord-role-grants"
-    );
-    void queueDiscordRoleGrantsForBadgeAward(award.id);
+    emitBadgeAwardedSideEffects({
+      userId,
+      courseId,
+      courseSlug: course.slug,
+      courseTitle: course.title,
+      badgeId: course.badge.id,
+      badgeName: course.badge.name,
+      badgeAwardId: award.id,
+      verificationSlug: slug,
+      path,
+      productId: course.product.id,
+      productSlug: course.product.slug,
+    });
   }
 
   return { completed: true, newlyAwarded: true, verificationSlug: slug };

@@ -4,7 +4,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { PartnerIntakeReviewStatus } from "@prisma/client";
 import { isPartnerIntakeAvailable, prisma } from "@/lib/prisma";
-import { requireProjectAdmin } from "@/lib/project-admin";
+import {
+  authorizeProjectAdmin,
+  toActionError,
+} from "@/lib/access-control";
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
 
@@ -26,15 +29,6 @@ const PARTNER_STATUS_TRANSITIONS: Partial<
 
 function selfServicePath(productId: string) {
   return `/partner-console/${productId}/self-service`;
-}
-
-async function guardProduct(productId: string) {
-  try {
-    await requireProjectAdmin(productId);
-    return null;
-  } catch {
-    return "You do not have permission to manage this project.";
-  }
 }
 
 export type PartnerSelfServicePayload = {
@@ -63,8 +57,8 @@ export type PartnerSelfServicePayload = {
 export async function getPartnerSelfServiceData(
   productId: string
 ): Promise<Result<{ data: PartnerSelfServicePayload }>> {
-  const err = await guardProduct(productId);
-  if (err) return { error: err };
+  const auth = await authorizeProjectAdmin(productId);
+  if (!auth.ok) return toActionError(auth);
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
@@ -135,8 +129,8 @@ export async function upsertPartnerIntakeFields(
   productId: string,
   raw: z.input<typeof partnerFieldsSchema>
 ): Promise<Result<{ intakeId: string }>> {
-  const err = await guardProduct(productId);
-  if (err) return { error: err };
+  const auth = await authorizeProjectAdmin(productId);
+  if (!auth.ok) return toActionError(auth);
 
   const parsed = partnerFieldsSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
@@ -205,8 +199,8 @@ export async function upsertPartnerIntakeFields(
 export async function submitPartnerReview(
   productId: string
 ): Promise<Result> {
-  const err = await guardProduct(productId);
-  if (err) return { error: err };
+  const auth = await authorizeProjectAdmin(productId);
+  if (!auth.ok) return toActionError(auth);
 
   if (!isPartnerIntakeAvailable()) {
     return {

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Filter, RotateCcw } from "lucide-react";
 import { EcosystemListView } from "@/components/ecosystem/ecosystem-list-view";
 import { ExplorerSidebar } from "@/components/ecosystem/explorer-sidebar";
@@ -76,7 +77,14 @@ export function EcosystemExplorer() {
             </h1>
             <p className="mt-2 max-w-2xl text-pretty text-muted-foreground">
               Discover projects building on Arcium. Explore categories, follow
-              connections, and learn about each team without leaving the map.
+              connections, and learn about each team without leaving the map.{" "}
+              <Link
+                href="/products"
+                className="text-primary underline-offset-4 hover:underline"
+              >
+                Browse courses by project
+              </Link>
+              .
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">

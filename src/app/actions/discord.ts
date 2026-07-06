@@ -2,19 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/lib/session";
+import { authorizeUser } from "@/lib/access-control";
 import { trackEventFireAndForget } from "@/lib/analytics-events";
 import { retryDiscordRoleGrant } from "@/lib/discord-role-grants";
 
 type Result = { ok: true } | { error: string };
 
 export async function disconnectDiscord(): Promise<Result> {
-  let user;
-  try {
-    user = await requireUser();
-  } catch {
-    return { error: "Sign in with your wallet first." };
-  }
+  const auth = await authorizeUser("Sign in with your wallet first.");
+  if (!auth.ok) return { error: auth.message };
+  const user = auth.user;
 
   const account = await prisma.discordAccount.findUnique({
     where: { userId: user.id },
@@ -37,12 +34,9 @@ export async function disconnectDiscord(): Promise<Result> {
 }
 
 export async function retryMyDiscordGrant(grantId: string): Promise<Result> {
-  let user;
-  try {
-    user = await requireUser();
-  } catch {
-    return { error: "Sign in with your wallet first." };
-  }
+  const auth = await authorizeUser("Sign in with your wallet first.");
+  if (!auth.ok) return { error: auth.message };
+  const user = auth.user;
 
   const ok = await retryDiscordRoleGrant(grantId, user.id);
   if (!ok) return { error: "This grant cannot be retried." };

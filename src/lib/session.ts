@@ -71,13 +71,23 @@ export const getCurrentUser = cache(async () => {
 });
 
 export async function requireUser() {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("UNAUTHENTICATED");
-  return user;
+  const { authorizeUser } = await import("@/lib/access-control");
+  const auth = await authorizeUser();
+  if (!auth.ok) {
+    throw new Error(
+      auth.reason === "unauthenticated" ? "UNAUTHENTICATED" : "FORBIDDEN"
+    );
+  }
+  return auth.user;
 }
 
 export async function requireStaff() {
-  const user = await getCurrentUser();
-  if (!user || user.role !== "staff_admin") throw new Error("FORBIDDEN");
-  return user;
+  const { authorizeStaff } = await import("@/lib/access-control");
+  const auth = await authorizeStaff();
+  if (!auth.ok) {
+    throw new Error(
+      auth.reason === "unauthenticated" ? "UNAUTHENTICATED" : "FORBIDDEN"
+    );
+  }
+  return auth.user;
 }

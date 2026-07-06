@@ -1,25 +1,20 @@
 import "server-only";
-import { prisma } from "@/lib/prisma";
-import { getCurrentUser, requireStaff, requireUser } from "@/lib/session";
 
-export async function isProjectAdmin(
-  userId: string,
-  productId: string
-): Promise<boolean> {
-  const admin = await prisma.projectAdmin.findUnique({
-    where: { productId_userId: { productId, userId } },
-    select: { id: true },
-  });
-  return Boolean(admin);
-}
+import { prisma } from "@/lib/prisma";
+import { authorizeProjectAdmin, authorizeStaffOrProjectAdmin } from "@/lib/access-control";
+import { isProjectAdmin } from "@/lib/project-admin-access";
+import { getCurrentUser } from "@/lib/session";
+
+export { isProjectAdmin } from "@/lib/project-admin-access";
 
 export async function requireProjectAdmin(productId: string) {
-  const user = await requireUser();
-  if (user.role === "staff_admin") return user;
-
-  const allowed = await isProjectAdmin(user.id, productId);
-  if (!allowed) throw new Error("FORBIDDEN");
-  return user;
+  const auth = await authorizeProjectAdmin(productId);
+  if (!auth.ok) {
+    throw new Error(
+      auth.reason === "unauthenticated" ? "UNAUTHENTICATED" : "FORBIDDEN"
+    );
+  }
+  return auth.user;
 }
 
 export async function getManagedProducts(userId: string, isStaff: boolean) {
@@ -81,10 +76,11 @@ export async function getProjectAdminAccess(productId: string) {
 }
 
 export async function requireStaffOrProjectAdmin(productId: string) {
-  try {
-    return await requireProjectAdmin(productId);
-  } catch {
-    await requireStaff();
-    return requireUser();
+  const auth = await authorizeStaffOrProjectAdmin(productId);
+  if (!auth.ok) {
+    throw new Error(
+      auth.reason === "unauthenticated" ? "UNAUTHENTICATED" : "FORBIDDEN"
+    );
   }
+  return auth.user;
 }

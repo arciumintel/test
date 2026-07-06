@@ -1,16 +1,8 @@
 import { z } from "zod";
 import { FIELD_LIMITS as L } from "@/lib/field-limits";
+import { slugify } from "@/lib/slugify";
 
-export function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 60)
-    .replace(/^-|-$/g, "");
-}
+export { slugify };
 
 export const courseSchema = z.object({
   title: z.string().min(2, "Title is required").max(L.courseTitle),

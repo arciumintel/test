@@ -12,25 +12,24 @@ import {
   partnerPlusReportToCsv,
   partnerPlusReportToMarkdown,
 } from "@/lib/partner-analytics";
-import { requireProjectAdmin } from "@/lib/project-admin";
+import {
+  ACCESS_MESSAGES,
+  authorizeProjectAdmin,
+  toActionError,
+} from "@/lib/access-control";
 import { trackEventFireAndForget } from "@/lib/analytics-events";
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
-
-async function guard(productId: string) {
-  try {
-    return await requireProjectAdmin(productId);
-  } catch {
-    return null;
-  }
-}
 
 export async function getPartnerAnalyticsOverview(
   productId: string,
   rangePreset?: string
 ): Promise<Result<{ data: NonNullable<Awaited<ReturnType<typeof getPartnerPlusAnalytics>>> }>> {
-  const user = await guard(productId);
-  if (!user) return { error: "You do not have permission to view this analytics." };
+  const auth = await authorizeProjectAdmin(
+    productId,
+    ACCESS_MESSAGES.analyticsForbidden
+  );
+  if (!auth.ok) return toActionError(auth);
 
   const range = resolveAnalyticsDateRange(parseAnalyticsRangePreset(rangePreset));
   const data = await getPartnerPlusAnalytics(productId, range);
@@ -46,8 +45,11 @@ export async function getPartnerAnalyticsCourse(
 ): Promise<
   Result<{ data: NonNullable<Awaited<ReturnType<typeof getPartnerPlusCourseAnalytics>>> }>
 > {
-  const user = await guard(productId);
-  if (!user) return { error: "You do not have permission to view this analytics." };
+  const auth = await authorizeProjectAdmin(
+    productId,
+    ACCESS_MESSAGES.analyticsForbidden
+  );
+  if (!auth.ok) return toActionError(auth);
 
   const range = resolveAnalyticsDateRange(parseAnalyticsRangePreset(rangePreset));
   const data = await getPartnerPlusCourseAnalytics(productId, courseId, range);
@@ -68,8 +70,12 @@ export async function exportPartnerPlusReport(
   const parsed = exportSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
-  const user = await guard(parsed.data.productId);
-  if (!user) return { error: "You do not have permission to export this report." };
+  const auth = await authorizeProjectAdmin(
+    parsed.data.productId,
+    ACCESS_MESSAGES.analyticsForbidden
+  );
+  if (!auth.ok) return toActionError(auth);
+  const user = auth.user;
 
   const range = resolveAnalyticsDateRange(
     parseAnalyticsRangePreset(parsed.data.rangePreset)
@@ -131,8 +137,9 @@ export async function updatePartnerAnalyticsNotes(
   productId: string,
   notes: string | null
 ): Promise<Result> {
-  const user = await guard(productId);
-  if (!user || user.role !== "staff_admin") {
+  const auth = await authorizeProjectAdmin(productId);
+  if (!auth.ok) return toActionError(auth);
+  if (auth.user.role !== "staff_admin") {
     return { error: "Only staff can update partner analytics notes." };
   }
 

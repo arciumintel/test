@@ -48,6 +48,7 @@ export default async function PartnerCourseEditorPage({
     include: {
       product: true,
       lessons: { orderBy: { order: "asc" } },
+      modules: { orderBy: { order: "asc" } },
       badge: true,
       quizzes: {
         where: { lessonId: null },
@@ -138,6 +139,12 @@ export default async function PartnerCourseEditorPage({
           required: l.required,
           estimatedDuration: l.estimatedDuration,
           moduleId: l.moduleId,
+        }))}
+        modules={course.modules.map((m) => ({
+          id: m.id,
+          title: m.title,
+          description: m.description,
+          order: m.order,
         }))}
         quiz={
           finalQuiz

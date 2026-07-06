@@ -3,35 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { isPartnerIntakeAvailable, prisma } from "@/lib/prisma";
-import { requireStaff, requireUser } from "@/lib/session";
+import { authorizeStaff, authorizeUser, toActionError } from "@/lib/access-control";
 import { trackEventFireAndForget } from "@/lib/analytics-events";
+
+import { uniqueProductSlug } from "@/lib/slugs";
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
 
 const PENDING_APPLICATION_STATUSES = ["received", "in_review"] as const;
-
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 60)
-    .replace(/^-|-$/g, "");
-}
-
-async function uniqueProductSlug(base: string): Promise<string> {
-  const root = slugify(base) || "product";
-  let slug = root;
-  let n = 1;
-  for (;;) {
-    const existing = await prisma.product.findUnique({ where: { slug } });
-    if (!existing) return slug;
-    n += 1;
-    slug = `${root}-${n}`;
-  }
-}
 
 const applicationSchema = z.object({
   partnerName: z.string().min(2, "Partner name is required").max(120),
@@ -64,10 +43,11 @@ export type PartnerApplicationStatus = {
 };
 
 export async function getMyPartnerApplicationStatus(): Promise<PartnerApplicationStatus> {
-  const user = await requireUser().catch(() => null);
-  if (!user) {
+  const auth = await authorizeUser();
+  if (!auth.ok) {
     return { hasPartnerAccess: false, pendingApplication: null };
   }
+  const user = auth.user;
 
   const adminCount = await prisma.projectAdmin.count({
     where: { userId: user.id },
@@ -113,12 +93,9 @@ export async function getMyPartnerApplicationStatus(): Promise<PartnerApplicatio
 export async function submitPartnerApplication(
   raw: z.input<typeof applicationSchema>
 ): Promise<Result<{ id: string }>> {
-  let user;
-  try {
-    user = await requireUser();
-  } catch {
-    return { error: "Connect your wallet to apply as a partner." };
-  }
+  const auth = await authorizeUser("Connect your wallet to apply as a partner.");
+  if (!auth.ok) return { error: auth.message };
+  const user = auth.user;
 
   if (user.role === "staff_admin") {
     return { error: "Staff accounts already have full admin access." };
@@ -205,11 +182,9 @@ export async function submitPartnerApplication(
 export async function approvePartnerApplication(
   intakeId: string
 ): Promise<Result<{ productId: string }>> {
-  try {
-    await requireStaff();
-  } catch {
-    return { error: "You must be signed in as staff to do this." };
-  }
+  const auth = await authorizeStaff();
+  if (!auth.ok) return toActionError(auth);
+  const staff = auth.user;
 
   const intake = await prisma.partnerIntake.findUnique({
     where: { id: intakeId },
@@ -228,8 +203,6 @@ export async function approvePartnerApplication(
   if (!intake.projectName?.trim()) {
     return { error: "Application is missing an ecosystem project name." };
   }
-
-  const staff = await requireStaff();
 
   const product = await prisma.product.create({
     data: {
@@ -297,11 +270,8 @@ export async function rejectPartnerApplication(
   intakeId: string,
   notes?: string | null
 ): Promise<Result> {
-  try {
-    await requireStaff();
-  } catch {
-    return { error: "You must be signed in as staff to do this." };
-  }
+  const auth = await authorizeStaff();
+  if (!auth.ok) return toActionError(auth);
 
   const intake = await prisma.partnerIntake.findUnique({
     where: { id: intakeId },

@@ -1,5 +1,11 @@
 import type { EcosystemCategory, EcosystemProject } from "./types";
 
+/**
+ * Static seed data for the ecosystem directory — not the runtime source of truth.
+ * Seeded into `EcosystemDirectoryEntry` via `prisma/seed-ecosystem-directory.ts`.
+ * Runtime reads use `loadEcosystemExplorerProjects()` from `@/lib/ecosystem-catalog`.
+ */
+
 export const ECOSYSTEM_CATEGORIES: EcosystemCategory[] = [
   {
     id: "defi",
@@ -511,10 +517,12 @@ export const ECOSYSTEM_PROJECTS: EcosystemProject[] = [
   },
 ];
 
+/** Seed lookup only — runtime explorer uses DB-backed projects from the store. */
 export function getProjectById(id: string): EcosystemProject | undefined {
   return ECOSYSTEM_PROJECTS.find((project) => project.id === id);
 }
 
+/** Seed lookup only — runtime explorer uses DB-backed projects from the store. */
 export function getProjectBySlug(slug: string): EcosystemProject | undefined {
   return ECOSYSTEM_PROJECTS.find((project) => project.slug === slug);
 }

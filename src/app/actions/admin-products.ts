@@ -5,47 +5,16 @@ import { z } from "zod";
 import {
   ensureEcosystemDirectoryOnProductPublish,
   syncEcosystemDirectoryFromProduct,
-} from "@/lib/ecosystem-directory";
+} from "@/lib/ecosystem-catalog";
 import { prisma } from "@/lib/prisma";
 import { productPath } from "@/lib/paths";
 import { getProductPublishReadiness } from "@/lib/publish-readiness";
-import { requireStaff } from "@/lib/session";
+import { authorizeStaff, toActionError } from "@/lib/access-control";
 import { trackEventFireAndForget } from "@/lib/analytics-events";
 import { normalizeCategory } from "@/lib/project-categories";
+import { resolveProductSlugOnRename, uniqueProductSlug } from "@/lib/slugs";
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
-
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 60)
-    .replace(/^-|-$/g, "");
-}
-
-async function guard(): Promise<string | null> {
-  try {
-    await requireStaff();
-    return null;
-  } catch {
-    return "You must be signed in as staff to do this.";
-  }
-}
-
-async function uniqueSlug(base: string, ignoreId?: string): Promise<string> {
-  const root = slugify(base) || "product";
-  let slug = root;
-  let n = 1;
-  for (;;) {
-    const existing = await prisma.product.findUnique({ where: { slug } });
-    if (!existing || existing.id === ignoreId) return slug;
-    n += 1;
-    slug = `${root}-${n}`;
-  }
-}
 
 const productLinkSchema = z.object({
   label: z.string().min(1).max(80),
@@ -69,8 +38,8 @@ const productSchema = z.object({
 export async function createProduct(
   raw: z.input<typeof productSchema>
 ): Promise<Result<{ id: string }>> {
-  const err = await guard();
-  if (err) return { error: err };
+  const auth = await authorizeStaff();
+  if (!auth.ok) return toActionError(auth);
   const parsed = productSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const data = parsed.data;
@@ -83,7 +52,7 @@ export async function createProduct(
   const product = await prisma.product.create({
     data: {
       name: data.name,
-      slug: await uniqueSlug(data.name),
+      slug: await uniqueProductSlug(data.name),
       description: data.description,
       logoUrl: data.logoUrl || null,
       bannerUrl: data.bannerUrl || null,
@@ -97,10 +66,9 @@ export async function createProduct(
     },
   });
 
-  const staff = await requireStaff().catch(() => null);
-  if (staff) {
-    trackEventFireAndForget({
-      eventName: "admin_ecosystem_project_created",
+  const staff = auth.user;
+  trackEventFireAndForget({
+    eventName: "admin_ecosystem_project_created",
       source: "admin",
       path: "/admin/products/new",
       userId: staff.id,
@@ -108,7 +76,6 @@ export async function createProduct(
       ecosystemProjectSlug: product.slug,
       metadata: { adminUserId: staff.id },
     });
-  }
 
   revalidatePath("/admin");
   revalidatePath("/admin/products");
@@ -121,18 +88,15 @@ export async function updateProduct(
   id: string,
   raw: z.input<typeof productSchema>
 ): Promise<Result> {
-  const err = await guard();
-  if (err) return { error: err };
+  const auth = await authorizeStaff();
+  if (!auth.ok) return toActionError(auth);
   const parsed = productSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   const data = parsed.data;
 
   const current = await prisma.product.findUnique({ where: { id } });
   if (!current) return { error: "Product not found." };
-  const nextSlug =
-    slugify(data.name) === current.slug
-      ? current.slug
-      : await uniqueSlug(data.name, id);
+  const nextSlug = await resolveProductSlugOnRename(data.name, current.slug, id);
   const role = data.role ?? current.role;
   const category = role === "foundation" ? null : normalizeCategory(data.category);
   const featured = role === "foundation" ? false : (data.featured ?? false);
@@ -176,8 +140,8 @@ export async function setProductStatus(
   id: string,
   status: "draft" | "published" | "archived"
 ): Promise<Result> {
-  const err = await guard();
-  if (err) return { error: err };
+  const auth = await authorizeStaff();
+  if (!auth.ok) return toActionError(auth);
 
   if (status === "published") {
     const readiness = await getProductPublishReadiness(id);
@@ -199,22 +163,20 @@ export async function setProductStatus(
   });
 
   if (status === "published" && current.status !== "published") {
-    const staff = await requireStaff().catch(() => null);
-    if (staff) {
-      trackEventFireAndForget({
-        eventName: "admin_ecosystem_project_published",
-        source: "admin",
-        path: `/admin/products/${id}`,
-        userId: staff.id,
-        ecosystemProjectId: id,
-        ecosystemProjectSlug: product.slug,
-        metadata: {
-          adminUserId: staff.id,
-          previousStatus: current.status,
-          nextStatus: status,
-        },
-      });
-    }
+    const staff = auth.user;
+    trackEventFireAndForget({
+      eventName: "admin_ecosystem_project_published",
+      source: "admin",
+      path: `/admin/products/${id}`,
+      userId: staff.id,
+      ecosystemProjectId: id,
+      ecosystemProjectSlug: product.slug,
+      metadata: {
+        adminUserId: staff.id,
+        previousStatus: current.status,
+        nextStatus: status,
+      },
+    });
   }
 
   if (status === "published") {
@@ -232,8 +194,8 @@ export async function setProductStatus(
 }
 
 export async function deleteProduct(id: string): Promise<Result> {
-  const err = await guard();
-  if (err) return { error: err };
+  const auth = await authorizeStaff();
+  if (!auth.ok) return toActionError(auth);
 
   const product = await prisma.product.findUnique({
     where: { id },

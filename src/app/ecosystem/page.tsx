@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { EcosystemExplorer } from "@/components/ecosystem/ecosystem-explorer";
 import { EcosystemExplorerProvider } from "@/components/ecosystem/ecosystem-explorer-provider";
-import { loadExplorerProjects } from "@/lib/ecosystem/queries";
+import { loadEcosystemExplorerProjects } from "@/lib/ecosystem-catalog";
 
 export const metadata: Metadata = {
   title: "Ecosystem Explorer",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function EcosystemPage() {
-  const projects = await loadExplorerProjects();
+  const projects = await loadEcosystemExplorerProjects();
 
   return (
     <EcosystemExplorerProvider projects={projects}>

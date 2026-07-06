@@ -25,8 +25,8 @@ import {
   isVisibleToLearners,
   visibilityToStatus,
 } from "@/lib/learner-visibility";
-import { upsertBadge } from "@/app/actions/admin";
-import { upsertPartnerBadge } from "@/app/actions/project-courses";
+import { upsertBadge } from "@/app/actions/course-editing";
+import { courseEditorContext } from "@/lib/course-editor-context";
 import { FIELD_LIMITS as L } from "@/lib/field-limits";
 import type { BadgeStatus } from "@prisma/client";
 
@@ -73,30 +73,18 @@ export function BadgeForm({
     setBusy(true);
     setError(null);
     setSaved(false);
-    const badgeStatus: BadgeStatus =
-      variant === "partner"
-        ? "draft"
-        : isArchived
-          ? "archived"
-          : visibilityToStatus(visibleToLearners);
-    const res =
-      variant === "partner" && partnerProductId
-        ? await upsertPartnerBadge(partnerProductId, courseId, {
-            name,
-            description,
-            imageUrl: imageUrl || null,
-            criteria: criteria || null,
-            issuer: issuer || "Arcademy",
-            status: badgeStatus,
-          })
-        : await upsertBadge(courseId, {
-            name,
-            description,
-            imageUrl: imageUrl || null,
-            criteria: criteria || null,
-            issuer: issuer || "Arcademy",
-            status: badgeStatus,
-          });
+    const ctx = courseEditorContext(variant, partnerProductId);
+    const badgeStatus: BadgeStatus = isArchived
+      ? "archived"
+      : visibilityToStatus(visibleToLearners);
+    const res = await upsertBadge(ctx, courseId, {
+      name,
+      description,
+      imageUrl: imageUrl || null,
+      criteria: criteria || null,
+      issuer: issuer || "Arcademy",
+      status: badgeStatus,
+    });
     setBusy(false);
     if ("error" in res) {
       setError(res.error);
@@ -182,15 +170,19 @@ export function BadgeForm({
               />
             </FormField>
 
-            {variant === "admin" && !isArchived && (
+            {!isArchived && (
               <LearnerVisibilityField
                 id="badge-visibility"
                 visible={visibleToLearners}
                 onChange={setVisibleToLearners}
-                description="The badge goes live when you publish the course if it is still hidden."
+                description={
+                  variant === "partner"
+                    ? "Published badge content goes live when staff publishes the course."
+                    : "The badge goes live when you publish the course if it is still hidden."
+                }
               />
             )}
-            {variant === "admin" && isArchived && (
+            {isArchived && (
               <p className="self-end text-sm text-muted-foreground">
                 This badge is archived and cannot be shown to learners.
               </p>

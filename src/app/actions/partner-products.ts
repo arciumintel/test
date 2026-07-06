@@ -5,32 +5,15 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { productPath } from "@/lib/paths";
 import { normalizeCategory } from "@/lib/project-categories";
-import { requireProjectAdmin } from "@/lib/project-admin";
+import {
+  ACCESS_MESSAGES,
+  authorizeProjectAdmin,
+  toActionError,
+} from "@/lib/access-control";
+
+import { resolveProductSlugOnRename } from "@/lib/slugs";
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
-
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 60)
-    .replace(/^-|-$/g, "");
-}
-
-async function uniqueSlug(base: string, ignoreId?: string): Promise<string> {
-  const root = slugify(base) || "product";
-  let slug = root;
-  let n = 1;
-  for (;;) {
-    const existing = await prisma.product.findUnique({ where: { slug } });
-    if (!existing || existing.id === ignoreId) return slug;
-    n += 1;
-    slug = `${root}-${n}`;
-  }
-}
 
 const productLinkSchema = z.object({
   label: z.string().min(1).max(80),
@@ -50,11 +33,8 @@ export async function updatePartnerProduct(
   productId: string,
   raw: z.input<typeof partnerProductSchema>
 ): Promise<Result> {
-  try {
-    await requireProjectAdmin(productId);
-  } catch {
-    return { error: "You do not have permission to manage this project." };
-  }
+  const auth = await authorizeProjectAdmin(productId);
+  if (!auth.ok) return toActionError(auth);
 
   const parsed = partnerProductSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
@@ -62,10 +42,11 @@ export async function updatePartnerProduct(
   const current = await prisma.product.findUnique({ where: { id: productId } });
   if (!current) return { error: "Ecosystem project not found." };
 
-  const nextSlug =
-    slugify(parsed.data.name) === current.slug
-      ? current.slug
-      : await uniqueSlug(parsed.data.name, productId);
+  const nextSlug = await resolveProductSlugOnRename(
+    parsed.data.name,
+    current.slug,
+    productId
+  );
 
   await prisma.product.update({
     where: { id: productId },
@@ -105,11 +86,8 @@ export async function getPartnerProduct(
     };
   }>
 > {
-  try {
-    await requireProjectAdmin(productId);
-  } catch {
-    return { error: "You do not have permission to manage this project." };
-  }
+  const auth = await authorizeProjectAdmin(productId);
+  if (!auth.ok) return toActionError(auth);
 
   const product = await prisma.product.findUnique({
     where: { id: productId },

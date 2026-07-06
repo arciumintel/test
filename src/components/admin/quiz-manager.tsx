@@ -30,13 +30,8 @@ import {
   createQuestion,
   updateQuestion,
   deleteQuestion,
-} from "@/app/actions/admin";
-import {
-  upsertPartnerFinalQuiz,
-  createPartnerQuestion,
-  updatePartnerQuestion,
-  deletePartnerQuestion,
-} from "@/app/actions/project-courses";
+} from "@/app/actions/course-editing";
+import { courseEditorContext } from "@/lib/course-editor-context";
 import { FIELD_LIMITS as L } from "@/lib/field-limits";
 
 export type AdminQuestion = {
@@ -79,10 +74,9 @@ export function QuizManager({
     quiz?.title ?? (isLessonScope ? "Knowledge check" : "Course Quiz")
   );
   const [description, setDescription] = React.useState(quiz?.description ?? "");
+  const editorCtx = courseEditorContext(variant, partnerProductId);
   const [visibleToLearners, setVisibleToLearners] = React.useState(
-    isVisibleToLearners(
-      quiz?.status ?? (variant === "partner" ? "draft" : "published")
-    )
+    isVisibleToLearners(quiz?.status ?? "published")
   );
   const [threshold, setThreshold] = React.useState(
     String(quiz?.passThreshold ?? 70)
@@ -98,15 +92,12 @@ export function QuizManager({
       title,
       passThreshold: Number(threshold),
       description: description || null,
-      status:
-        variant === "partner" ? "draft" : visibilityToStatus(visibleToLearners),
+      status: visibilityToStatus(visibleToLearners),
     };
     const res =
       isLessonScope && lessonId
-        ? await upsertLessonKnowledgeCheck(courseId, lessonId, payload)
-        : variant === "partner" && partnerProductId
-          ? await upsertPartnerFinalQuiz(partnerProductId, courseId, payload)
-          : await upsertFinalQuiz(courseId, payload);
+        ? await upsertLessonKnowledgeCheck(editorCtx, courseId, lessonId, payload)
+        : await upsertFinalQuiz(editorCtx, courseId, payload);
     setSavingQuiz(false);
     if ("error" in res) {
       setQuizError(res.error);
@@ -159,12 +150,16 @@ export function QuizManager({
               placeholder="Explain what this quiz checks."
             />
           </div>
-          {variant === "admin" && !isLessonScope && (
+          {!isLessonScope && (
             <LearnerVisibilityField
               id="quiz-visibility"
               visible={visibleToLearners}
               onChange={setVisibleToLearners}
-              description="The final quiz goes live when you publish the course if it is still hidden."
+              description={
+                variant === "partner"
+                  ? "Published quiz content goes live when staff publishes the course."
+                  : "The final quiz goes live when you publish the course if it is still hidden."
+              }
             />
           )}
           {variant === "admin" && isLessonScope && (
@@ -337,13 +332,10 @@ function QuestionForm({
       correctAnswer: correct,
       explanation: explanation || null,
     };
+    const editorCtx = courseEditorContext(variant, partnerProductId);
     const res = question
-      ? variant === "partner" && partnerProductId
-        ? await updatePartnerQuestion(partnerProductId, question.id, payload)
-        : await updateQuestion(question.id, payload)
-      : variant === "partner" && partnerProductId
-        ? await createPartnerQuestion(partnerProductId, quizId, payload)
-        : await createQuestion(quizId, payload);
+      ? await updateQuestion(editorCtx, question.id, payload)
+      : await createQuestion(editorCtx, quizId, payload);
     setBusy(false);
     if ("error" in res) {
       setError(res.error);
@@ -473,11 +465,8 @@ function DeleteQuestionButton({
       disabled={busy}
       onClick={async () => {
         setBusy(true);
-        if (variant === "partner" && partnerProductId) {
-          await deletePartnerQuestion(partnerProductId, questionId);
-        } else {
-          await deleteQuestion(questionId);
-        }
+        const editorCtx = courseEditorContext(variant, partnerProductId);
+        await deleteQuestion(editorCtx, questionId);
         setBusy(false);
         onDeleted();
       }}
