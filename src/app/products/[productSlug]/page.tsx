@@ -95,7 +95,7 @@ export default async function ProductPage({
             path={pagePath}
           />
         </div>
-        <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-accent to-secondary">
+        <div className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl border bg-media-placeholder">
           {product.logoUrl ? (
             <Image
               src={product.logoUrl}

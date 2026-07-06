@@ -6,8 +6,9 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
-  Arcademy design system.
-  Calm, official, trustworthy. Violet/indigo brand on a soft neutral canvas.
+  Arcademy Vault design system.
+  Cryptographic / secretive identity — approachable-first. Teal primary,
+  brass seal accents, security-paper light canvas, interference ambient texture.
 */
 :root {
   --radius: 0.75rem;
@@ -15,101 +16,118 @@
   --radius-card: 1rem;
   --radius-button: 0.75rem;
 
-  --background: oklch(0.99 0.003 264);
-  --foreground: oklch(0.21 0.02 264);
+  /* Light — security paper */
+  --background: #f4f1e8;
+  --foreground: #12201f;
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.21 0.02 264);
+  --card: #fffdf8;
+  --card-foreground: #12201f;
 
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.21 0.02 264);
+  --popover: #fffdf8;
+  --popover-foreground: #12201f;
 
-  --primary: #6755ff;
+  --primary: #1c7e79;
   --primary-foreground: #ffffff;
 
-  --secondary: oklch(0.96 0.01 264);
-  --secondary-foreground: oklch(0.28 0.03 280);
+  --secondary: #e9e3d2;
+  --secondary-foreground: #12201f;
 
-  --muted: oklch(0.97 0.005 264);
-  --muted-foreground: oklch(0.52 0.02 264);
+  --muted: #e9e3d2;
+  --muted-foreground: #5f6e6b;
 
-  --accent: oklch(0.95 0.03 280);
-  --accent-foreground: oklch(0.32 0.08 280);
+  --accent: #e5dec9;
+  --accent-foreground: #12201f;
 
-  --destructive: #ef4444;
+  --destructive: #dc2626;
   --destructive-foreground: #ffffff;
 
-  --success: #22c55e;
+  --success: #16a34a;
   --success-foreground: #ffffff;
 
-  --warning: #f59e0b;
+  --warning: #d97706;
   --warning-foreground: #422006;
 
-  --info: #3b82f6;
+  --info: #2563eb;
   --info-foreground: #ffffff;
 
-  /* Progress / XP meters share the info accent */
-  --xp: var(--info);
-  --xp-foreground: var(--info-foreground);
+  --xp: var(--primary);
+  --xp-foreground: var(--primary-foreground);
 
-  --border: oklch(0.92 0.005 264);
-  --input: oklch(0.94 0.006 264);
-  --input-background: oklch(0.965 0.005 264);
-  --input-background-focus: oklch(1 0 0);
-  --ring: #6755ff;
+  --border: #e5dec9;
+  --input: #e5dec9;
+  --input-background: #f4f1e8;
+  --input-background-focus: #fffdf8;
+  --ring: #1c7e79;
 
-  --chart-1: #6755ff;
-  --chart-2: #3b82f6;
-  --chart-3: #22c55e;
-  --chart-4: #f59e0b;
-  --chart-5: #ef4444;
+  /* Vault semantic — brass seal (decorative / large text on light) */
+  --seal: #b8862a;
+  --seal-foreground: #8a6516;
+  --earned: #8a6516;
+  --earned-background: rgba(184, 134, 42, 0.16);
+  --earned-border: rgba(184, 134, 42, 0.45);
+
+  --interference-stroke: rgba(184, 134, 42, 0.09);
+
+  --chart-1: #1c7e79;
+  --chart-2: #b8862a;
+  --chart-3: #16a34a;
+  --chart-4: #d97706;
+  --chart-5: #dc2626;
 }
 
 .dark {
-  --background: oklch(0.17 0.02 270);
-  --foreground: oklch(0.96 0.005 264);
+  --background: #0c1a1c;
+  --foreground: #eaf3f1;
 
-  --card: oklch(0.21 0.025 270);
-  --card-foreground: oklch(0.96 0.005 264);
+  --card: #102325;
+  --card-foreground: #eaf3f1;
 
-  --popover: oklch(0.21 0.025 270);
-  --popover-foreground: oklch(0.96 0.005 264);
+  --popover: #102325;
+  --popover-foreground: #eaf3f1;
 
-  --primary: #8b7cff;
-  --primary-foreground: oklch(0.17 0.02 270);
+  --primary: #2fa6a0;
+  --primary-foreground: #04100f;
 
-  --secondary: oklch(0.27 0.03 270);
-  --secondary-foreground: oklch(0.96 0.005 264);
+  --secondary: #1e3a3a;
+  --secondary-foreground: #eaf3f1;
 
-  --muted: oklch(0.27 0.03 270);
-  --muted-foreground: oklch(0.7 0.02 264);
+  --muted: #1e3a3a;
+  --muted-foreground: #8ba6a2;
 
-  --accent: oklch(0.3 0.05 285);
-  --accent-foreground: oklch(0.96 0.005 264);
+  --accent: #1e3a3a;
+  --accent-foreground: #eaf3f1;
 
   --destructive: #f87171;
-  --destructive-foreground: oklch(0.17 0.02 270);
+  --destructive-foreground: #04100f;
 
   --success: #4ade80;
-  --success-foreground: oklch(0.17 0.02 270);
+  --success-foreground: #04100f;
 
   --warning: #fbbf24;
-  --warning-foreground: oklch(0.17 0.02 270);
+  --warning-foreground: #04100f;
 
   --info: #60a5fa;
-  --info-foreground: oklch(0.17 0.02 270);
+  --info-foreground: #04100f;
 
-  --xp: var(--info);
-  --xp-foreground: var(--info-foreground);
+  --xp: var(--primary);
+  --xp-foreground: var(--primary-foreground);
 
-  --border: oklch(0.3 0.02 270);
-  --input: oklch(0.34 0.02 270);
-  --input-background: oklch(0.24 0.025 270);
-  --input-background-focus: oklch(0.21 0.025 270);
-  --ring: #8b7cff;
+  --border: #1e3a3a;
+  --input: #1e3a3a;
+  --input-background: #102325;
+  --input-background-focus: #0c1a1c;
+  --ring: #2fa6a0;
 
-  --chart-1: #8b7cff;
-  --chart-2: #60a5fa;
+  --seal: #d6a43b;
+  --seal-foreground: #e7c070;
+  --earned: #e7c070;
+  --earned-background: rgba(214, 164, 59, 0.14);
+  --earned-border: rgba(214, 164, 59, 0.4);
+
+  --interference-stroke: rgba(214, 164, 59, 0.14);
+
+  --chart-1: #2fa6a0;
+  --chart-2: #d6a43b;
   --chart-3: #4ade80;
   --chart-4: #fbbf24;
   --chart-5: #f87171;
@@ -140,6 +158,11 @@
   --color-info-foreground: var(--info-foreground);
   --color-xp: var(--xp);
   --color-xp-foreground: var(--xp-foreground);
+  --color-seal: var(--seal);
+  --color-seal-foreground: var(--seal-foreground);
+  --color-earned: var(--earned);
+  --color-earned-background: var(--earned-background);
+  --color-earned-border: var(--earned-border);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-input-background: var(--input-background);
@@ -182,22 +205,121 @@
   }
 }
 
-/* Soft violet wash behind page title bands (light mode only) */
+/* ── Ambient interference texture (moiré ring-fields) ───────────────────── */
+
+.bg-ambient,
 .bg-page-header {
-  background: linear-gradient(180deg, #f7f5ff 0%, #ffffff 100%);
+  position: relative;
+  isolation: isolate;
 }
 
-.dark .bg-page-header {
+.dark .bg-ambient::before,
+.dark .bg-page-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+  background-image:
+    repeating-radial-gradient(
+      circle at 90% -5%,
+      transparent 0,
+      transparent 12px,
+      var(--interference-stroke) 12px,
+      var(--interference-stroke) 13px
+    ),
+    repeating-radial-gradient(
+      circle at 102% 35%,
+      transparent 0,
+      transparent 12px,
+      var(--interference-stroke) 12px,
+      var(--interference-stroke) 13px
+    );
+  mask-image: radial-gradient(130% 100% at 82% -10%, #000 34%, transparent 82%);
+  -webkit-mask-image: radial-gradient(
+    130% 100% at 82% -10%,
+    #000 34%,
+    transparent 82%
+  );
+}
+
+.bg-ambient::after,
+.bg-page-header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+
+.dark .bg-ambient::after,
+.dark .bg-page-header::after {
+  opacity: 0.05;
+  mix-blend-mode: soft-light;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dark .bg-ambient::before,
+  .dark .bg-page-header::before {
+    animation: ambient-drift 52s ease-in-out infinite;
+  }
+}
+
+@keyframes ambient-drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-0.4%, 0.25%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dark .bg-ambient::before,
+  .dark .bg-page-header::before {
+    animation: none;
+  }
+}
+
+/* Page title bands — flat in light; gradient wash in dark */
+.bg-page-header {
   background: var(--background);
 }
 
-/* Subtle brand wash used behind hero / marketing sections */
-.bg-grid {
-  background-image: radial-gradient(
-    color-mix(in oklch, var(--primary) 12%, transparent) 1px,
-    transparent 1px
+.dark .bg-page-header {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--card) 80%, var(--background)) 0%,
+    var(--background) 100%
   );
-  background-size: 22px 22px;
+}
+
+/* ── Signature moments ──────────────────────────────────────────────────── */
+
+@keyframes seal-reveal {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.quiz-pass-celebrate {
+  animation: seal-reveal 0.65s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quiz-pass-celebrate {
+    animation: none;
+  }
 }
 
 /* Solana wallet modal — align with site theme in light mode */
@@ -230,28 +352,19 @@
   box-shadow: 0 8px 24px color-mix(in oklch, var(--foreground) 12%, transparent);
 }
 
-/* Ecosystem Explorer — visualization-scoped glow and glass (hybrid aesthetic) */
+/* Ecosystem Explorer — visualization-scoped teal/brass framing */
 [data-eco-visualization],
 .eco-shell [data-eco-visualization] {
-  --eco-glow: color-mix(in oklch, var(--primary) 35%, transparent);
   --eco-glass: color-mix(in oklch, var(--card) 82%, transparent);
 }
 
 .eco-viz-frame {
   position: relative;
   overflow: hidden;
-  border: 1px solid color-mix(in oklch, var(--primary) 18%, var(--border));
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--border));
   border-radius: var(--radius-card);
-  background:
-    radial-gradient(
-      circle at 50% 42%,
-      color-mix(in oklch, var(--primary) 10%, transparent),
-      transparent 55%
-    ),
-    var(--background);
-  box-shadow:
-    inset 0 1px 0 color-mix(in oklch, var(--primary) 12%, transparent),
-    0 12px 40px color-mix(in oklch, var(--primary) 8%, transparent);
+  background: var(--background);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
 .eco-canvas {
@@ -262,7 +375,7 @@
 .eco-glass {
   background: color-mix(in oklch, var(--card) 88%, transparent);
   backdrop-filter: blur(12px);
-  border-color: color-mix(in oklch, var(--primary) 12%, var(--border));
+  border-color: color-mix(in srgb, var(--primary) 14%, var(--border));
 }
 
 .eco-panel {
@@ -274,8 +387,13 @@
   background:
     radial-gradient(
       circle at 50% 42%,
-      color-mix(in oklch, var(--primary) 16%, transparent),
+      color-mix(in srgb, var(--seal) 10%, transparent),
       transparent 60%
+    ),
+    radial-gradient(
+      circle at 72% 18%,
+      color-mix(in srgb, var(--primary) 12%, transparent),
+      transparent 50%
     ),
     var(--background);
 }
@@ -297,4 +415,60 @@
   .eco-canvas {
     cursor: default;
   }
+}
+
+/* Media placeholders — flat secondary in light; gradient wash in dark */
+.bg-media-placeholder {
+  background-color: var(--secondary);
+}
+
+.dark .bg-media-placeholder {
+  background-color: transparent;
+  background-image: linear-gradient(
+    to bottom right,
+    color-mix(in srgb, var(--primary) 15%, transparent),
+    var(--accent),
+    var(--secondary)
+  );
+}
+
+.bg-media-fade {
+  display: none;
+}
+
+.dark .bg-media-fade {
+  display: block;
+  background-image: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--card) 95%, transparent),
+    color-mix(in srgb, var(--card) 35%, transparent),
+    transparent
+  );
+}
+
+.bg-hero-panel {
+  background-color: var(--card);
+}
+
+.dark .bg-hero-panel {
+  background-image: linear-gradient(
+    to bottom right,
+    color-mix(in srgb, var(--primary) 6%, transparent),
+    var(--card),
+    var(--card)
+  );
+}
+
+.bg-banner-edge-fade {
+  display: none;
+}
+
+.dark .bg-banner-edge-fade {
+  display: block;
+  background-image: linear-gradient(
+    to right,
+    var(--card),
+    color-mix(in srgb, var(--card) 40%, transparent),
+    transparent
+  );
 }

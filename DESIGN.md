@@ -1,21 +1,23 @@
 ---
-name: Arcademy
-description: Official, calm learning UI for the Arcium ecosystem
+name: Arcademy Vault
+description: Cryptographic learning UI — teal primary, brass seal accents, security-paper canvas
 colors:
-  background: "oklch(0.99 0.003 264)"
-  foreground: "oklch(0.21 0.02 264)"
-  primary: "oklch(0.52 0.21 280)"
-  primary-foreground: "oklch(0.99 0.01 280)"
-  secondary: "oklch(0.96 0.01 264)"
-  secondary-foreground: "oklch(0.28 0.03 280)"
-  muted: "oklch(0.97 0.005 264)"
-  muted-foreground: "oklch(0.52 0.02 264)"
-  accent: "oklch(0.95 0.03 280)"
-  accent-foreground: "oklch(0.32 0.08 280)"
-  card: "oklch(1 0 0)"
-  border: "oklch(0.92 0.005 264)"
-  destructive: "oklch(0.58 0.22 27)"
-  success: "oklch(0.6 0.15 155)"
+  background: "#F4F1E8"
+  foreground: "#12201F"
+  primary: "#1C7E79"
+  primary-foreground: "#FFFFFF"
+  secondary: "#E9E3D2"
+  secondary-foreground: "#12201F"
+  muted: "#E9E3D2"
+  muted-foreground: "#5F6E6B"
+  accent: "#E5DEC9"
+  accent-foreground: "#12201F"
+  card: "#FFFDF8"
+  border: "#E5DEC9"
+  seal: "#B8862A"
+  earned: "#8A6516"
+  destructive: "#DC2626"
+  success: "#16A34A"
 typography:
   display:
     fontFamily: "Geist, system-ui, sans-serif"
@@ -91,144 +93,154 @@ components:
     height: "2.5rem"
 ---
 
-# Design System: Arcademy
+# Design System: Arcademy Vault
 
 ## Overview
 
-**Creative North Star: "The Trusted Classroom"**
+**Creative North Star: "The Sealed Classroom"**
 
-Arcademy looks and feels like an official institution for ecosystem learning: calm surfaces, violet-indigo brand accents used with restraint, and typography that prioritizes readability over display flair. The UI serves learning workflows (catalog, lessons, quizzes, profile, admin) rather than selling hype. Depth comes from tonal layering and subtle borders, not dramatic shadows or glass effects.
+Arcademy has its own cryptographic identity — approachable-first, never intimidating hacker-tool aesthetic. Learners encounter warm security-paper surfaces, teal primary actions, and brass seal accents reserved for credential moments. Depth comes from tonal layering, interference ambient texture, and lock/key seal badges — not neon glow or gradient meshes.
 
-This system explicitly rejects crypto hype aesthetics, developer-wiki density, corporate enterprise polish, and generic SaaS landing-page templates. Visual identity stays aligned with Arcium's own brand while remaining approachable to newcomers.
+Arcademy is **not** inheriting Arcium's violet brand. It teaches the Arcium ecosystem but speaks with its own voice.
 
 **Key Characteristics:**
 
-- Soft neutral canvas with cool-violet tint (not warm cream/sand defaults)
-- Single sans family (Geist) with weight contrast for hierarchy
-- Primary violet used for CTAs, progress, and brand moments at ≤15% of any screen
-- Rounded corners capped at 12–16px on cards; pills reserved for badges and tags
-- Visible progress and status at every step of the learner journey
+- Security-paper light canvas (`#F4F1E8`) / deep teal-black dark canvas (`#0C1A1C`)
+- Teal primary for CTAs, progress, links, focus rings
+- Brass seal accent for decorative/large credential text only — earned chip text darkened on light for WCAG
+- Interference moiré texture ambient-only (headers, hero, footer, empty states, seal surfaces)
+- Lock/key `SealBadge` for badge earn and verification moments
+- Grain overlay paired with interference at low opacity
 
 ## Colors
 
-A restrained product palette: tinted cool neutrals carry most surfaces; violet-indigo primary marks official Arcium-aligned actions and brand moments.
+### Primary (Teal)
 
-### Primary
+| Mode | Token | Hex | Use |
+|------|-------|-----|-----|
+| Light | `--primary` | `#1C7E79` | Buttons, links, progress, focus |
+| Light | `--primary-foreground` | `#FFFFFF` | Text on primary |
+| Dark | `--primary` | `#2FA6A0` | Buttons, links, progress, focus |
+| Dark | `--primary-foreground` | `#04100F` | Text on primary |
 
-- **Arcium Violet** (oklch(0.52 0.21 280)): Primary buttons, logo mark, links, focus rings, selection highlight, progress indicators. The signature brand accent.
+### Canvas & Surfaces
 
-### Secondary
+| Mode | Token | Hex |
+|------|-------|-----|
+| Light | `--background` | `#F4F1E8` |
+| Light | `--card` | `#FFFDF8` |
+| Light | `--border` | `#E5DEC9` |
+| Light | `--foreground` | `#12201F` |
+| Light | `--muted-foreground` | `#5F6E6B` |
+| Dark | `--background` | `#0C1A1C` |
+| Dark | `--card` | `#102325` |
+| Dark | `--border` | `#1E3A3A` |
+| Dark | `--foreground` | `#EAF3F1` |
+| Dark | `--muted-foreground` | `#8BA6A2` |
 
-- **Soft Violet Wash** (oklch(0.95 0.03 280)): Hover backgrounds, accent surfaces, icon containers on marketing sections.
+### Seal / Brass (decorative + earned chips)
 
-### Neutral
+| Mode | Token | Hex | Use |
+|------|-------|-----|-----|
+| Light | `--seal` | `#B8862A` | Seal SVG strokes, large decorative text |
+| Light | `--earned` | `#8A6516` | Earned chip foreground (WCAG on light) |
+| Dark | `--seal` | `#D6A43B` | Seal SVG strokes, large decorative text |
+| Dark | `--earned` | `#E7C070` | Earned chip foreground on dark |
 
-- **Canvas** (oklch(0.99 0.003 264)): Page background. Cool-tinted near-white, not warm paper.
-- **Ink** (oklch(0.21 0.02 264)): Primary body text and headings.
-- **Muted Ink** (oklch(0.52 0.02 264)): Supporting copy, metadata, placeholders. Must maintain readable contrast on canvas.
-- **Surface** (oklch(1 0 0)): Card and popover backgrounds.
-- **Divider** (oklch(0.92 0.005 264)): Borders and input strokes.
-- **Secondary Fill** (oklch(0.96 0.01 264)): Secondary buttons and subtle section backgrounds.
+### XP / Progress
 
-### Semantic
+`--xp` maps to `--primary` (teal). Progress bars use `bg-xp`.
 
-- **Destructive** (oklch(0.58 0.22 27)): Delete, error, fail states.
-- **Success** (oklch(0.6 0.15 155)): Pass quiz, completion, positive confirmation.
+## Texture — Interference
 
-### Named Rules
+Two offset `repeating-radial-gradient` ring-fields create moiré fringes. Applied via `.bg-ambient` and `.bg-page-header` pseudo-elements with edge mask fade and light grain overlay.
 
-**The Restrained Accent Rule.** Primary violet appears on CTAs, the logo mark, active nav, progress bars, and one focal element per section. It never floods backgrounds or body text blocks.
+**Ambient only** — page headers, hero, footer, empty states, badge verification card header, seal surfaces.
+
+**Never on** — dashboards, quizzes, forms, lesson readers, dense content panels.
+
+Subtle drift animation (52s) respects `prefers-reduced-motion`.
+
+## Motifs
+
+- **Interference texture** — ambient backgrounds
+- **SealBadge** — lock/key SVG seal using `--seal` + `--primary`
+- **Grain** — paired with interference at 4–5% opacity
+
+**Rejected:** crossed grid (`.bg-grid`), glitch, redaction bars, heavy monospace body, glow, gradient-mesh hero lines.
 
 ## Typography
 
-**Display Font:** Geist Sans (with system-ui fallback)
-**Body Font:** Geist Sans (with system-ui fallback)
-**Mono Font:** Geist Mono (with ui-monospace fallback)
-
-**Character:** Clean geometric sans with enough weight contrast to feel official without corporate stiffness. Hierarchy through size and semibold weight, not decorative display type.
+**Display Font:** Geist Sans  
+**Body Font:** Geist Sans  
+**Mono Font:** Geist Mono (metadata, wallet addresses only — not body copy)
 
 ### Hierarchy
 
-- **Display** (600, clamp(2.25rem–3rem), 1.1): Homepage hero and major landing headings only. Max clamp ceiling 3rem; never shout past 6rem.
-- **Headline** (600, 1.5rem / text-2xl, 1.25): Section titles on catalog and course pages.
-- **Title** (600, 1rem, 1.4): Card titles, lesson names, panel headers.
-- **Body** (400, 1rem, 1.6): Lesson content, descriptions, form labels. Cap line length at 65–75ch in prose blocks.
-- **Label** (500, 0.875rem): Button text, nav items, badges, metadata.
-
-### Named Rules
-
-**The Plain Language Rule.** Typography supports scannability: short headings, generous line height on body copy, `text-wrap: balance` on h1–h3. No all-caps body copy.
+- **Display** (600, clamp 2.25–3rem): Homepage hero only
+- **Headline** (600, 1.5rem): Section titles
+- **Title** (600, 1rem): Card titles, lesson names
+- **Body** (400, 1rem, 1.6): Lesson content, descriptions
+- **Label** (500, 0.875rem): Buttons, nav, badges
 
 ## Elevation
 
-Flat-by-default with light structural shadows. Cards use `shadow-sm` (subtle, ≤8px blur) paired with a 1px border, never both a heavy drop shadow and decorative border on the same element. The sticky header uses backdrop blur (`bg-background/80 backdrop-blur-md`) as a functional layer, not decorative glassmorphism.
-
-### Shadow Vocabulary
-
-- **Structural** (`shadow-sm`): Cards, inputs, primary buttons at rest. Single soft shadow, no wide blur.
-- **None at rest:** Page sections, list rows, lesson content. Depth via background tint and border only.
-
-### Named Rules
-
-**The No Ghost Card Rule.** Do not pair `border: 1px solid` with wide soft shadows (blur ≥16px). Pick border OR a tight shadow, not both as decoration.
+Flat-by-default. Cards: `shadow-sm` + 1px border. No wide glow shadows. Ecosystem viz frame uses inset highlight only (no outer glow).
 
 ## Components
 
 ### Buttons
 
-- **Shape:** Moderately rounded (0.625rem / rounded-md)
-- **Primary:** Violet fill, white foreground, shadow-sm, h-10 default / h-11 lg
-- **Hover / Focus:** Primary darkens to 90% opacity; focus-visible ring at 3px ring-ring/40
-- **Ghost:** Transparent with accent hover wash for nav and secondary actions
-- **Outline:** Border + background, accent hover for tertiary actions
+- **Primary:** Teal fill, on-primary foreground, h-10 default
+- **Ghost / Outline:** Accent hover wash on security-paper tones
 
-### Cards / Containers
+### Cards
 
-- **Corner Style:** 1rem (rounded-xl) on card shells; 0.75rem on inline feature blocks
-- **Background:** White card on canvas; dashed border for empty states
-- **Shadow Strategy:** shadow-sm only; border always present
-- **Internal Padding:** 1.5rem (p-6) standard; gap-6 between card sections
-
-### Inputs / Fields
-
-- **Style:** 1px border, canvas background, rounded-md, h-10
-- **Focus:** 3px ring at ring/40, border shifts to ring color
-- **Placeholder:** muted-foreground; must meet contrast requirements
-
-### Navigation
-
-- **Header:** Sticky, 4rem height, logo mark (primary square + GraduationCap icon), ghost nav links, wallet + Discord auth on the right
-- **Active state:** Font weight or primary tint; no heavy underline bars
-- **Mobile:** Collapse nav; preserve wallet connect prominence
+- `rounded-xl`, opaque `--card` background
+- Dashed border empty states with optional `.bg-ambient` overlay
 
 ### Progress & Badges
 
-- **Progress bar:** Primary fill on muted track
-- **Badges:** Rounded pill for status labels; primary variant for official platform tag
-- **Level badges:** Small caps avoided; use readable label text
+- Progress: `bg-xp` (teal) on `--secondary` track
+- Status badges: semantic variants (`success`, `earned`, etc.)
+- Credential display: `SealBadge` or `BadgeMedallion` (image override)
 
-### Marketing Hero (homepage)
+### Signature Moments
 
-- **Grid wash:** `.bg-grid` radial dot pattern at 12% primary opacity
-- **Gradient accent:** Single horizontal hairline via primary/40, not gradient text
-- **CTA cluster:** Primary button + muted supporting line ("No wallet needed to explore")
+- **Quiz pass:** `SealBadge` with `quiz-pass-celebrate` animation when badge earned; teal trophy icon otherwise
+- **Badge verification:** Ambient texture on card header band + seal medallion
+
+## WCAG AA
+
+All body text and interactive controls on **opaque** surfaces. Texture is decorative behind content, never under small text directly.
+
+Verified pairs (approximate):
+
+| Pair | Ratio | Notes |
+|------|-------|-------|
+| `#12201F` on `#FFFDF8` | ~12.5:1 | Body on card |
+| `#5F6E6B` on `#FFFDF8` | ~5.2:1 | Muted on card |
+| `#1C7E79` on `#FFFFFF` | ~4.6:1 | Primary button |
+| `#8A6516` on earned chip bg | ~4.5:1+ | Light earned chip (darkened brass) |
+| `#EAF3F1` on `#102325` | ~11:1 | Dark body on card |
+| `#8BA6A2` on `#102325` | ~4.6:1 | Dark muted |
+| `#2FA6A0` on `#04100F` | ~5.5:1 | Dark primary button |
+
+Brass `#B8862A` on white is **not** used for small body text — decorative/large only on light mode.
 
 ## Do's and Don'ts
 
-### Do:
+### Do
 
-- **Do** use OKLCH tokens from globals.css for all new surfaces and states
-- **Do** keep primary violet on CTAs, progress, and one focal element per view
-- **Do** show learner progress explicitly (lesson checklist, quiz score, badge award)
-- **Do** write button labels as verb + object ("Browse courses", "Save changes")
-- **Do** align visual tone with Arcium's official brand identity
+- Use CSS tokens from `globals.css` for all surfaces
+- Apply `.bg-ambient` only on marketing/header/footer/empty-state bands
+- Use `SealBadge` for credential earn and verification moments
+- Keep teal on CTAs, progress, and one focal element per section
 
-### Don't:
+### Don't
 
-- **Don't** use crypto hype visuals: neon gradients, moon memes, degen energy, loud Web3 marketing
-- **Don't** default to developer-docs aesthetics: dense monospace body, API-reference layout, insider jargon in UI copy
-- **Don't** adopt corporate enterprise polish: navy-and-gold schemes, stock-photo trust badges, "enterprise-grade" filler
-- **Don't** use generic SaaS templates: hero metrics, identical icon-card grids, numbered section eyebrows (01/02/03)
-- **Don't** use gradient text, side-stripe borders, or glassmorphism as decoration
-- **Don't** exceed 12–16px border-radius on cards or round inputs past pill territory
-- **Don't** pair 1px borders with wide soft drop shadows on the same element
+- Don't use violet/indigo Arcium brand colors in Arcademy UI
+- Don't put interference texture on quiz forms or lesson readers
+- Don't use glow, gradient-mesh heroes, or crossed-line grids
+- Don't use brass for small body text on light mode
+- Don't use crypto hype or hacker-tool aesthetics

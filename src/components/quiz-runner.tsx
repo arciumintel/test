@@ -20,6 +20,7 @@ import { coursePath, badgeVerificationPath } from "@/lib/paths";
 import { submitQuiz } from "@/app/actions/learn";
 import { trackClientEvent } from "@/app/actions/tracking";
 import { CourseCompletionNextSteps } from "@/components/course-completion-next-steps";
+import { SealBadge } from "@/components/seal-badge";
 import type { PostCompletionRecommendations } from "@/lib/courses";
 import {
   getBrowserReferrer,
@@ -151,7 +152,15 @@ export function QuizRunner({
         >
           <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
             {result.passed ? (
-              <Trophy className="size-12 text-success" />
+              result.newBadge ? (
+                <SealBadge
+                  size="lg"
+                  celebrate
+                  label="Course badge earned"
+                />
+              ) : (
+                <Trophy className="quiz-pass-celebrate size-12 text-primary" />
+              )
             ) : (
               <RotateCcw className="size-12 text-destructive" />
             )}
@@ -166,7 +175,7 @@ export function QuizRunner({
             {result.newBadge && (
               <Alert variant="success" className="mt-2 text-left">
                 <Award />
-                <AlertTitle>Badge earned</AlertTitle>
+                <AlertTitle className="text-earned">Badge earned</AlertTitle>
                 <AlertDescription>
                   You&apos;ve completed the course. Your new badge is saved in
                   My learning.

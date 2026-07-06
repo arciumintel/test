@@ -43,7 +43,9 @@ export function PageHeader({
         className,
       )}
     >
-      <header className={cn("max-w-2xl", innerClassName)}>{content}</header>
+      <header className={cn("relative z-10 max-w-2xl", innerClassName)}>
+        {content}
+      </header>
     </div>
   );
 }

@@ -15,6 +15,7 @@ const badgeVariants = cva(
         outline: "border-border/80 text-foreground bg-background",
         destructive: "border-transparent bg-destructive/12 text-destructive",
         muted: "border-transparent bg-muted text-muted-foreground",
+        earned: "border-earned-border bg-earned-background text-earned",
       },
     },
     defaultVariants: {
@@ -53,6 +54,7 @@ function StatusDot({
     outline: "bg-foreground/50",
     destructive: "bg-destructive",
     muted: "bg-muted-foreground",
+    earned: "bg-earned",
   };
 
   return (

@@ -28,7 +28,7 @@ export function FoundationStartHero({
   return (
     <section
       aria-labelledby="foundation-start-heading"
-      className="overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/[0.06] via-card to-card"
+      className="bg-hero-panel overflow-hidden rounded-2xl border"
     >
       <div className="grid gap-0 md:grid-cols-[minmax(0,1fr)_auto]">
         <div className="flex flex-col gap-5 p-6 sm:p-8 md:pr-4">
@@ -127,13 +127,13 @@ export function FoundationStartHero({
               className="object-cover"
             />
             <div
-              className="absolute inset-0 bg-gradient-to-r from-card via-card/40 to-transparent"
+              className="bg-banner-edge-fade absolute inset-0"
               aria-hidden
             />
           </div>
         ) : (
           <div
-            className="hidden bg-gradient-to-br from-primary/15 via-accent/40 to-secondary/30 md:block md:w-48 lg:w-56"
+            className="bg-media-placeholder hidden md:block md:w-48 lg:w-56"
             aria-hidden
           />
         )}

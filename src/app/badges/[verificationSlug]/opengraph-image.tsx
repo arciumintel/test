@@ -4,6 +4,15 @@ import { getBadgeAwardByVerificationSlug } from "@/lib/badges";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+const VAULT = {
+  canvas: "#0c1a1c",
+  card: "#102325",
+  foreground: "#eaf3f1",
+  muted: "#8ba6a2",
+  primary: "#2fa6a0",
+  seal: "#d6a43b",
+} as const;
+
 export default async function Image({
   params,
 }: {
@@ -22,8 +31,8 @@ export default async function Image({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "#0f172a",
-            color: "#f8fafc",
+            background: VAULT.canvas,
+            color: VAULT.foreground,
             fontSize: 48,
             fontWeight: 600,
           }}
@@ -45,8 +54,8 @@ export default async function Image({
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 64,
-          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #0f766e 100%)",
-          color: "#f8fafc",
+          background: VAULT.canvas,
+          color: VAULT.foreground,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -54,12 +63,13 @@ export default async function Image({
             style={{
               width: 56,
               height: 56,
-              borderRadius: 16,
-              background: "rgba(255,255,255,0.12)",
+              borderRadius: 28,
+              border: `2px solid ${VAULT.seal}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 28,
+              color: VAULT.seal,
             }}
           >
             ✓
@@ -72,7 +82,7 @@ export default async function Image({
             style={{
               fontSize: 24,
               fontWeight: 600,
-              color: "#5eead4",
+              color: VAULT.primary,
               textTransform: "uppercase",
               letterSpacing: 2,
             }}
@@ -82,12 +92,14 @@ export default async function Image({
           <div style={{ fontSize: 64, fontWeight: 700, lineHeight: 1.1 }}>
             {award.badge.name}
           </div>
-          <div style={{ fontSize: 30, color: "#cbd5e1", lineHeight: 1.4 }}>
+          <div
+            style={{ fontSize: 30, color: VAULT.muted, lineHeight: 1.4 }}
+          >
             {award.course.title} · {award.course.product.name}
           </div>
         </div>
 
-        <div style={{ fontSize: 22, color: "#94a3b8" }}>
+        <div style={{ fontSize: 22, color: VAULT.muted }}>
           Official Arcium ecosystem learning credential
         </div>
       </div>

@@ -38,7 +38,7 @@ function ProductCardArtwork({
   return (
     <div
       className={cn(
-        "relative overflow-hidden bg-gradient-to-br from-primary/20 via-accent to-secondary",
+        "relative overflow-hidden bg-media-placeholder",
         className
       )}
     >
@@ -52,7 +52,7 @@ function ProductCardArtwork({
         />
       ) : null}
       <div
-        className="absolute inset-0 bg-gradient-to-t from-card/95 via-card/35 to-transparent"
+        className="bg-media-fade absolute inset-0"
         aria-hidden
       />
     </div>

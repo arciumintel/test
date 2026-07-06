@@ -1,5 +1,5 @@
 import { PrismaNeon } from "@prisma/adapter-neon";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../../generated/client";
 import { getDatabaseConnectionString } from "@/lib/configure-neon";
 
 const globalForPrisma = globalThis as unknown as {

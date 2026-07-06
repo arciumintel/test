@@ -84,10 +84,8 @@ export default async function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative overflow-hidden border-b">
-        <div className="bg-grid absolute inset-0 opacity-60" />
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+      <section className="relative overflow-hidden border-b bg-ambient">
+        <div className="relative z-10 mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
           <div className="mx-auto max-w-3xl text-center">
             <Badge variant="default" className="mx-auto mb-6">
               Official Arcium learning platform
@@ -218,13 +216,14 @@ export default async function HomePage() {
                 ))}
               </div>
             ) : (
-              <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
+              <div className="relative overflow-hidden rounded-xl border border-dashed bg-muted/30 p-10 text-center">
+                <div className="bg-ambient pointer-events-none absolute inset-0" aria-hidden />
                 <BookOpen
-                  className="mx-auto size-8 text-muted-foreground"
+                  className="relative z-10 mx-auto size-8 text-muted-foreground"
                   aria-hidden
                 />
-                <p className="mt-3 font-medium">No published courses yet</p>
-                <p className="mt-1 text-pretty text-sm text-muted-foreground">
+                <p className="relative z-10 mt-3 font-medium">No published courses yet</p>
+                <p className="relative z-10 mt-1 text-pretty text-sm text-muted-foreground">
                   The Arcademy team is preparing the first courses. Check back
                   soon.
                 </p>
@@ -288,13 +287,14 @@ export default async function HomePage() {
                   ))}
                 </div>
               ) : (
-                <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
+                <div className="relative overflow-hidden rounded-xl border border-dashed bg-muted/30 p-10 text-center">
+                  <div className="bg-ambient pointer-events-none absolute inset-0" aria-hidden />
                   <BookOpen
-                    className="mx-auto size-8 text-muted-foreground"
+                    className="relative z-10 mx-auto size-8 text-muted-foreground"
                     aria-hidden
                   />
-                  <p className="mt-3 font-medium">No published projects yet</p>
-                  <p className="mt-1 text-pretty text-sm text-muted-foreground">
+                  <p className="relative z-10 mt-3 font-medium">No published projects yet</p>
+                  <p className="relative z-10 mt-1 text-pretty text-sm text-muted-foreground">
                     Project pages appear here as Arcium apps and tools are added
                     to Arcademy.
                   </p>

@@ -89,8 +89,9 @@ export default async function BadgeVerificationPage({
         ]}
       />
 
-      <Card className="mt-6 overflow-hidden border-2 border-success/20 shadow-sm">
-        <CardContent className="p-6 sm:p-8">
+      <Card className="relative mt-6 overflow-hidden border-2 border-success/20 shadow-sm">
+        <div className="bg-ambient pointer-events-none absolute inset-x-0 top-0 h-40" aria-hidden />
+        <CardContent className="relative z-10 p-6 sm:p-8">
           <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
             <BadgeMedallion
               name={badge.name}

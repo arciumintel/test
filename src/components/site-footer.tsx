@@ -39,8 +39,8 @@ export async function SiteFooter() {
   const partnerLinks = getFooterPartnerLinks(navContext);
 
   return (
-    <footer className="border-t bg-muted/30">
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+    <footer className="relative overflow-hidden border-t bg-muted/30 bg-ambient">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <GraduationCap className="size-4 text-primary" />

@@ -38,25 +38,25 @@ function parseCssColor(value: string): [number, number, number] {
     const int = Number.parseInt(normalized, 16);
     return [(int >> 16) & 255, (int >> 8) & 255, int & 255];
   }
-  return [103, 85, 255];
+  return [28, 126, 121];
 }
 
 function readThemeColors(): ThemeColors {
   if (typeof window === "undefined") {
     return {
-      primary: "#6755ff",
-      primaryRgb: [103, 85, 255],
-      foreground: "#1a1a2e",
-      muted: "#8b8b9a",
-      background: "#fafafa",
-      info: "#3b82f6",
-      success: "#22c55e",
-      warning: "#f59e0b",
+      primary: "#1c7e79",
+      primaryRgb: [28, 126, 121],
+      foreground: "#12201f",
+      muted: "#5f6e6b",
+      background: "#f4f1e8",
+      info: "#2563eb",
+      success: "#16a34a",
+      warning: "#d97706",
     };
   }
 
   const styles = getComputedStyle(document.documentElement);
-  const primary = styles.getPropertyValue("--primary").trim() || "#6755ff";
+  const primary = styles.getPropertyValue("--primary").trim() || "#1c7e79";
   return {
     primary,
     primaryRgb: parseCssColor(primary),

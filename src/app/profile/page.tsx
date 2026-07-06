@@ -225,17 +225,18 @@ export default async function ProfilePage({
                 ))}
               </div>
             ) : (
-              <div className="mt-4 rounded-xl border border-dashed bg-muted/30 p-10 text-center">
+              <div className="relative mt-4 overflow-hidden rounded-xl border border-dashed bg-muted/30 p-10 text-center">
+                <div className="bg-ambient pointer-events-none absolute inset-0" aria-hidden />
                 <Award
-                  className="mx-auto size-7 text-muted-foreground"
+                  className="relative z-10 mx-auto size-7 text-muted-foreground"
                   aria-hidden
                 />
-                <p className="mt-3 font-medium">No badges yet</p>
-                <p className="mt-1 text-pretty text-sm text-muted-foreground">
+                <p className="relative z-10 mt-3 font-medium">No badges yet</p>
+                <p className="relative z-10 mt-1 text-pretty text-sm text-muted-foreground">
                   Complete a course and pass the final quiz to earn your first
                   badge.
                 </p>
-                <Button variant="outline" className="mt-4" asChild>
+                <Button variant="outline" className="relative z-10 mt-4" asChild>
                   <Link href="/courses">Browse courses</Link>
                 </Button>
               </div>
@@ -282,20 +283,21 @@ export default async function ProfilePage({
 
           {courses.length === 0 && (
             <section
-              className="mt-10 rounded-xl border border-dashed bg-muted/30 p-10 text-center"
+              className="relative mt-10 overflow-hidden rounded-xl border border-dashed bg-muted/30 p-10 text-center"
               aria-labelledby="empty-courses-heading"
             >
+              <div className="bg-ambient pointer-events-none absolute inset-0" aria-hidden />
               <BookOpen
-                className="mx-auto size-8 text-muted-foreground"
+                className="relative z-10 mx-auto size-8 text-muted-foreground"
                 aria-hidden
               />
-              <h2 id="empty-courses-heading" className="mt-3 font-medium">
+              <h2 id="empty-courses-heading" className="relative z-10 mt-3 font-medium">
                 You haven&apos;t started a course yet
               </h2>
-              <p className="mt-1 text-pretty text-sm text-muted-foreground">
+              <p className="relative z-10 mt-1 text-pretty text-sm text-muted-foreground">
                 Browse the catalog and start learning.
               </p>
-              <Button className="mt-4" asChild>
+              <Button className="relative z-10 mt-4" asChild>
                 <Link href="/courses">
                   Browse courses
                   <ArrowRight />

@@ -24,6 +24,7 @@ export const lessonSchema = z.object({
   status: z.enum(["draft", "published"]),
   required: z.boolean(),
   estimatedDuration: z.coerce.number().int().min(0).max(100000).optional().nullable(),
+  moduleId: z.string().optional().nullable(),
 });
 
 export const questionSchema = z.object({

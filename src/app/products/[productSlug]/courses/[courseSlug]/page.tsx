@@ -176,7 +176,7 @@ export default async function CourseDetailPage({
         <aside className="order-1 lg:order-2 lg:col-span-1">
           <div className="lg:sticky lg:top-20">
             <Card className="overflow-hidden p-0">
-              <div className="relative aspect-[16/9] w-full bg-gradient-to-br from-primary/15 via-accent to-secondary">
+              <div className="relative aspect-[16/9] w-full bg-media-placeholder">
                 {course.thumbnailUrl ? (
                   <Image
                     src={course.thumbnailUrl}

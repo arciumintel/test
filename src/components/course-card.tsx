@@ -30,7 +30,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
       className="group block min-w-0"
     >
       <Card className="h-full min-w-0 gap-0 overflow-hidden p-0 motion-safe:transition-all motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-md">
-        <div className="relative aspect-[16/9] w-full overflow-hidden bg-gradient-to-br from-primary/15 via-accent to-secondary">
+        <div className="relative aspect-[16/9] w-full overflow-hidden bg-media-placeholder">
           {course.thumbnailUrl ? (
             <Image
               src={course.thumbnailUrl}

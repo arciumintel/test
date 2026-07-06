@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Award } from "lucide-react";
+import { SealBadge } from "@/components/seal-badge";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -7,6 +7,8 @@ type Props = {
   imageUrl?: string | null;
   size?: "sm" | "md";
   className?: string;
+  /** Animate seal on badge-earn / quiz-pass moments */
+  celebrate?: boolean;
 };
 
 export function BadgeMedallion({
@@ -14,17 +16,21 @@ export function BadgeMedallion({
   imageUrl,
   size = "md",
   className,
+  celebrate = false,
 }: Props) {
   const dim = size === "md" ? "size-20" : "size-12";
-  return (
-    <div
-      className={cn(
-        "relative flex items-center justify-center rounded-full bg-gradient-to-br from-warning/25 to-warning/5 ring-2 ring-warning/25",
-        dim,
-        className
-      )}
-    >
-      {imageUrl ? (
+  const sealSize = size === "md" ? "md" : "sm";
+
+  if (imageUrl) {
+    return (
+      <div
+        className={cn(
+          "relative flex items-center justify-center overflow-hidden rounded-full bg-earned-background ring-2 ring-earned-border",
+          dim,
+          celebrate && "quiz-pass-celebrate",
+          className
+        )}
+      >
         <Image
           src={imageUrl}
           alt={name}
@@ -32,9 +38,16 @@ export function BadgeMedallion({
           sizes="80px"
           className="rounded-full object-cover"
         />
-      ) : (
-        <Award className={size === "md" ? "size-9 text-warning" : "size-6 text-warning"} />
-      )}
-    </div>
+      </div>
+    );
+  }
+
+  return (
+    <SealBadge
+      label={name}
+      size={sealSize}
+      celebrate={celebrate}
+      className={className}
+    />
   );
 }
