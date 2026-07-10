@@ -5,6 +5,8 @@ import {
   Gauge,
   TrendingDown,
   Award,
+  Timer,
+  Repeat2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { CourseAnalytics } from "@/lib/analytics";
@@ -12,6 +14,7 @@ import type {
   AttemptsBeforePassBucket,
   QuizQuestionDiagnostic,
 } from "@/lib/quiz-diagnostics";
+import { formatQuizDuration } from "@/lib/quiz-diagnostics";
 import { QuizDiagnosticsPanel } from "@/components/analytics/quiz-diagnostics-panel";
 
 function formatOptionalPercent(value: number | null): string {
@@ -49,6 +52,14 @@ function CourseAnalyticsCompactSummary({
       label: "Quiz pass rate",
       value: formatOptionalPercent(data.quizPassRate),
       detail: `${data.attempts} attempts`,
+    },
+    {
+      label: "Within-2-attempt pass rate",
+      value: formatOptionalPercent(data.withinTwoAttemptPassRate),
+    },
+    {
+      label: "Avg time to complete",
+      value: formatQuizDuration(data.averageQuizDurationSeconds),
     },
     {
       label: "Avg quiz score",
@@ -135,6 +146,20 @@ export function CourseAnalyticsView({
       value: formatOptionalPercent(data.quizPassRate),
       hint: `${data.attempts} attempts`,
       icon: Target,
+    },
+    {
+      label: "Within-2-attempt pass rate",
+      value: formatOptionalPercent(data.withinTwoAttemptPassRate),
+      hint:
+        data.quizAbandonmentRate != null
+          ? `${data.quizAbandonmentRate}% abandonment before submit`
+          : undefined,
+      icon: Repeat2,
+    },
+    {
+      label: "Avg time to complete",
+      value: formatQuizDuration(data.averageQuizDurationSeconds),
+      icon: Timer,
     },
     {
       label: "Avg quiz score",
@@ -231,6 +256,8 @@ export function CourseAnalyticsView({
         <QuizDiagnosticsPanel
           diagnostics={quizDiagnostics}
           attemptsBeforePass={attemptsBeforePass}
+          averageQuizDurationSeconds={data.averageQuizDurationSeconds}
+          withinTwoAttemptPassRate={data.withinTwoAttemptPassRate}
         />
       )}
     </div>

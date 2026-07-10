@@ -401,13 +401,14 @@ model Progress {
 
 /// A submitted quiz with score and pass/fail outcome.
 model QuizAttempt {
-  id          String   @id @default(cuid())
-  userId      String
-  quizId      String
-  score       Int // percent 0-100
-  passed      Boolean
-  answers     Json? // recorded selections for feedback
-  submittedAt DateTime @default(now())
+  id                 String   @id @default(cuid())
+  userId             String
+  quizId             String
+  score              Int // percent 0-100
+  passed             Boolean
+  answers            Json? // recorded selections for feedback
+  durationInSeconds  Int? // client-measured time from quiz start to submit
+  submittedAt        DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)

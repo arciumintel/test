@@ -153,9 +153,17 @@ export async function completeLesson(
   };
 }
 
+function normalizeDurationInSeconds(value: unknown): number | undefined {
+  if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
+  const rounded = Math.round(value);
+  if (rounded < 1 || rounded > 86_400) return undefined;
+  return rounded;
+}
+
 export async function submitQuiz(
   quizId: string,
-  answers: number[]
+  answers: number[],
+  durationInSeconds?: number
 ): Promise<
   | {
       ok: true;
@@ -210,6 +218,8 @@ export async function submitQuiz(
       where: { userId: user.id, quizId },
     })) + 1;
 
+  const normalizedDuration = normalizeDurationInSeconds(durationInSeconds);
+
   const attempt = await prisma.quizAttempt.create({
     data: {
       userId: user.id,
@@ -217,6 +227,7 @@ export async function submitQuiz(
       score,
       passed,
       answers: answers,
+      durationInSeconds: normalizedDuration,
     },
   });
 
@@ -258,6 +269,11 @@ export async function submitQuiz(
     ? "lesson_knowledge_check_submitted"
     : "quiz_failed";
 
+  const durationMetadata =
+    normalizedDuration != null
+      ? { durationInSeconds: normalizedDuration }
+      : {};
+
   trackEventFireAndForget({
     eventName: submittedEventName,
     ...baseEvent,
@@ -273,6 +289,7 @@ export async function submitQuiz(
       courseCompleted: completed,
       badgeAwarded: newBadge,
       isLessonKnowledgeCheck: isLessonCheck,
+      ...durationMetadata,
     },
   });
 
@@ -288,6 +305,7 @@ export async function submitQuiz(
         courseCompleted: completed,
         badgeAwarded: newBadge,
         isLessonKnowledgeCheck: isLessonCheck,
+        ...durationMetadata,
       },
     });
   } else if (!isLessonCheck) {
@@ -300,6 +318,7 @@ export async function submitQuiz(
         passThreshold: quiz.passThreshold,
         attemptNumber,
         incorrectCount: quiz.questions.length - correctCount,
+        ...durationMetadata,
       },
     });
   }

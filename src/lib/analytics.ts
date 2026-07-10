@@ -4,6 +4,7 @@ import { coursePath, productPath } from "@/lib/paths";
 import type { AnalyticsDateRange } from "@/lib/analytics-date-range";
 import {
   awardedAtFilter,
+  occurredAtFilter,
   progressCompletedAtFilter,
   progressCreatedAtFilter,
   submittedAtFilter,
@@ -18,12 +19,91 @@ export type CourseAnalytics = {
   completions: number;
   badgeAwards: number;
   quizPassRate: number | null;
+  withinTwoAttemptPassRate: number | null;
   averageQuizScore: number | null;
+  averageQuizDurationSeconds: number | null;
+  quizAbandonmentRate: number | null;
   attempts: number;
   averageAttemptsBeforePass: number | null;
   dropOff: { lessonTitle: string; order: number } | null;
   lessonFunnel: { title: string; order: number; completed: number }[];
 };
+
+function computeWithinTwoAttemptPassRate(
+  attempts: { userId: string; passed: boolean }[]
+): number | null {
+  if (attempts.length === 0) return null;
+
+  const byUser = new Map<string, boolean[]>();
+  for (const attempt of attempts) {
+    const list = byUser.get(attempt.userId) ?? [];
+    list.push(attempt.passed);
+    byUser.set(attempt.userId, list);
+  }
+
+  let passedWithinTwo = 0;
+  for (const tries of byUser.values()) {
+    const firstPassIdx = tries.findIndex((passed) => passed);
+    if (firstPassIdx >= 0 && firstPassIdx <= 1) {
+      passedWithinTwo += 1;
+    }
+  }
+
+  return Math.round((passedWithinTwo / byUser.size) * 100);
+}
+
+function computeAverageDurationSeconds(
+  attempts: { durationInSeconds: number | null }[]
+): number | null {
+  const durations = attempts
+    .map((attempt) => attempt.durationInSeconds)
+    .filter((value): value is number => value != null && value > 0);
+  if (durations.length === 0) return null;
+
+  return Math.round(
+    durations.reduce((sum, value) => sum + value, 0) / durations.length
+  );
+}
+
+async function computeQuizAbandonmentRate(
+  courseId: string,
+  quizId: string,
+  range?: AnalyticsDateRange
+): Promise<number | null> {
+  const occurredAt = range ? occurredAtFilter(range) : undefined;
+
+  const [quizStartedUsers, quizSubmitters] = await Promise.all([
+    prisma.analyticsEvent.findMany({
+      where: {
+        courseId,
+        quizId,
+        eventName: "quiz_started",
+        userId: { not: null },
+        ...(occurredAt ? { occurredAt } : {}),
+      },
+      distinct: ["userId"],
+      select: { userId: true },
+    }),
+    prisma.quizAttempt.findMany({
+      where: {
+        quizId,
+        ...(range ? { submittedAt: submittedAtFilter(range) } : {}),
+      },
+      distinct: ["userId"],
+      select: { userId: true },
+    }),
+  ]);
+
+  const starters = quizStartedUsers.length;
+  if (starters === 0) return null;
+
+  const submitterIds = new Set(quizSubmitters.map((row) => row.userId));
+  const abandoned = quizStartedUsers.filter(
+    (row) => row.userId != null && !submitterIds.has(row.userId)
+  ).length;
+
+  return Math.round((abandoned / starters) * 100);
+}
 
 export async function getCourseAnalytics(
   courseId: string,
@@ -94,7 +174,10 @@ export async function getCourseAnalytics(
   }
 
   let quizPassRate: number | null = null;
+  let withinTwoAttemptPassRate: number | null = null;
   let averageQuizScore: number | null = null;
+  let averageQuizDurationSeconds: number | null = null;
+  let quizAbandonmentRate: number | null = null;
   let averageAttemptsBeforePass: number | null = null;
   let attempts = 0;
 
@@ -109,6 +192,7 @@ export async function getCourseAnalytics(
         score: true,
         passed: true,
         submittedAt: true,
+        durationInSeconds: true,
       },
       orderBy: { submittedAt: "asc" },
     });
@@ -117,6 +201,8 @@ export async function getCourseAnalytics(
       averageQuizScore = Math.round(
         allAttempts.reduce((sum, a) => sum + a.score, 0) / attempts
       );
+      withinTwoAttemptPassRate = computeWithinTwoAttemptPassRate(allAttempts);
+      averageQuizDurationSeconds = computeAverageDurationSeconds(allAttempts);
       const byUser = new Map<string, boolean>();
       for (const a of allAttempts) {
         byUser.set(a.userId, byUser.get(a.userId) || a.passed);
@@ -145,6 +231,12 @@ export async function getCourseAnalytics(
         ) / 10;
       }
     }
+
+    quizAbandonmentRate = await computeQuizAbandonmentRate(
+      courseId,
+      finalQuiz.id,
+      range
+    );
   }
 
   let completions = badgeAwards;
@@ -182,7 +274,10 @@ export async function getCourseAnalytics(
     completions,
     badgeAwards,
     quizPassRate,
+    withinTwoAttemptPassRate,
     averageQuizScore,
+    averageQuizDurationSeconds,
+    quizAbandonmentRate,
     attempts,
     averageAttemptsBeforePass,
     dropOff,

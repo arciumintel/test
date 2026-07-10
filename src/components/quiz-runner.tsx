@@ -82,8 +82,10 @@ export function QuizRunner({
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [result, setResult] = React.useState<SubmitResult | null>(null);
+  const quizStartedAtRef = React.useRef(Date.now());
 
-  React.useEffect(() => {
+  const trackQuizStarted = React.useCallback(() => {
+    quizStartedAtRef.current = Date.now();
     void trackClientEvent({
       eventName: "quiz_started",
       path: quizPath,
@@ -114,6 +116,10 @@ export function QuizRunner({
     previouslyPassed,
   ]);
 
+  React.useEffect(() => {
+    trackQuizStarted();
+  }, [trackQuizStarted]);
+
   const answeredCount = answers.filter((a) => a !== null).length;
   const allAnswered = answeredCount === questions.length;
 
@@ -121,7 +127,11 @@ export function QuizRunner({
     if (!allAnswered) return;
     setBusy(true);
     setError(null);
-    const res = await submitQuiz(quizId, answers as number[]);
+    const durationInSeconds = Math.max(
+      1,
+      Math.round((Date.now() - quizStartedAtRef.current) / 1000)
+    );
+    const res = await submitQuiz(quizId, answers as number[], durationInSeconds);
     setBusy(false);
     if ("error" in res) {
       setError(res.error);
@@ -136,6 +146,7 @@ export function QuizRunner({
     setAnswers(questions.map(() => null));
     setResult(null);
     setError(null);
+    trackQuizStarted();
   }
 
   // ── Result view ──────────────────────────────────────────────────────────
