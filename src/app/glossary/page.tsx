@@ -22,7 +22,7 @@ export default function GlossaryPage() {
   return (
     <div className="mx-auto min-w-0 max-w-6xl px-4 pb-12 sm:px-6">
       <PageHeader headingId="glossary-heading" innerClassName="max-w-4xl">
-        <p className="text-xs font-medium uppercase tracking-[0.22em] text-primary/80">
+        <p className="text-xs font-medium uppercase tracking-[0.22em] text-text-secondary">
           Arcademy reference
         </p>
         <h1

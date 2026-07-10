@@ -97,7 +97,7 @@ export function NotificationBell({
                 onClick={() => onOpenItem(item.id, item.actionUrl)}
                 className={cn(
                   "w-full rounded-lg border p-3 text-left text-sm transition-colors hover:bg-muted/50",
-                  !item.readAt && "border-primary/30 bg-primary/5"
+                  !item.readAt && "border-border-strong bg-surface-secondary"
                 )}
               >
                 <p className="font-medium">{item.title}</p>

@@ -29,12 +29,12 @@ export function ProductRowLink({ product }: { product: ProductRowData }) {
             className="object-cover"
           />
         ) : (
-          <PackageOpen className="size-5 text-primary" aria-hidden />
+          <PackageOpen className="size-5 text-muted-foreground" aria-hidden />
         )}
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-          <span className="truncate font-medium group-hover:text-primary">
+          <span className="truncate font-medium group-hover:text-foreground">
             {product.name}
           </span>
           {product.category && (
@@ -51,7 +51,7 @@ export function ProductRowLink({ product }: { product: ProductRowData }) {
         {product.courseCount} course{product.courseCount === 1 ? "" : "s"}
       </span>
       <ArrowRight
-        className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+        className="size-4 shrink-0 text-muted-foreground transition-[color,transform] group-hover:translate-x-0.5 group-hover:text-foreground"
         aria-hidden
       />
     </Link>

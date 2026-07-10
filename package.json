@@ -13,6 +13,7 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
+    "analytics:backfill": "tsx scripts/analytics/backfill-rollups.ts",
     "discord:deploy-commands": "tsx scripts/discord/deploy-commands.ts",
     "discord:deploy-commands:guild": "tsx scripts/discord/deploy-commands.ts --guild",
     "postinstall": "prisma generate"

@@ -83,7 +83,7 @@ function MultiPartyComputationVisual() {
       title="How MPC works"
       subtitle="Each party keeps its own input private. The network collaborates on the math and reveals only the final result."
     >
-      <svg viewBox="0 0 620 280" className="w-full text-primary">
+      <svg viewBox="0 0 620 280" className="w-full text-foreground">
         <rect
           x="220"
           y="86"
@@ -139,7 +139,7 @@ function SecretSharingVisual() {
       title="How secret sharing works"
       subtitle="One secret is split into incomplete shares. No single holder can reconstruct the original value alone."
     >
-      <svg viewBox="0 0 620 300" className="w-full text-primary">
+      <svg viewBox="0 0 620 300" className="w-full text-foreground">
         <rect
           x="42"
           y="118"
@@ -192,7 +192,7 @@ function ClusterVisual() {
       title="How a cluster fits the network"
       subtitle="The network contains many nodes. A cluster is the smaller working group selected to handle a given private workload."
     >
-      <svg viewBox="0 0 620 300" className="w-full text-primary">
+      <svg viewBox="0 0 620 300" className="w-full text-foreground">
         <rect
           x="50"
           y="40"
@@ -231,7 +231,7 @@ function MxeVisual() {
       title="What an MXE packages together"
       subtitle="An MXE combines logic, configuration, cluster selection, and execution rules into one runnable private environment."
     >
-      <svg viewBox="0 0 620 300" className="w-full text-primary">
+      <svg viewBox="0 0 620 300" className="w-full text-foreground">
         <rect x="210" y="70" width="200" height="160" rx="28" fill="currentColor" opacity="0.08" stroke="currentColor" />
         <text x="310" y="108" textAnchor="middle" fontSize="20" fill="currentColor">
           MXE
@@ -279,7 +279,7 @@ function ProtocolComparisonVisual({ activeSlug }: { activeSlug?: string }) {
         <div
           className={cn(
             "rounded-[1.5rem] border p-5",
-            cerberusActive && "border-primary bg-primary/[0.05]"
+            cerberusActive && "border-border-strong bg-surface-hover"
           )}
         >
           <p className="text-lg font-semibold tracking-tight text-foreground">Cerberus</p>
@@ -302,7 +302,7 @@ function ProtocolComparisonVisual({ activeSlug }: { activeSlug?: string }) {
         <div
           className={cn(
             "rounded-[1.5rem] border p-5",
-            manticoreActive && "border-primary bg-primary/[0.05]"
+            manticoreActive && "border-border-strong bg-surface-hover"
           )}
         >
           <p className="text-lg font-semibold tracking-tight text-foreground">Manticore</p>
@@ -332,7 +332,7 @@ function ClusterForkingVisual() {
       title="What cluster forking looks like"
       subtitle="One group of nodes can split into two supported paths when operator choices diverge around an execution environment."
     >
-      <svg viewBox="0 0 620 280" className="w-full text-primary">
+      <svg viewBox="0 0 620 280" className="w-full text-foreground">
         <circle cx="170" cy="140" r="78" fill="currentColor" opacity="0.08" />
         <circle cx="170" cy="140" r="78" fill="none" stroke="currentColor" strokeWidth="2" />
         <text x="170" y="138" textAnchor="middle" fontSize="18" fill="currentColor">

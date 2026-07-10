@@ -5,6 +5,8 @@ import Link from "next/link";
 import { BookOpen, Search, Sparkles, X } from "lucide-react";
 import { GlossaryTermCard } from "@/components/glossary-term-card";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { FilterChip } from "@/components/ui/filter-chip";
 import { Input } from "@/components/ui/input";
 import {
   getGlossaryLetters,
@@ -19,35 +21,6 @@ import { cn } from "@/lib/utils";
 const alphabet = Array.from({ length: 26 }, (_, index) =>
   String.fromCharCode(65 + index)
 );
-
-function FilterChip({
-  active,
-  disabled,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  disabled?: boolean;
-  onClick?: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      disabled={disabled}
-      className={cn(
-        "inline-flex items-center rounded-full border px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-45",
-        active
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-background text-foreground hover:bg-muted/60"
-      )}
-    >
-      {children}
-    </button>
-  );
-}
 
 type GlossaryCatalogProps = {
   terms: GlossaryTerm[];
@@ -147,7 +120,7 @@ export function GlossaryCatalog({
             </p>
           </div>
 
-          <div className="rounded-2xl border border-primary/15 bg-primary/[0.04] p-4 text-sm dark:bg-primary/[0.08]">
+          <div className="rounded-2xl border border-border-subtle bg-surface-secondary p-4 text-sm">
             <p className="font-medium text-foreground">Need a full walkthrough first?</p>
             <p className="mt-2 max-w-sm text-pretty leading-6 text-muted-foreground">
               Start with the guided Arcium introduction, then come back here when
@@ -155,7 +128,7 @@ export function GlossaryCatalog({
             </p>
             <Link
               href="/start"
-              className="mt-3 inline-flex items-center gap-2 font-medium text-primary underline-offset-4 hover:underline"
+              className="mt-3 inline-flex items-center gap-2 font-medium text-link underline-offset-4 hover:text-link-hover hover:underline"
             >
               Start with Arcium
               <Sparkles className="size-4" aria-hidden />
@@ -200,25 +173,24 @@ export function GlossaryCatalog({
       </div>
 
       {filteredTerms.length === 0 ? (
-        <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
-          <BookOpen className="mx-auto size-8 text-muted-foreground" aria-hidden />
-          <p className="mt-3 font-medium">No glossary terms match your filters</p>
-          <p className="mt-1 text-pretty text-sm text-muted-foreground">
-            Try a different keyword, acronym, or letter.
-          </p>
-          {hasActiveFilters ? (
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={() => {
-                setQuery("");
-                setActiveLetter("");
-              }}
-            >
-              Clear filters
-            </Button>
-          ) : null}
-        </div>
+        <EmptyState
+          icon={BookOpen}
+          title="No glossary terms match your filters"
+          description="Try a different keyword, acronym, or letter."
+          action={
+            hasActiveFilters ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setQuery("");
+                  setActiveLetter("");
+                }}
+              >
+                Clear filters
+              </Button>
+            ) : undefined
+          }
+        />
       ) : null}
 
       {groupedTerms.length > 0 ? (
@@ -228,13 +200,13 @@ export function GlossaryCatalog({
               key={group.letter}
               id={`letter-${group.letter}`}
               aria-labelledby={`glossary-letter-${group.letter}`}
-              className="scroll-mt-24 rounded-[2rem] border bg-card/60 px-4 py-5 shadow-sm sm:px-6 sm:py-6"
+              className="scroll-mt-24 rounded-[2rem] border border-border-subtle bg-surface-primary px-4 py-5 sm:px-6 sm:py-6"
             >
               <div className="grid gap-6 md:grid-cols-[72px_minmax(0,1fr)] md:items-start">
                 <div className="border-b border-border/60 pb-4 md:border-b-0 md:border-r md:pb-0 md:pr-5">
                   <h2
                     id={`glossary-letter-${group.letter}`}
-                    className="text-4xl font-semibold tracking-tight text-primary/90 sm:text-5xl"
+                    className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
                   >
                     {group.letter}
                   </h2>

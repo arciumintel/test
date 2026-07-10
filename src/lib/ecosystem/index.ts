@@ -224,7 +224,13 @@ export function countByStatus(
       acc[project.status] += 1;
       return acc;
     },
-    { mainnet: 0, testnet: 0, coming_soon: 0 }
+    {
+      mainnet: 0,
+      testnet: 0,
+      coming_soon: 0,
+      deprecated: 0,
+      experimental: 0,
+    }
   );
 }
 

@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BookOpen, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { FilterChip } from "@/components/ui/filter-chip";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import {
@@ -38,44 +39,6 @@ function withProgress(
     ...product,
     progress: progressBySlug[product.slug] ?? null,
   };
-}
-
-function FilterChip({
-  active,
-  onClick,
-  href,
-  children,
-}: {
-  active: boolean;
-  onClick?: () => void;
-  href?: string;
-  children: React.ReactNode;
-}) {
-  const className = cn(
-    "inline-flex items-center rounded-full border px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40",
-    active
-      ? "border-primary bg-primary text-primary-foreground"
-      : "border-border bg-background text-foreground hover:bg-muted/60"
-  );
-
-  if (href) {
-    return (
-      <Link href={href} aria-current={active ? "true" : undefined} className={className}>
-        {children}
-      </Link>
-    );
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={className}
-    >
-      {children}
-    </button>
-  );
 }
 
 export function ProjectsCatalog({
@@ -271,28 +234,24 @@ export function ProjectsCatalog({
             ))}
           </div>
         ) : (
-          <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
-            <BookOpen
-              className="mx-auto size-8 text-muted-foreground"
-              aria-hidden
-            />
-            <p className="mt-3 font-medium">No projects match your filters</p>
-            <p className="mt-1 text-pretty text-sm text-muted-foreground">
-              Try a different search term or clear your category filter.
-            </p>
-            {hasActiveFilters ? (
-              <Button
-                variant="outline"
-                className="mt-4"
-                onClick={() => {
-                  setQuery("");
-                  setCategory("");
-                }}
-              >
-                Clear filters
-              </Button>
-            ) : null}
-          </div>
+          <EmptyState
+            icon={BookOpen}
+            title="No projects match your filters"
+            description="Try a different search term or clear your category filter."
+            action={
+              hasActiveFilters ? (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setQuery("");
+                    setCategory("");
+                  }}
+                >
+                  Clear filters
+                </Button>
+              ) : undefined
+            }
+          />
         )}
       </section>
     </div>

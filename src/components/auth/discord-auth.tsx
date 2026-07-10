@@ -30,7 +30,7 @@ export function DiscordAuth({ linked, walletConnected, discordEnabled }: Props) 
         aria-label={`Discord: ${displayName(linked)}`}
       >
         <Link href="/profile">
-          <MessageCircle className="size-4 text-[#5865F2]" />
+          <MessageCircle className="size-4 text-info" />
           <span className="hidden max-w-[8rem] truncate sm:inline">
             {displayName(linked)}
           </span>
@@ -48,7 +48,7 @@ export function DiscordAuth({ linked, walletConnected, discordEnabled }: Props) 
       aria-label="Connect Discord"
     >
       <Link href="/api/discord/connect">
-        <MessageCircle className="size-4 text-[#5865F2]" />
+        <MessageCircle className="size-4 text-info" />
         <span className="hidden sm:inline">Connect Discord</span>
       </Link>
     </Button>

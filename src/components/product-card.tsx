@@ -23,6 +23,7 @@ import {
   type ProductProgressState,
 } from "@/lib/product-catalog";
 import { cn } from "@/lib/utils";
+import { getProductCategoryBadgeVariant } from "@/lib/badge-colors";
 
 export type ProductCardData = ProductCatalogItem & {
   progress?: ProductProgressState | null;
@@ -82,7 +83,7 @@ function ProductCardLogo({
           className="object-cover"
         />
       ) : (
-        <PackageOpen className="size-6 text-primary" aria-hidden />
+        <PackageOpen className="size-6 text-muted-foreground" aria-hidden />
       )}
     </span>
   );
@@ -150,7 +151,7 @@ function ProductLearningOutcomes({ outcomes }: { outcomes: string[] }) {
             className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground"
           >
             <Check
-              className="mt-0.5 size-3.5 shrink-0 text-primary"
+              className="mt-0.5 size-3.5 shrink-0 text-muted-foreground"
               aria-hidden
             />
             <span className="line-clamp-2">{outcome}</span>
@@ -195,7 +196,7 @@ function ProductCardCta({
   return (
     <span
       className={cn(
-        "mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary",
+        "mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-foreground/80 group-hover:text-foreground",
         className
       )}
     >
@@ -218,7 +219,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
       aria-label={`${ctaLabel} — ${product.name}`}
       className="group block min-w-0 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-2xl"
     >
-      <Card className="h-full min-w-0 gap-0 overflow-hidden p-0 motion-safe:transition-all motion-safe:duration-200 motion-safe:hover:-translate-y-0.5 motion-safe:hover:border-primary/25 motion-safe:hover:shadow-md">
+      <Card className="product-card h-full min-w-0 gap-0 overflow-hidden p-0 motion-safe:transition-all motion-safe:duration-200 motion-safe:hover:-translate-y-0.5">
         <ProductCardArtwork product={product} className="h-28 w-full" />
         <CardContent className="flex min-w-0 flex-1 flex-col p-6 pt-0">
           <div className="-mt-7 mb-4 flex items-end justify-between gap-3">
@@ -229,11 +230,14 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           </div>
 
           <div className="min-w-0 space-y-2">
-            <h3 className="line-clamp-2 text-pretty text-lg font-semibold leading-snug tracking-tight group-hover:text-primary">
+            <h3 className="line-clamp-2 text-pretty text-lg font-semibold leading-snug tracking-tight group-hover:text-foreground">
               {product.name}
             </h3>
             {product.category ? (
-              <Badge variant="default" className="max-w-full truncate">
+              <Badge
+                variant={getProductCategoryBadgeVariant(product.category)}
+                className="max-w-full truncate"
+              >
                 {product.category}
               </Badge>
             ) : null}
@@ -272,7 +276,7 @@ export function FeaturedProductCard({ product }: { product: ProductCardData }) {
       aria-label={`${ctaLabel} — ${product.name}`}
       className="group block min-w-0 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-2xl"
     >
-      <Card className="h-full min-w-0 gap-0 overflow-hidden p-0 motion-safe:transition-all motion-safe:duration-200 motion-safe:hover:-translate-y-1 motion-safe:hover:border-primary/30 motion-safe:hover:shadow-lg">
+      <Card className="product-card h-full min-w-0 gap-0 overflow-hidden p-0 motion-safe:transition-all motion-safe:duration-200 motion-safe:hover:-translate-y-1">
         <ProductCardArtwork
           product={product}
           className="relative aspect-[16/9] w-full"
@@ -282,14 +286,17 @@ export function FeaturedProductCard({ product }: { product: ProductCardData }) {
             <ProductCardLogo product={product} className="size-16" />
             <div className="min-w-0 flex-1 pb-1">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="warning">Featured</Badge>
+                <Badge variant="featured">Featured</Badge>
                 {product.category ? (
-                  <Badge variant="muted" className="max-w-full truncate">
+                  <Badge
+                    variant={getProductCategoryBadgeVariant(product.category)}
+                    className="max-w-full truncate"
+                  >
                     {product.category}
                   </Badge>
                 ) : null}
               </div>
-              <h3 className="mt-2 text-pretty text-xl font-semibold tracking-tight group-hover:text-primary sm:text-2xl">
+              <h3 className="mt-2 text-pretty text-xl font-semibold tracking-tight group-hover:text-foreground sm:text-2xl">
                 {product.name}
               </h3>
             </div>

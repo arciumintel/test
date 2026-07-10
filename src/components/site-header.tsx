@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { GraduationCap } from "lucide-react";
 import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
@@ -16,6 +17,8 @@ import { getHeaderNavLinks, getSiteNavContext } from "@/lib/site-nav";
 import { Button } from "@/components/ui/button";
 
 export async function SiteHeader() {
+  const headerList = await headers();
+  const pathname = headerList.get("x-pathname")?.split("?")[0] ?? "/";
   const navContext = await getSiteNavContext();
   const { user } = navContext;
 
@@ -38,9 +41,9 @@ export async function SiteHeader() {
   const navLinks = getHeaderNavLinks(navContext);
 
   return (
-    <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6">
-        <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+    <header className="surface-nav sticky top-0 z-30 border-b backdrop-blur-md">
+      <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between gap-3 px-4 sm:gap-5 sm:px-6">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-5">
           <MobileNav links={navLinks} />
           <Link href="/" className="flex min-w-0 items-center gap-2 font-semibold">
             <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -48,15 +51,31 @@ export async function SiteHeader() {
             </span>
             <span className="truncate text-lg tracking-tight">Arcademy</span>
           </Link>
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden items-center gap-1.5 md:flex">
             {navLinks.map((link) => (
-              <Button key={link.href} variant="ghost" size="sm" asChild>
-                <Link href={link.href}>{link.label}</Link>
+              <Button
+                key={link.href}
+                variant="ghost"
+                size="sm"
+                className="nav-link px-3.5 text-[13px] font-medium"
+                asChild
+              >
+                <Link
+                  href={link.href}
+                  aria-current={
+                    pathname === link.href ||
+                    (link.href !== "/" && pathname.startsWith(`${link.href}/`))
+                      ? "page"
+                      : undefined
+                  }
+                >
+                  {link.label}
+                </Link>
               </Button>
             ))}
           </nav>
         </div>
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
           <ThemeToggle />
           {user && (
             <NotificationBell

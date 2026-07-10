@@ -15,7 +15,7 @@ function FormActions({
       className={cn(
         "flex flex-wrap items-center gap-3 border-t border-border/60 pt-6",
         sticky &&
-          "sticky bottom-0 z-20 -mx-8 border-t bg-background/95 px-8 pb-6 pt-4 backdrop-blur-sm supports-[backdrop-filter]:bg-background/80",
+          "surface-nav sticky bottom-0 z-20 -mx-8 border-t px-8 pb-6 pt-4 backdrop-blur-sm",
         className
       )}
       {...props}

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 type PageHeaderProps = {
+  eyebrow?: ReactNode;
   title?: ReactNode;
   description?: ReactNode;
   headingId?: string;
@@ -11,6 +12,7 @@ type PageHeaderProps = {
 };
 
 export function PageHeader({
+  eyebrow,
   title,
   description,
   headingId,
@@ -20,10 +22,13 @@ export function PageHeader({
 }: PageHeaderProps) {
   const content = children ?? (
     <>
+      {eyebrow ? (
+        <p className="section-eyebrow mb-2">{eyebrow}</p>
+      ) : null}
       {title ? (
         <h1
           id={headingId}
-          className="text-balance text-[1.875rem] font-semibold leading-tight tracking-tight sm:text-[2rem]"
+          className="text-balance text-[1.875rem] font-semibold leading-tight tracking-tight sm:text-[2.25rem]"
         >
           {title}
         </h1>
@@ -39,7 +44,7 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "relative -mx-4 mb-8 border-b bg-page-header px-4 pb-8 pt-12 sm:-mx-6 sm:px-6",
+        "relative -mx-4 mb-8 border-b bg-page-header px-4 pb-10 pt-14 sm:-mx-6 sm:px-6 sm:pb-12 sm:pt-16",
         className,
       )}
     >

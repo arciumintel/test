@@ -46,6 +46,8 @@ enum DirectoryNetworkStatus {
   mainnet
   testnet
   coming_soon
+  deprecated
+  experimental
 }
 
 enum LessonStatus {
@@ -584,6 +586,24 @@ model PartnerIntake {
 }
 
 /// Append-only funnel and audit events (additive instrumentation).
+/// Daily aggregated analytics dimensions for cheap trend queries.
+/// Recomputed idempotently (delete + insert per day) by /api/cron/analytics-rollup.
+model AnalyticsDailyRollup {
+  id                 String   @id @default(cuid())
+  date               DateTime @db.Date
+  eventName          String
+  ecosystemProjectId String?
+  courseId           String?
+  eventCount         Int      @default(0)
+  uniqueUsers        Int      @default(0)
+  uniqueAnonymous    Int      @default(0)
+  createdAt          DateTime @default(now())
+
+  @@index([date])
+  @@index([eventName, date])
+  @@index([ecosystemProjectId, eventName, date])
+}
+
 model AnalyticsEvent {
   id                   String   @id @default(cuid())
   eventName            String

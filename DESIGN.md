@@ -101,13 +101,14 @@ components:
 
 Arcademy has its own cryptographic identity — approachable-first, never intimidating hacker-tool aesthetic. Learners encounter warm security-paper surfaces, teal primary actions, and brass seal accents reserved for credential moments. Depth comes from tonal layering, interference ambient texture, and lock/key seal badges — not neon glow or gradient meshes.
 
-Arcademy is **not** inheriting Arcium's violet brand. It teaches the Arcium ecosystem but speaks with its own voice.
+Arcademy is **not** inheriting Arcium's violet brand wholesale. It teaches the Arcium ecosystem but speaks with its own voice. Dark mode introduces a restrained violet accent for featured/premium surfaces only.
 
 **Key Characteristics:**
 
-- Security-paper light canvas (`#F4F1E8`) / deep teal-black dark canvas (`#0C1A1C`)
-- Teal primary for CTAs, progress, links, focus rings
-- Brass seal accent for decorative/large credential text only — earned chip text darkened on light for WCAG
+- Security-paper light canvas (`#F4F1E8`) / neutral charcoal dark canvas (`#0A1011`)
+- Teal primary for CTAs, progress, links, focus rings — **interactive only in dark mode**
+- Violet (`--featured`) for featured/premium content in dark mode
+- Brass/gold seal accent for credential and achievement moments
 - Interference moiré texture ambient-only (headers, hero, footer, empty states, seal surfaces)
 - Lock/key `SealBadge` for badge earn and verification moments
 - Grain overlay paired with interference at low opacity
@@ -120,10 +121,36 @@ Arcademy is **not** inheriting Arcium's violet brand. It teaches the Arcium ecos
 |------|-------|-----|-----|
 | Light | `--primary` | `#1C7E79` | Buttons, links, progress, focus |
 | Light | `--primary-foreground` | `#FFFFFF` | Text on primary |
-| Dark | `--primary` | `#2FA6A0` | Buttons, links, progress, focus |
+| Dark | `--primary` | `#32B5AE` | Buttons, links, progress, focus — interactive only |
 | Dark | `--primary-foreground` | `#04100F` | Text on primary |
 
-### Canvas & Surfaces
+### Canvas & Surfaces (dark — Vault Prime)
+
+Dark mode uses a **neutral charcoal elevation stack**. Teal is removed from surfaces, borders, and muted text. Hierarchy comes from lightness steps, not hue saturation.
+
+| Mode | Token | Hex | Role |
+|------|-------|-----|------|
+| Dark | `--background` | `#0A1011` | Base canvas |
+| Dark | `--card` | `#12181A` | Elevated panels |
+| Dark | `--popover` | `#141B1D` | Floating surfaces |
+| Dark | `--foreground` | `#E8EDEC` | Primary text |
+| Dark | `--muted-foreground` | `#8B9498` | Secondary text (neutral, not teal-tinted) |
+| Dark | `--secondary` | `#181F21` | Tracks, chips, inactive fills |
+| Dark | `--accent` | `#1C2426` | Hover washes |
+| Dark | `--border` | `#252D30` | Dividers — visible like Linear/GitHub dark |
+
+### Featured / Premium (dark only)
+
+| Token | Hex | Use |
+|-------|-----|-----|
+| `--featured` | `#9B8AFB` | Featured labels, premium highlights, chart accent |
+| `--featured-foreground` | `#F4F2FF` | Text on featured fills |
+| `--featured-background` | `rgba(155,138,251,0.10)` | Featured chip/card wash |
+| `--featured-border` | `rgba(155,138,251,0.22)` | Featured chip borders |
+
+Reserved for featured courses, premium content, ecosystem featured nodes — not general decoration.
+
+### Canvas & Surfaces (light — unchanged)
 
 | Mode | Token | Hex |
 |------|-------|-----|
@@ -132,20 +159,15 @@ Arcademy is **not** inheriting Arcium's violet brand. It teaches the Arcium ecos
 | Light | `--border` | `#E5DEC9` |
 | Light | `--foreground` | `#12201F` |
 | Light | `--muted-foreground` | `#5F6E6B` |
-| Dark | `--background` | `#0C1A1C` |
-| Dark | `--card` | `#102325` |
-| Dark | `--border` | `#1E3A3A` |
-| Dark | `--foreground` | `#EAF3F1` |
-| Dark | `--muted-foreground` | `#8BA6A2` |
 
-### Seal / Brass (decorative + earned chips)
+### Seal / Gold (achievements + credentials)
 
 | Mode | Token | Hex | Use |
 |------|-------|-----|-----|
 | Light | `--seal` | `#B8862A` | Seal SVG strokes, large decorative text |
-| Light | `--earned` | `#8A6516` | Earned chip foreground (WCAG on light) |
-| Dark | `--seal` | `#D6A43B` | Seal SVG strokes, large decorative text |
-| Dark | `--earned` | `#E7C070` | Earned chip foreground on dark |
+| Light | `--earned` | `#7A5812` | Earned chip foreground (WCAG on light) |
+| Dark | `--seal` | `#C9A44E` | Seal SVG strokes, large decorative text |
+| Dark | `--earned` | `#DCC07A` | Earned chip foreground on dark |
 
 ### XP / Progress
 
@@ -214,19 +236,28 @@ Flat-by-default. Cards: `shadow-sm` + 1px border. No wide glow shadows. Ecosyste
 
 All body text and interactive controls on **opaque** surfaces. Texture is decorative behind content, never under small text directly.
 
-Verified pairs (approximate):
+Verified pairs (Jul 2026 accessibility audit):
 
 | Pair | Ratio | Notes |
 |------|-------|-------|
-| `#12201F` on `#FFFDF8` | ~12.5:1 | Body on card |
-| `#5F6E6B` on `#FFFDF8` | ~5.2:1 | Muted on card |
-| `#1C7E79` on `#FFFFFF` | ~4.6:1 | Primary button |
-| `#8A6516` on earned chip bg | ~4.5:1+ | Light earned chip (darkened brass) |
-| `#EAF3F1` on `#102325` | ~11:1 | Dark body on card |
-| `#8BA6A2` on `#102325` | ~4.6:1 | Dark muted |
-| `#2FA6A0` on `#04100F` | ~5.5:1 | Dark primary button |
+| `#12201F` on `#FFFDF8` | ~16.5:1 | Body on card |
+| `#5F6E6B` on `#FFFDF8` | ~5.3:1 | Muted on card |
+| `#1C7E79` on `#FFFFFF` | ~4.9:1 | Primary button |
+| `#176B67` on `#F4F1E8` | ~5.6:1 | Inline links on canvas (`--link`) |
+| `#166534` on `#FFFFFF` | ~7.1:1 | Success button / mainnet badge |
+| `#7A5812` on earned chip bg | ~5.4:1 | Light earned / certification chips |
+| Label pills on 12% tint | ≥4.5:1 | Darkened label inks in light mode |
+| Status tint pills (`/12`–`/14`) | ≥4.5:1 | `--*-subtle-foreground` tokens |
+| `#E8EDEC` on `#12181A` | ~15.2:1 | Dark body on card |
+| `#8B9498` on `#12181A` | ~5.8:1 | Dark muted |
+| `#32B5AE` on `#04100F` | ~7.7:1 | Dark primary button |
+| `#DCC07A` on earned chip bg | ~8.3:1 | Dark earned chip |
+| `#9B8AFB` on `#12181A` | ~5.5:1 | Featured accent text |
+| Focus ring (`--ring`) vs surfaces | ≥4.8:1 | 40% opacity ring on controls |
 
 Brass `#B8862A` on white is **not** used for small body text — decorative/large only on light mode.
+
+Disabled controls use reduced opacity (WCAG exempt); focus rings use `ring-ring/40` minimum.
 
 ## Do's and Don'ts
 
@@ -236,10 +267,12 @@ Brass `#B8862A` on white is **not** used for small body text — decorative/larg
 - Apply `.bg-ambient` only on marketing/header/footer/empty-state bands
 - Use `SealBadge` for credential earn and verification moments
 - Keep teal on CTAs, progress, and one focal element per section
+- In dark mode, use neutral surfaces; let cyan carry interaction, violet carry featured, gold carry achievement
 
 ### Don't
 
-- Don't use violet/indigo Arcium brand colors in Arcademy UI
+- Don't flood dark surfaces with teal tints (borders, cards, muted text)
+- Don't use violet/indigo as a general brand wash — featured/premium moments only
 - Don't put interference texture on quiz forms or lesson readers
 - Don't use glow, gradient-mesh heroes, or crossed-line grids
 - Don't use brass for small body text on light mode

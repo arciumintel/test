@@ -13,6 +13,7 @@ import { getProductBySlug } from "@/lib/products";
 import { getPublishedLearningPaths } from "@/lib/learning-paths";
 import { LearningPathTimeline } from "@/components/learning-path-timeline";
 import { productPath } from "@/lib/paths";
+import { getProductCategoryBadgeVariant } from "@/lib/badge-colors";
 
 export async function generateMetadata({
   params,
@@ -61,11 +62,13 @@ export default async function ProductPage({
       <section className="grid gap-8 rounded-2xl border bg-card p-6 shadow-sm md:grid-cols-[1fr_280px] md:p-8">
         <div>
           <div className="mb-4 flex flex-wrap items-center gap-2">
-            <Badge variant="default">
-              {isFoundation ? "Core learning" : "Ecosystem Project"}
+            <Badge variant={isFoundation ? "official" : "default"}>
+              {isFoundation ? "Official Arcademy" : "Ecosystem Project"}
             </Badge>
             {!isFoundation && product.category && (
-              <Badge variant="muted">{product.category}</Badge>
+              <Badge variant={getProductCategoryBadgeVariant(product.category)}>
+                {product.category}
+              </Badge>
             )}
           </div>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl">
@@ -79,13 +82,18 @@ export default async function ProductPage({
           <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
             {product.description}
           </p>
-          <div className="mt-4 flex items-start gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
-            <GraduationCap className="mt-0.5 size-4 shrink-0 text-primary" />
-            <p>
+          <div className="mt-4 rounded-lg border border-featured-border bg-featured-background px-4 py-3 text-sm">
+            <div className="mb-2">
+              <Badge variant="official">Official Arcademy learning</Badge>
+            </div>
+            <p className="flex items-start gap-2">
+              <GraduationCap className="mt-0.5 size-4 shrink-0 text-featured" />
+              <span>
               Official Arcademy learning for {product.name}.
               {product.partnerName && product.partnerName !== product.name
                 ? ` Curated in partnership with ${product.partnerName}.`
                 : " Start with a structured course and earn recognition tied to your wallet."}
+              </span>
             </p>
           </div>
           <ProductReferralLinks
@@ -105,7 +113,7 @@ export default async function ProductPage({
               className="object-cover"
             />
           ) : (
-            <PackageOpen className="size-16 text-primary/50" />
+            <PackageOpen className="size-16 text-muted-foreground/60" />
           )}
         </div>
       </section>

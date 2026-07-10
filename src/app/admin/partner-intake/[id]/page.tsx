@@ -86,7 +86,7 @@ export default async function PartnerIntakeDetailPage({
           {intake.partnerName}
         </h1>
         {intake.applicantUserId && !intake.productId && (
-          <Badge variant="default">Partner application</Badge>
+          <Badge variant="official">Partner application</Badge>
         )}
         <StatusBadge
           variant={STATUS_VARIANT[intake.reviewStatus]}

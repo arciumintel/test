@@ -1,0 +1,68 @@
+---
+title: Badge verify API
+description: Check whether a wallet has earned Arcademy badges — for campaign eligibility, role gating, and allowlists.
+---
+
+Arcademy exposes a public, read-only API for verifying badge completions. It returns the same information shown on public badge verification pages, in machine-readable form — no API key required.
+
+Use it to gate campaign eligibility, community roles, or allowlists on **proof of understanding**: wallets that completed a course and passed its final quiz.
+
+## Endpoint
+
+```
+GET /api/v1/verify?wallet=<solana-address>[&course=<course-slug>]
+```
+
+| Parameter | Required | Description |
+| --- | --- | --- |
+| `wallet` | Yes | Solana wallet address (base58). |
+| `course` | No | Restrict the check to a single course by its URL slug. |
+
+## Example
+
+```bash
+curl "https://arcademy.example/api/v1/verify?wallet=7sPjK...&course=welcome-to-arcium"
+```
+
+```json
+{
+  "wallet": "7sPjK...",
+  "course": "welcome-to-arcium",
+  "verified": true,
+  "badgeCount": 1,
+  "badges": [
+    {
+      "badge": {
+        "name": "Arcium Explorer",
+        "description": "Completed Welcome to Arcium.",
+        "imageUrl": "https://res.cloudinary.com/..."
+      },
+      "course": {
+        "title": "Welcome to Arcium",
+        "slug": "welcome-to-arcium",
+        "project": { "name": "Arcium", "slug": "arcium" }
+      },
+      "awardedAt": "2026-07-01T18:22:04.000Z",
+      "verificationUrl": "https://arcademy.example/badges/abc123"
+    }
+  ],
+  "issuer": "Arcademy"
+}
+```
+
+`verified` is `true` when the wallet holds at least one matching badge. Each badge includes a `verificationUrl` — a human-readable public page you can link from your own UI.
+
+## Behavior and limits
+
+- **Public data only.** The API exposes exactly what public badge verification pages already show. No emails, progress details, or quiz scores.
+- **Rate limit:** 60 requests per minute per IP. Responses include standard `429` + `Retry-After` when exceeded.
+- **Caching:** responses are cacheable for up to 60 seconds; new badge awards appear shortly after completion.
+- **CORS:** enabled (`Access-Control-Allow-Origin: *`), so you can call it directly from a browser app.
+
+## Typical integrations
+
+- **Campaign eligibility** — require a badge before a quest, raffle, or incentive claim.
+- **Discord roles** — Arcademy already grants Discord roles automatically for connected learners; use the API for custom bots or other platforms.
+- **Allowlists** — for bulk lists (all wallets that completed a course), ask Arcademy staff for a cohort export instead of crawling the API.
+
+Questions or a use case that needs more than this? Contact the Arcademy team.

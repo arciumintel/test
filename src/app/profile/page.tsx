@@ -161,7 +161,7 @@ export default async function ProfilePage({
 
       <PageHeader innerClassName="min-w-0 max-w-none">
         <div className="flex min-w-0 items-start gap-4">
-          <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <span className="flex size-14 shrink-0 items-center justify-center rounded-full bg-surface-secondary text-text-secondary">
             <GraduationCap className="size-7" aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
@@ -353,7 +353,7 @@ function CourseProgressRow({
             <div className="flex flex-wrap items-center gap-2">
               <p className="min-w-0 flex-1 truncate font-medium">{title}</p>
               {completed && (
-                <Badge variant="success" className="shrink-0">
+                <Badge variant="milestone" className="shrink-0">
                   <Award />
                   Complete
                 </Badge>

@@ -65,19 +65,26 @@ export async function getCourseAnalytics(
   });
   const starts = starters.length;
 
-  const lessonFunnel = await Promise.all(
-    lessons.map(async (l) => ({
-      title: l.title,
-      order: l.order,
-      completed: await prisma.progress.count({
-        where: {
-          lessonId: l.id,
-          completed: true,
-          ...(completedAtFilter ? { completedAt: completedAtFilter } : {}),
-        },
-      }),
-    }))
+  const lessonCompletionGroups =
+    lessonIds.length > 0
+      ? await prisma.progress.groupBy({
+          by: ["lessonId"],
+          where: {
+            lessonId: { in: lessonIds },
+            completed: true,
+            ...(completedAtFilter ? { completedAt: completedAtFilter } : {}),
+          },
+          _count: { _all: true },
+        })
+      : [];
+  const completedByLesson = new Map(
+    lessonCompletionGroups.map((g) => [g.lessonId, g._count._all])
   );
+  const lessonFunnel = lessons.map((l) => ({
+    title: l.title,
+    order: l.order,
+    completed: completedByLesson.get(l.id) ?? 0,
+  }));
 
   let dropOff: CourseAnalytics["dropOff"] = null;
   if (lessonFunnel.length > 0 && starts > 0) {

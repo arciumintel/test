@@ -159,7 +159,7 @@ export function QuizRunner({
                   label="Course badge earned"
                 />
               ) : (
-                <Trophy className="quiz-pass-celebrate size-12 text-primary" />
+                <Trophy className="quiz-pass-celebrate size-12 text-earned" />
               )
             ) : (
               <RotateCcw className="size-12 text-destructive" />
@@ -292,7 +292,7 @@ export function QuizRunner({
                             isCorrect && "bg-success/10 text-success font-medium",
                             isChosen &&
                               !isCorrect &&
-                              "bg-destructive/10 text-destructive"
+                              "bg-destructive/10 text-destructive-subtle-foreground"
                           )}
                         >
                           {opt}

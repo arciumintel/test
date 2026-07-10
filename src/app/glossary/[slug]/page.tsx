@@ -42,7 +42,7 @@ function RelatedTermLink({ term }: { term: GlossaryTerm }) {
   return (
     <Link
       href={href}
-      className="rounded-2xl border bg-background px-4 py-3 transition-colors hover:border-primary/40 hover:bg-primary/[0.03]"
+      className="rounded-2xl border bg-background px-4 py-3 transition-colors hover:border-border-strong hover:bg-surface-secondary"
     >
       <p className="font-medium text-foreground">{term.term}</p>
       <p className="mt-1 text-sm leading-6 text-muted-foreground">{term.definition}</p>
@@ -77,9 +77,9 @@ export default async function GlossaryTermPage({
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(300px,0.75fr)]">
         <div className="min-w-0">
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline">{detailPage.eyebrow ?? "Glossary guide"}</Badge>
+            <Badge variant="official">{detailPage.eyebrow ?? "Glossary guide"}</Badge>
             {detailPage.kind === "visual" ? (
-              <Badge variant="muted">Visual explainer</Badge>
+              <Badge variant="premium">Visual explainer</Badge>
             ) : null}
           </div>
 
@@ -130,13 +130,13 @@ export default async function GlossaryTermPage({
           <Card className="rounded-[1.75rem]">
             <CardContent className="p-6">
               <p className="flex items-center gap-2 text-sm font-medium text-foreground">
-                <Sparkles className="size-4 text-primary" aria-hidden />
+                <Sparkles className="size-4 text-muted-foreground" aria-hidden />
                 Key takeaways
               </p>
               <ul className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
                 {(detailPage.keyTakeaways ?? [term.definition]).map((item) => (
                   <li key={item} className="flex gap-3">
-                    <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary/80" />
+                    <span className="mt-2 size-1.5 shrink-0 rounded-full bg-border-strong" />
                     <span>{item}</span>
                   </li>
                 ))}

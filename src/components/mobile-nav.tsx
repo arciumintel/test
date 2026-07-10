@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +19,7 @@ export type { NavLink };
 
 export function MobileNav({ links }: { links: NavLink[] }) {
   const [open, setOpen] = React.useState(false);
+  const pathname = usePathname();
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -25,7 +27,7 @@ export function MobileNav({ links }: { links: NavLink[] }) {
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="nav-control md:hidden"
           aria-label="Open menu"
         >
           <Menu className="size-5" />
@@ -41,10 +43,19 @@ export function MobileNav({ links }: { links: NavLink[] }) {
               key={link.href}
               variant="ghost"
               size="sm"
-              className="justify-start"
+              className="nav-link h-10 justify-start px-3.5"
               asChild
             >
-              <Link href={link.href} onClick={() => setOpen(false)}>
+              <Link
+                href={link.href}
+                aria-current={
+                  pathname === link.href ||
+                  (link.href !== "/" && pathname.startsWith(`${link.href}/`))
+                    ? "page"
+                    : undefined
+                }
+                onClick={() => setOpen(false)}
+              >
                 {link.label}
               </Link>
             </Button>

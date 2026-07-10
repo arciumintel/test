@@ -126,7 +126,7 @@ export default async function PartnerIntakeListPage() {
                         {intake.partnerName}
                       </Link>
                       {isPendingApplication(intake) && (
-                        <Badge variant="default">Partner application</Badge>
+                        <Badge variant="official">Partner application</Badge>
                       )}
                       <StatusBadge
                         variant={STATUS_VARIANT[intake.reviewStatus]}

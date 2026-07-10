@@ -24,6 +24,7 @@ export const ANALYTICS_EVENT_NAMES = [
   "badge_verification_viewed",
   "profile_viewed",
   "partner_report_generated",
+  "ecosystem_report_generated",
   "admin_ecosystem_project_created",
   "admin_ecosystem_project_published",
   "admin_course_created",

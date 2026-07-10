@@ -68,7 +68,7 @@ export function EcosystemExplorer() {
       <div className="border-b bg-page-header px-4 py-6 sm:px-6">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-medium text-primary">Arcium ecosystem</p>
+            <p className="section-eyebrow">Arcium ecosystem</p>
             <h1
               id="ecosystem-heading"
               className="mt-1 text-3xl font-semibold tracking-tight text-balance"

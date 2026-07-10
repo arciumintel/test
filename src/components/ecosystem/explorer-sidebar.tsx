@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Filter, RotateCcw, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FilterChip } from "@/components/ui/filter-chip";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import {
@@ -18,32 +19,6 @@ import {
 } from "@/lib/ecosystem/types";
 import { useEcosystemExplorerStore } from "@/stores/ecosystem-explorer";
 import { cn } from "@/lib/utils";
-
-function FilterChip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "inline-flex items-center rounded-full border px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40",
-        active
-          ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-background text-foreground hover:bg-muted/60"
-      )}
-    >
-      {children}
-    </button>
-  );
-}
 
 type ExplorerSidebarProps = {
   className?: string;
@@ -94,7 +69,7 @@ export function ExplorerSidebar({ className, onClose }: ExplorerSidebarProps) {
     >
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-2">
-          <Filter className="size-4 text-primary" aria-hidden />
+          <Filter className="size-4 text-muted-foreground" aria-hidden />
           <h2 className="text-sm font-semibold">Discover</h2>
         </div>
         {onClose ? (
@@ -194,7 +169,7 @@ export function ExplorerSidebar({ className, onClose }: ExplorerSidebarProps) {
             {Object.entries(RELATIONSHIP_LABELS).map(([type, label]) => (
               <li key={type} className="flex items-center gap-2">
                 <span
-                  className="size-2 rounded-full bg-primary/70"
+                  className="size-2 rounded-full bg-border-strong"
                   aria-hidden
                 />
                 {label}

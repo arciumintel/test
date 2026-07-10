@@ -4,11 +4,15 @@ import type { CourseLevel } from "@prisma/client";
 
 const MAP: Record<
   CourseLevel,
-  { label: string; icon: React.ElementType; variant: "muted" | "secondary" }
+  {
+    label: string;
+    icon: React.ElementType;
+    variant: "muted" | "secondary" | "premium";
+  }
 > = {
   beginner: { label: "Beginner", icon: Zap, variant: "secondary" },
   intermediate: { label: "Intermediate", icon: Signal, variant: "secondary" },
-  advanced: { label: "Advanced", icon: BarChart, variant: "secondary" },
+  advanced: { label: "Advanced", icon: BarChart, variant: "premium" },
 };
 
 export function LevelBadge({ level }: { level: CourseLevel }) {

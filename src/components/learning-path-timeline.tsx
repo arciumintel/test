@@ -38,7 +38,7 @@ export function LearningPathTimeline({
             {path.courses.map((course, index) => (
               <li key={course.id} className="relative pb-8 last:pb-0">
                 <span
-                  className="absolute -left-[1.625rem] mt-1.5 size-3 rounded-full border-2 border-primary bg-background"
+                  className="absolute -left-[1.625rem] mt-1.5 size-3 rounded-full border-2 border-border-strong bg-surface-elevated"
                   aria-hidden
                 />
                 <div className="rounded-xl border bg-card p-4">
@@ -55,7 +55,7 @@ export function LearningPathTimeline({
                   </p>
                   <Link
                     href={learningPathCourseHref(productSlug, course.slug)}
-                    className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                    className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-link hover:text-link-hover hover:underline"
                   >
                     View course
                     <ArrowRight className="size-4" />

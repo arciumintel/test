@@ -43,10 +43,10 @@ export function FoundationStartHero({
                   className="object-cover"
                 />
               ) : (
-                <PackageOpen className="size-6 text-primary" aria-hidden />
+                <PackageOpen className="size-6 text-muted-foreground" aria-hidden />
               )}
             </span>
-            <Badge variant="default">Core learning</Badge>
+            <Badge variant="official">Official Arcademy</Badge>
           </div>
 
           <div>
@@ -73,7 +73,7 @@ export function FoundationStartHero({
                     className="flex items-start gap-2 text-sm leading-relaxed text-muted-foreground"
                   >
                     <Check
-                      className="mt-0.5 size-3.5 shrink-0 text-primary"
+                      className="mt-0.5 size-3.5 shrink-0 text-muted-foreground"
                       aria-hidden
                     />
                     <span>{outcome}</span>

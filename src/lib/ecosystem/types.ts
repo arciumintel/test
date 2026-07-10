@@ -1,4 +1,9 @@
-export type ProjectStatus = "mainnet" | "testnet" | "coming_soon";
+export type ProjectStatus =
+  | "mainnet"
+  | "testnet"
+  | "coming_soon"
+  | "deprecated"
+  | "experimental";
 
 export type RelationshipType =
   | "sdk"
@@ -109,4 +114,6 @@ export const STATUS_LABELS: Record<ProjectStatus, string> = {
   mainnet: "Mainnet",
   testnet: "Testnet",
   coming_soon: "Coming Soon",
+  deprecated: "Deprecated",
+  experimental: "Experimental",
 };

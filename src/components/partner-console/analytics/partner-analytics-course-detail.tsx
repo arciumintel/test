@@ -37,7 +37,7 @@ export function PartnerAnalyticsCourseDetail({
                     </div>
                     <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
                       <div
-                        className="h-full rounded-full bg-primary"
+                        className="h-full rounded-full bg-foreground/70"
                         style={{
                           width: `${Math.round((bucket.count / max) * 100)}%`,
                         }}

@@ -3,6 +3,7 @@ import { ArrowUpRight, MoveRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { hasGlossaryDetailPage, type GlossaryTerm } from "@/lib/glossary";
 import { cn } from "@/lib/utils";
+import { getGlossaryCategoryBadgeVariant } from "@/lib/badge-colors";
 
 type GlossaryTermCardProps = {
   term: GlossaryTerm;
@@ -49,7 +50,7 @@ export function GlossaryTermCard({
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <Badge variant="outline" className="bg-background/80">
+          <Badge variant={getGlossaryCategoryBadgeVariant(term.categoryId)}>
             {categoryTitle}
           </Badge>
           {term.detailPage?.kind === "visual" ? (

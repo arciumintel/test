@@ -102,7 +102,7 @@ export function LessonContent({ content }: { content: string }) {
             return (
               <blockquote
                 key={key}
-                className="my-4 border-l-4 border-primary/30 pl-4 italic text-muted-foreground"
+                className="my-4 border-l-4 border-border-strong pl-4 italic text-muted-foreground"
               >
                 {renderLessonInline(block.text, key)}
               </blockquote>

@@ -104,7 +104,7 @@ function WorkflowStep({
       {!isLast && (
         <span
           className={`absolute left-[11px] top-6 h-full w-px ${
-            isComplete ? "bg-primary" : "bg-border"
+            isComplete ? "bg-border-strong" : "bg-border"
           }`}
           aria-hidden
         />
@@ -112,9 +112,9 @@ function WorkflowStep({
       <span
         className={`relative z-10 flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-medium ${
           isComplete
-            ? "border-primary bg-primary text-primary-foreground"
+            ? "border-border-strong bg-foreground text-background"
             : isCurrent
-              ? "border-primary bg-background text-primary"
+              ? "border-[color:var(--featured-border)] bg-surface-elevated text-foreground shadow-[inset_0_0_0_1px_var(--featured-border)]"
               : "border-border bg-muted text-muted-foreground"
         }`}
         aria-hidden

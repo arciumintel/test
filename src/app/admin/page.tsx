@@ -4,6 +4,8 @@ import { Plus, BookOpen, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge, StatusBadge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { StatMetric } from "@/components/ui/stat-metric";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { prisma } from "@/lib/prisma";
 import { getPlatformSummary } from "@/lib/analytics";
@@ -73,11 +75,12 @@ export default async function AdminDashboard() {
             Create and manage official Arcademy courses.
           </p>
           {!dbError && (
-            <p className="mt-2 text-pretty text-sm text-muted-foreground">
-              {summary.learners} learners · {summary.published} published ·{" "}
-              {summary.completions} completions · {summary.badges} badges
-              defined
-            </p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <StatMetric label="Learners" value={summary.learners} />
+              <StatMetric label="Published" value={summary.published} />
+              <StatMetric label="Completions" value={summary.completions} />
+              <StatMetric label="Badges defined" value={summary.badges} />
+            </div>
           )}
         </div>
         <Button asChild className="shrink-0 self-start">
@@ -105,19 +108,16 @@ export default async function AdminDashboard() {
           </h2>
           <div className="mt-4 space-y-3">
             {courses.length === 0 ? (
-              <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
-                <BookOpen
-                  className="mx-auto size-8 text-muted-foreground"
-                  aria-hidden
-                />
-                <p className="mt-3 font-medium">No courses yet</p>
-                <p className="mt-1 text-pretty text-sm text-muted-foreground">
-                  Create your first course to get started.
-                </p>
-                <Button asChild className="mt-4" size="sm">
-                  <Link href="/admin/courses/new">New course</Link>
-                </Button>
-              </div>
+              <EmptyState
+                icon={BookOpen}
+                title="No courses yet"
+                description="Create your first course to get started."
+                action={
+                  <Button asChild size="sm">
+                    <Link href="/admin/courses/new">New course</Link>
+                  </Button>
+                }
+              />
             ) : (
               courses.map((course) => (
                 <Card key={course.id}>
@@ -126,7 +126,7 @@ export default async function AdminDashboard() {
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/admin/courses/${course.id}`}
-                          className="truncate font-medium hover:text-primary"
+                          className="truncate font-medium hover:text-foreground hover:underline"
                         >
                           {course.title}
                         </Link>

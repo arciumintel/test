@@ -3,6 +3,7 @@ import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { FoundationStartHero } from "@/components/foundation-start-hero";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { PageHeader } from "@/components/page-header";
@@ -145,20 +146,16 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             )}
           </>
         ) : (
-          <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
-            <BookOpen
-              className="mx-auto size-8 text-muted-foreground"
-              aria-hidden
-            />
-            <p className="mt-3 font-medium">No published projects yet</p>
-            <p className="mt-1 text-pretty text-sm text-muted-foreground">
-              Ecosystem project pages appear here as Arcium apps and tools are
-              added to Arcademy.
-            </p>
-            <Button variant="outline" className="mt-4" asChild>
-              <Link href="/start">Start with Arcium</Link>
-            </Button>
-          </div>
+          <EmptyState
+            icon={BookOpen}
+            title="No published projects yet"
+            description="Ecosystem project pages appear here as Arcium apps and tools are added to Arcademy."
+            action={
+              <Button variant="outline" asChild>
+                <Link href="/start">Start with Arcium</Link>
+              </Button>
+            }
+          />
         )}
       </section>
     </div>

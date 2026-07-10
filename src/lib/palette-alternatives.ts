@@ -32,23 +32,23 @@ const currentLight: PaletteModeTokens = {
   accent: "#e5dec9",
   border: "#e5dec9",
   seal: "#b8862a",
-  earned: "#8a6516",
-  success: "#16a34a",
+  earned: "#7a5812",
+  success: "#166534",
 };
 
 const currentDark: PaletteModeTokens = {
-  background: "#0c1a1c",
-  foreground: "#eaf3f1",
-  card: "#102325",
-  primary: "#2fa6a0",
+  background: "#0a1011",
+  foreground: "#e8edec",
+  card: "#12181a",
+  primary: "#32b5ae",
   primaryForeground: "#04100f",
-  secondary: "#1e3a3a",
-  mutedForeground: "#8ba6a2",
-  accent: "#1e3a3a",
-  border: "#1e3a3a",
-  seal: "#d6a43b",
-  earned: "#e7c070",
-  success: "#4ade80",
+  secondary: "#181f21",
+  mutedForeground: "#8b9498",
+  accent: "#1c2426",
+  border: "#252d30",
+  seal: "#c9a44e",
+  earned: "#dcc07a",
+  success: "#3dba6e",
 };
 
 /** Palette comparison set — current Vault plus alternatives A–E from color assessment. */
@@ -56,7 +56,7 @@ export const PALETTE_ALTERNATIVES: PaletteAlternative[] = [
   {
     id: "current",
     name: "Current Vault",
-    tagline: "Security paper · teal · brass seal",
+    tagline: "Security paper · teal · brass seal · Vault Prime dark",
     light: currentLight,
     dark: currentDark,
   },

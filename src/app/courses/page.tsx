@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { CourseCard } from "@/components/course-card";
 import { CourseCatalogFilters } from "@/components/course-catalog-filters";
 import { PageHeader } from "@/components/page-header";
@@ -71,7 +72,7 @@ export default async function CoursesPage({ searchParams }: CoursesPageProps) {
       />
 
       {!coursesLoadError ? (
-        <div className="mb-6 rounded-xl border border-primary/20 bg-primary/[0.04] px-4 py-3 text-sm dark:bg-primary/[0.08]">
+        <div className="mb-6 rounded-xl border border-border-subtle bg-surface-secondary px-4 py-3 text-sm">
           <p className="text-pretty text-muted-foreground">
             <span className="font-medium text-foreground">New here?</span>{" "}
             <Link
@@ -123,30 +124,22 @@ export default async function CoursesPage({ searchParams }: CoursesPageProps) {
             ))}
           </div>
         ) : filtersActive ? (
-          <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
-            <BookOpen
-              className="mx-auto size-8 text-muted-foreground"
-              aria-hidden
-            />
-            <p className="mt-3 font-medium">No courses match these filters</p>
-            <p className="mt-1 text-pretty text-sm text-muted-foreground">
-              Try removing a filter or browse the full catalog.
-            </p>
-            <Button variant="outline" className="mt-4" asChild>
-              <Link href="/courses">Clear filters</Link>
-            </Button>
-          </div>
+          <EmptyState
+            icon={BookOpen}
+            title="No courses match these filters"
+            description="Try removing a filter or browse the full catalog."
+            action={
+              <Button variant="outline" asChild>
+                <Link href="/courses">Clear filters</Link>
+              </Button>
+            }
+          />
         ) : (
-          <div className="rounded-xl border border-dashed bg-muted/30 p-10 text-center">
-            <BookOpen
-              className="mx-auto size-8 text-muted-foreground"
-              aria-hidden
-            />
-            <p className="mt-3 font-medium">No published courses yet</p>
-            <p className="mt-1 text-pretty text-sm text-muted-foreground">
-              The Arcademy team is preparing the first courses. Check back soon.
-            </p>
-          </div>
+          <EmptyState
+            icon={BookOpen}
+            title="No published courses yet"
+            description="The Arcademy team is preparing the first courses. Check back soon."
+          />
         )}
       </section>
     </div>

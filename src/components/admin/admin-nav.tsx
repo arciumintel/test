@@ -24,9 +24,22 @@ const sections = [
     match: (pathname: string) => pathname.startsWith("/admin/partner-intake"),
   },
   {
+    label: "Analytics",
+    href: "/admin/analytics",
+    match: (pathname: string) =>
+      pathname.startsWith("/admin/analytics") &&
+      !pathname.startsWith("/admin/analytics/referrals"),
+  },
+  {
     label: "Referrals",
     href: "/admin/analytics/referrals",
-    match: (pathname: string) => pathname.startsWith("/admin/analytics"),
+    match: (pathname: string) =>
+      pathname.startsWith("/admin/analytics/referrals"),
+  },
+  {
+    label: "Cohorts",
+    href: "/admin/cohorts",
+    match: (pathname: string) => pathname.startsWith("/admin/cohorts"),
   },
 ] as const;
 
@@ -46,7 +59,7 @@ export function AdminNav() {
                 className={cn(
                   "inline-flex rounded-t-md px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
                   active
-                    ? "border-b-2 border-primary text-foreground"
+                    ? "border-b-2 border-[color:var(--featured)] text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >

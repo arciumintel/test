@@ -28,6 +28,7 @@ import {
 import { getCourseCompletionState } from "@/lib/course-completion";
 import { getCurrentUser } from "@/lib/session";
 import { productPath, coursePath } from "@/lib/paths";
+import { getCourseTypeBadgeVariant } from "@/lib/badge-colors";
 
 export async function generateMetadata({
   params,
@@ -109,7 +110,7 @@ export default async function CourseDetailPage({
 
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <LevelBadge level={course.level} />
-            <Badge variant="muted">
+            <Badge variant={getCourseTypeBadgeVariant(course.courseType)}>
               <Clock />
               {formatDuration(course.estimatedDuration)}
             </Badge>
@@ -119,7 +120,7 @@ export default async function CourseDetailPage({
               {course.lessons.length === 1 ? "" : "s"}
             </Badge>
             {course.badge && (
-              <Badge variant="warning">
+              <Badge variant="certification">
                 <Award />
                 Earns a badge
               </Badge>
@@ -187,7 +188,7 @@ export default async function CourseDetailPage({
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center">
-                    <BookOpen className="size-10 text-primary/40" />
+                    <BookOpen className="size-10 text-muted-foreground/60" />
                   </div>
                 )}
               </div>

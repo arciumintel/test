@@ -20,9 +20,12 @@ type ThemeColors = {
   foreground: string;
   muted: string;
   background: string;
+  inverse: string;
+  featured: string;
   info: string;
   success: string;
   warning: string;
+  destructive: string;
 };
 
 function parseCssColor(value: string): [number, number, number] {
@@ -38,40 +41,79 @@ function parseCssColor(value: string): [number, number, number] {
     const int = Number.parseInt(normalized, 16);
     return [(int >> 16) & 255, (int >> 8) & 255, int & 255];
   }
-  return [28, 126, 121];
+  return [0, 0, 0];
 }
 
 function readThemeColors(): ThemeColors {
   if (typeof window === "undefined") {
     return {
-      primary: "#1c7e79",
-      primaryRgb: [28, 126, 121],
-      foreground: "#12201f",
-      muted: "#5f6e6b",
-      background: "#f4f1e8",
-      info: "#2563eb",
-      success: "#16a34a",
-      warning: "#d97706",
+      primary: "currentColor",
+      primaryRgb: [0, 0, 0],
+      foreground: "CanvasText",
+      muted: "GrayText",
+      background: "Canvas",
+      inverse: "Canvas",
+      featured: "currentColor",
+      info: "currentColor",
+      success: "currentColor",
+      warning: "currentColor",
+      destructive: "currentColor",
     };
   }
 
   const styles = getComputedStyle(document.documentElement);
-  const primary = styles.getPropertyValue("--primary").trim() || "#1c7e79";
+  const primary =
+    styles.getPropertyValue("--accent-primary").trim() ||
+    styles.getPropertyValue("--primary").trim();
+  const foreground =
+    styles.getPropertyValue("--text-primary").trim() ||
+    styles.getPropertyValue("--foreground").trim();
+  const muted =
+    styles.getPropertyValue("--text-muted").trim() ||
+    styles.getPropertyValue("--muted-foreground").trim();
+  const background =
+    styles.getPropertyValue("--bg-primary").trim() ||
+    styles.getPropertyValue("--background").trim();
+  const inverse =
+    styles.getPropertyValue("--text-inverse").trim() ||
+    styles.getPropertyValue("--primary-foreground").trim() ||
+    foreground;
+
   return {
     primary,
     primaryRgb: parseCssColor(primary),
-    foreground: styles.getPropertyValue("--foreground").trim() || "#1a1a2e",
-    muted: styles.getPropertyValue("--muted-foreground").trim() || "#8b8b9a",
-    background: styles.getPropertyValue("--background").trim() || "#fafafa",
-    info: styles.getPropertyValue("--info").trim() || "#3b82f6",
-    success: styles.getPropertyValue("--success").trim() || "#22c55e",
-    warning: styles.getPropertyValue("--warning").trim() || "#f59e0b",
+    foreground,
+    muted,
+    background,
+    inverse,
+    featured:
+      styles.getPropertyValue("--featured").trim() ||
+      styles.getPropertyValue("--accent-premium").trim() ||
+      primary,
+    info:
+      styles.getPropertyValue("--status-info").trim() ||
+      styles.getPropertyValue("--info").trim() ||
+      primary,
+    success:
+      styles.getPropertyValue("--status-success").trim() ||
+      styles.getPropertyValue("--success").trim() ||
+      primary,
+    warning:
+      styles.getPropertyValue("--status-warning").trim() ||
+      styles.getPropertyValue("--warning").trim() ||
+      primary,
+    destructive:
+      styles.getPropertyValue("--status-danger").trim() ||
+      styles.getPropertyValue("--destructive").trim() ||
+      primary,
   };
 }
 
 function statusColor(status: string, colors: ThemeColors): string {
   if (status === "mainnet") return colors.success;
   if (status === "testnet") return colors.info;
+  if (status === "experimental") return colors.featured;
+  if (status === "deprecated") return colors.destructive;
   return colors.warning;
 }
 
@@ -284,7 +326,7 @@ export function GalaxyCanvas({ className }: GalaxyCanvasProps) {
       ctx.arc(layout.core.x, layout.core.y, coreRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = colors.inverse;
       ctx.font = "600 13px var(--font-geist-sans), system-ui, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -326,7 +368,7 @@ export function GalaxyCanvas({ className }: GalaxyCanvasProps) {
         ctx.arc(hub.x, hub.y, hub.radius * hubPulse, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = colors.inverse;
         ctx.font = "500 11px var(--font-geist-sans), system-ui, sans-serif";
         ctx.fillText(hub.label, hub.x, hub.y);
       }
@@ -417,7 +459,7 @@ export function GalaxyCanvas({ className }: GalaxyCanvasProps) {
           ctx.stroke();
         }
 
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = colors.inverse;
         ctx.font = "600 9px var(--font-geist-sans), system-ui, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";

@@ -160,7 +160,7 @@ export function WalletAuth({ authedWallet, className, align = "end" }: Props) {
               className="fixed inset-0 z-40"
               onClick={() => setMenuOpen(false)}
             />
-            <div className="absolute right-0 z-50 mt-2 w-44 rounded-lg border bg-popover p-1 shadow-lg">
+            <div className="surface-popover absolute right-0 z-50 mt-2 w-44 rounded-lg border p-1">
               <button
                 onClick={handleSignOut}
                 disabled={busy}

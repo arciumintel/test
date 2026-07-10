@@ -14,12 +14,14 @@ import {
 
 type CourseCatalogFiltersMobileProps = {
   activeFilterCount: number;
+  triggerLabel?: string;
   children: React.ReactNode;
 };
 
 /** Mobile-only sheet trigger; desktop filters render inline in the toolbar. */
 export function CourseCatalogFiltersMobile({
   activeFilterCount,
+  triggerLabel = "Filter & sort",
   children,
 }: CourseCatalogFiltersMobileProps) {
   return (
@@ -31,13 +33,13 @@ export function CourseCatalogFiltersMobile({
           className={cn(
             "h-9 w-full sm:w-auto",
             activeFilterCount > 0 &&
-              "border-primary/30 bg-primary/5 text-primary hover:bg-primary/10 hover:text-primary"
+              "border-[color:var(--featured-border)] bg-[color:color-mix(in_srgb,var(--featured-background)_45%,transparent)] text-foreground hover:bg-[color:color-mix(in_srgb,var(--featured-background)_58%,var(--surface-elevated))]"
           )}
         >
           <SlidersHorizontal className="size-4" aria-hidden />
-          Filter & sort
+          {triggerLabel}
           {activeFilterCount > 0 && (
-            <Badge className="ml-1.5 border-transparent bg-primary/15 text-primary hover:bg-primary/15">
+            <Badge className="ml-1.5 border-transparent bg-[color:color-mix(in_srgb,var(--featured-background)_72%,transparent)] text-foreground hover:bg-[color:color-mix(in_srgb,var(--featured-background)_72%,transparent)]">
               {activeFilterCount}
             </Badge>
           )}

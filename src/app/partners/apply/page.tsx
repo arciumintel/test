@@ -28,7 +28,7 @@ export default async function PartnerApplyPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
       <div className="flex items-center gap-3">
-        <span className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+        <span className="flex size-10 items-center justify-center rounded-lg bg-surface-secondary text-text-secondary">
           <Handshake className="size-5" />
         </span>
         <div>

@@ -23,6 +23,7 @@ import {
 } from "@/lib/ecosystem/types";
 import { productPath } from "@/lib/paths";
 import { cn } from "@/lib/utils";
+import { getEcosystemCategoryBadgeVariant } from "@/lib/badge-colors";
 
 type ProjectCardProps = {
   project: EcosystemProject;
@@ -62,7 +63,7 @@ function ProjectLogo({
   return (
     <div
       className={cn(
-        "flex items-center justify-center rounded-xl bg-primary/10 font-semibold text-primary",
+        "flex items-center justify-center rounded-xl bg-surface-secondary font-semibold text-text-secondary",
         sizeClass
       )}
       aria-hidden
@@ -73,16 +74,19 @@ function ProjectLogo({
 }
 
 function StatusBadge({ status }: { status: EcosystemProject["status"] }) {
+  const variant =
+    status === "mainnet"
+      ? "mainnet"
+      : status === "testnet"
+        ? "testnet"
+        : status === "coming_soon"
+          ? "comingSoon"
+          : status === "deprecated"
+            ? "deprecated"
+            : "experimental";
+
   return (
-    <Badge
-      variant="outline"
-      className={cn(
-        "rounded-full font-medium",
-        status === "mainnet" && "border-success/40 text-success",
-        status === "testnet" && "border-info/40 text-info",
-        status === "coming_soon" && "border-warning/40 text-warning"
-      )}
-    >
+    <Badge variant={variant} className="rounded-full font-medium">
       {STATUS_LABELS[status]}
     </Badge>
   );
@@ -131,7 +135,7 @@ export function ProjectCard({
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-lg font-semibold tracking-tight">{project.name}</h3>
             {project.featured ? (
-              <Badge className="rounded-full bg-primary/15 text-primary">
+              <Badge variant="featured" className="rounded-full">
                 <Sparkles className="mr-1 size-3" aria-hidden />
                 Featured
               </Badge>
@@ -139,7 +143,10 @@ export function ProjectCard({
           </div>
           <p className="mt-1 text-sm text-muted-foreground">{project.tagline}</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <Badge variant="secondary" className="rounded-full">
+            <Badge
+              variant={getEcosystemCategoryBadgeVariant(project.categoryId)}
+              className="rounded-full"
+            >
               {getCategoryLabel(project.categoryId)}
             </Badge>
             <StatusBadge status={project.status} />

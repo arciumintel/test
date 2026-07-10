@@ -50,7 +50,7 @@ export default async function NotificationsPage() {
               <div
                 className={cn(
                   "rounded-xl border p-4",
-                  !item.readAt && "border-primary/30 bg-primary/5"
+                  !item.readAt && "border-border-strong bg-surface-secondary"
                 )}
               >
                 <p className="font-medium">{item.title}</p>
