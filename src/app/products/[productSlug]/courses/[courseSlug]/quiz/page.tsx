@@ -9,6 +9,7 @@ import {
   getFinalQuiz,
   getPostCompletionRecommendations,
 } from "@/lib/courses";
+import { toLearnerQuestion } from "@/lib/question-types";
 import { hasActiveDiscordRoleUnlockForBadge } from "@/lib/discord-role-grants";
 import { isDiscordConfigured } from "@/lib/discord";
 import { getCurrentUser } from "@/lib/session";
@@ -37,7 +38,6 @@ export default async function QuizPage({
     include: {
       questions: {
         orderBy: { order: "asc" },
-        select: { id: true, prompt: true, answerOptions: true },
       },
     },
   });
@@ -117,7 +117,7 @@ export default async function QuizPage({
           ecosystemProjectId={course.product.id}
           ecosystemProjectSlug={course.product.slug}
           passThreshold={quiz.passThreshold}
-          questions={quiz.questions}
+          questions={quiz.questions.map(toLearnerQuestion)}
           productSlug={productSlug}
           previouslyPassed={Boolean(previouslyPassed)}
           quizPath={quizPath(productSlug, courseSlug)}

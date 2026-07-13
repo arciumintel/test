@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { CourseAnalyticsView } from "@/components/analytics/course-analytics-view";
+import { QuizDiagnosticQuestion } from "@/components/analytics/quiz-diagnostic-question";
 import type { PartnerPlusCourseAnalytics } from "@/lib/partner-analytics";
 
 export function PartnerAnalyticsCourseDetail({
@@ -61,37 +62,7 @@ export function PartnerAnalyticsCourseDetail({
             </p>
             <div className="mt-4 space-y-6">
               {data.quizDiagnostics.map((q) => (
-                <div
-                  key={q.questionId}
-                  className="border-b border-border/50 pb-6 last:border-0"
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <p className="text-sm font-medium">
-                      Q{q.order + 1}. {q.prompt}
-                    </p>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {q.missRate}% miss rate · {q.attemptCount} attempts
-                    </span>
-                  </div>
-                  <ul className="mt-3 space-y-2">
-                    {q.optionDistribution.map((opt) => (
-                      <li key={opt.label} className="text-xs">
-                        <div className="mb-1 flex justify-between">
-                          <span className="line-clamp-1 pr-2">{opt.label}</span>
-                          <span className="text-muted-foreground">
-                            {opt.percent}%
-                          </span>
-                        </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-                          <div
-                            className="h-full rounded-full bg-muted-foreground/50"
-                            style={{ width: `${opt.percent}%` }}
-                          />
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <QuizDiagnosticQuestion key={q.questionId} diagnostic={q} />
               ))}
             </div>
           </CardContent>

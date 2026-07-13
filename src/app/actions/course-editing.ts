@@ -285,5 +285,3 @@ export async function upsertBadge(
 
   return { ok: true };
 }
-
-export type { CourseEditorContext };

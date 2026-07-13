@@ -10,6 +10,7 @@ import {
   getPartnerPlusAnalytics,
   getPartnerPlusCourseAnalytics,
   partnerPlusReportToCsv,
+  partnerPlusReportToHtml,
   partnerPlusReportToMarkdown,
 } from "@/lib/partner-analytics";
 import {
@@ -61,7 +62,7 @@ export async function getPartnerAnalyticsCourse(
 const exportSchema = z.object({
   productId: z.string().min(1),
   rangePreset: z.enum(["7d", "30d", "90d", "all"]).optional(),
-  format: z.enum(["markdown", "csv"]),
+  format: z.enum(["markdown", "csv", "html"]),
 });
 
 export async function exportPartnerPlusReport(
@@ -122,6 +123,15 @@ export async function exportPartnerPlusReport(
       content: partnerPlusReportToCsv(data),
       filename: `arcademy-analytics-${slug}-${date}.csv`,
       mimeType: "text/csv;charset=utf-8",
+    };
+  }
+
+  if (parsed.data.format === "html") {
+    return {
+      ok: true,
+      content: partnerPlusReportToHtml(data, validCourses),
+      filename: `arcademy-analytics-${slug}-${date}.html`,
+      mimeType: "text/html;charset=utf-8",
     };
   }
 

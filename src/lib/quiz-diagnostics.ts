@@ -1,56 +1,56 @@
 import { prisma } from "@/lib/prisma";
 import type { AnalyticsDateRange } from "@/lib/analytics-date-range";
+import {
+  gradeQuestion,
+  isSingleSelectFamily,
+  normalizeFillBlankAnswer,
+  QUESTION_TYPE_LABELS,
+  type QuizSubmissionAnswer,
+} from "@/lib/question-types";
+import { summarizeWithinTwoAttempts } from "@/lib/quiz-diagnostics-shared";
+import type {
+  AttemptsBeforePassBucket,
+  QuizEngagementSummary,
+  QuizQuestionDiagnostic,
+} from "@/lib/quiz-diagnostics-shared";
 
-export type QuizQuestionDiagnostic = {
-  questionId: string;
-  order: number;
-  prompt: string;
-  attemptCount: number;
-  missRate: number;
-  optionDistribution: { label: string; count: number; percent: number }[];
-};
+export type {
+  AttemptsBeforePassBucket,
+  QuizEngagementSummary,
+  QuizQuestionDiagnostic,
+} from "@/lib/quiz-diagnostics-shared";
+export {
+  formatQuizDuration,
+  summarizeWithinTwoAttempts,
+} from "@/lib/quiz-diagnostics-shared";
 
-export type AttemptsBeforePassBucket = {
-  label: string;
-  count: number;
-};
-
-export type QuizEngagementSummary = {
-  averageDurationSeconds: number | null;
-  withinTwoAttemptPassRate: number | null;
-  withinTwoAttemptCount: number;
-  learnersAttempted: number;
-};
-
-export function formatQuizDuration(seconds: number | null): string {
-  if (seconds == null || seconds <= 0) return "n/a";
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+function parseAttemptAnswer(
+  raw: unknown,
+  questionIndex: number,
+  answers: unknown
+): QuizSubmissionAnswer | null {
+  if (!Array.isArray(answers) || answers.length <= questionIndex) return null;
+  const value = answers[questionIndex];
+  if (
+    typeof value === "number" ||
+    typeof value === "string" ||
+    Array.isArray(value)
+  ) {
+    return value as QuizSubmissionAnswer;
+  }
+  return null;
 }
 
-export function summarizeWithinTwoAttempts(
-  buckets: AttemptsBeforePassBucket[]
-): Pick<
-  QuizEngagementSummary,
-  "withinTwoAttemptPassRate" | "withinTwoAttemptCount" | "learnersAttempted"
-> {
-  const pass1 = buckets.find((b) => b.label === "Passed on attempt 1")?.count ?? 0;
-  const pass2 = buckets.find((b) => b.label === "Passed on attempt 2")?.count ?? 0;
-  const pass3plus =
-    buckets.find((b) => b.label === "Passed on attempt 3+")?.count ?? 0;
-  const neverPassed = buckets.find((b) => b.label === "Never passed")?.count ?? 0;
-  const learnersAttempted = pass1 + pass2 + pass3plus + neverPassed;
-  const withinTwoAttemptCount = pass1 + pass2;
-
-  return {
-    withinTwoAttemptPassRate:
-      learnersAttempted > 0
-        ? Math.round((withinTwoAttemptCount / learnersAttempted) * 100)
-        : null,
-    withinTwoAttemptCount,
-    learnersAttempted,
-  };
+function buildOptionDistribution(
+  answerOptions: string[],
+  counts: number[],
+  answered: number
+) {
+  return answerOptions.map((label, oi) => ({
+    label,
+    count: counts[oi] ?? 0,
+    percent: answered > 0 ? Math.round(((counts[oi] ?? 0) / answered) * 100) : 0,
+  }));
 }
 
 export async function getQuizEngagementSummary(
@@ -126,34 +126,161 @@ export async function getQuizDiagnostics(
   if (attempts.length === 0) return [];
 
   return quiz.questions.map((q, qi) => {
-    const optionCounts = q.answerOptions.map(() => 0);
-    let misses = 0;
     let answered = 0;
+    let misses = 0;
+
+    if (isSingleSelectFamily(q.type) || q.type === "multi_select") {
+      const optionCounts = q.answerOptions.map(() => 0);
+
+      for (const attempt of attempts) {
+        const selected = parseAttemptAnswer(attempt.answers, qi, attempt.answers);
+        if (selected == null) continue;
+
+        if (q.type === "multi_select" && Array.isArray(selected)) {
+          answered += 1;
+          const graded = gradeQuestion(q, selected);
+          if (!graded.correct) misses += 1;
+          for (const index of selected.filter((v) => typeof v === "number")) {
+            if (index >= 0 && index < optionCounts.length) {
+              optionCounts[index] += 1;
+            }
+          }
+          continue;
+        }
+
+        if (typeof selected === "number") {
+          answered += 1;
+          const graded = gradeQuestion(q, selected);
+          if (!graded.correct) misses += 1;
+          if (selected >= 0 && selected < optionCounts.length) {
+            optionCounts[selected] += 1;
+          }
+        }
+      }
+
+      return {
+        questionId: q.id,
+        order: q.order,
+        prompt: q.prompt,
+        type: q.type,
+        typeLabel: QUESTION_TYPE_LABELS[q.type],
+        attemptCount: answered,
+        missRate: answered > 0 ? Math.round((misses / answered) * 100) : 0,
+        optionDistribution: buildOptionDistribution(
+          q.answerOptions,
+          optionCounts,
+          answered
+        ),
+      };
+    }
+
+    if (q.type === "ordering") {
+      const positionCorrect = q.answerOptions.map(() => 0);
+
+      for (const attempt of attempts) {
+        const selected = parseAttemptAnswer(attempt.answers, qi, attempt.answers);
+        if (!Array.isArray(selected)) continue;
+        answered += 1;
+        const graded = gradeQuestion(q, selected);
+        if (!graded.correct) misses += 1;
+        selected.forEach((originalIndex, position) => {
+          if (q.correctOrder[position] === originalIndex) {
+            positionCorrect[position] += 1;
+          }
+        });
+      }
+
+      return {
+        questionId: q.id,
+        order: q.order,
+        prompt: q.prompt,
+        type: q.type,
+        typeLabel: QUESTION_TYPE_LABELS[q.type],
+        attemptCount: answered,
+        missRate: answered > 0 ? Math.round((misses / answered) * 100) : 0,
+        positionAccuracy: q.answerOptions.map((label, position) => ({
+          label: `Position ${position + 1}: ${label}`,
+          correctPercent:
+            answered > 0
+              ? Math.round((positionCorrect[position] / answered) * 100)
+              : 0,
+        })),
+      };
+    }
+
+    if (q.type === "matching") {
+      const pairStats = q.leftItems.map((left) => ({
+        left,
+        misses: 0,
+        attempts: 0,
+      }));
+
+      for (const attempt of attempts) {
+        const selected = parseAttemptAnswer(attempt.answers, qi, attempt.answers);
+        if (!Array.isArray(selected)) continue;
+        answered += 1;
+        const graded = gradeQuestion(q, selected);
+        if (!graded.correct) misses += 1;
+        selected.forEach((chosen, leftIndex) => {
+          if (!pairStats[leftIndex]) return;
+          pairStats[leftIndex].attempts += 1;
+          if (chosen !== q.correctMatches[leftIndex]) {
+            pairStats[leftIndex].misses += 1;
+          }
+        });
+      }
+
+      return {
+        questionId: q.id,
+        order: q.order,
+        prompt: q.prompt,
+        type: q.type,
+        typeLabel: QUESTION_TYPE_LABELS[q.type],
+        attemptCount: answered,
+        missRate: answered > 0 ? Math.round((misses / answered) * 100) : 0,
+        pairMissRates: pairStats.map((pair) => ({
+          left: pair.left,
+          missRate:
+            pair.attempts > 0
+              ? Math.round((pair.misses / pair.attempts) * 100)
+              : 0,
+          attemptCount: pair.attempts,
+        })),
+      };
+    }
+
+    const wrongAnswerCounts = new Map<string, number>();
 
     for (const attempt of attempts) {
-      const raw = attempt.answers;
-      if (!Array.isArray(raw) || raw.length <= qi) continue;
-      const selected = raw[qi];
-      if (typeof selected !== "number") continue;
+      const selected = parseAttemptAnswer(attempt.answers, qi, attempt.answers);
+      if (typeof selected !== "string" || !selected.trim()) continue;
       answered += 1;
-      if (selected >= 0 && selected < optionCounts.length) {
-        optionCounts[selected] += 1;
+      const graded = gradeQuestion(q, selected);
+      if (!graded.correct) {
+        misses += 1;
+        const key = normalizeFillBlankAnswer(selected);
+        wrongAnswerCounts.set(key, (wrongAnswerCounts.get(key) ?? 0) + 1);
       }
-      if (selected !== q.correctAnswer) misses += 1;
     }
+
+    const commonWrongAnswers = [...wrongAnswerCounts.entries()]
+      .map(([answer, count]) => ({
+        answer,
+        count,
+        percent: answered > 0 ? Math.round((count / answered) * 100) : 0,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
 
     return {
       questionId: q.id,
       order: q.order,
       prompt: q.prompt,
+      type: q.type,
+      typeLabel: QUESTION_TYPE_LABELS[q.type],
       attemptCount: answered,
       missRate: answered > 0 ? Math.round((misses / answered) * 100) : 0,
-      optionDistribution: q.answerOptions.map((label, oi) => ({
-        label,
-        count: optionCounts[oi],
-        percent:
-          answered > 0 ? Math.round((optionCounts[oi] / answered) * 100) : 0,
-      })),
+      commonWrongAnswers,
     };
   });
 }

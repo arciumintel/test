@@ -9,11 +9,11 @@ import {
   lessonSchema,
   PARTNER_EDITABLE_STATUSES,
   questionSchema,
+  normalizeQuestionInput,
 } from "@/lib/course-schemas";
 import { resolveCourseSlugOnRename, uniqueCourseSlug } from "@/lib/slugs";
 import { coursePath, productPath } from "@/lib/paths";
 import { prisma } from "@/lib/prisma";
-import type { CourseEditorContext } from "@/lib/course-editor-context";
 
 export type CourseEditorScope =
   | { role: "staff"; userId: string }
@@ -612,9 +612,7 @@ export async function createQuestionForEditor(
 
   const parsed = questionSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
-  if (parsed.data.correctAnswer >= parsed.data.answerOptions.length) {
-    return { error: "Correct answer must be one of the options." };
-  }
+  const data = normalizeQuestionInput(parsed.data);
 
   const last = await prisma.question.findFirst({
     where: { quizId },
@@ -625,10 +623,7 @@ export async function createQuestionForEditor(
   await prisma.question.create({
     data: {
       quizId,
-      prompt: parsed.data.prompt,
-      answerOptions: parsed.data.answerOptions,
-      correctAnswer: parsed.data.correctAnswer,
-      explanation: parsed.data.explanation || null,
+      ...data,
       order: (last?.order ?? -1) + 1,
     },
   });
@@ -647,18 +642,11 @@ export async function updateQuestionForEditor(
 
   const parsed = questionSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
-  if (parsed.data.correctAnswer >= parsed.data.answerOptions.length) {
-    return { error: "Correct answer must be one of the options." };
-  }
+  const data = normalizeQuestionInput(parsed.data);
 
   await prisma.question.update({
     where: { id: questionId },
-    data: {
-      prompt: parsed.data.prompt,
-      answerOptions: parsed.data.answerOptions,
-      correctAnswer: parsed.data.correctAnswer,
-      explanation: parsed.data.explanation || null,
-    },
+    data,
   });
 
   revalidateCourseEditorPaths(scope, gate.question.quiz.courseId);
@@ -714,5 +702,3 @@ export async function upsertBadgeForEditor(
   revalidateCourseEditorPaths(scope, courseId);
   return { ok: true, created: !existingBadge };
 }
-
-export type { CourseEditorContext };

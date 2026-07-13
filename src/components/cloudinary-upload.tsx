@@ -21,6 +21,14 @@ type Props = {
   productId?: string;
 };
 
+function isCloudinaryUrl(url: string) {
+  try {
+    return new URL(url).hostname === "res.cloudinary.com";
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Signed, direct-to-Cloudinary upload. We only ever keep the returned
  * secure_url; the file never passes through our own server.
@@ -70,12 +78,28 @@ export function CloudinaryUpload({ value, onChange, label, className, productId 
   }
 
   return (
-    <FormField className={className}>
+    <FormField className={cn(className)}>
       {label ? <FormLabel>{label}</FormLabel> : null}
 
       {value ? (
         <div className="relative aspect-[16/9] w-full max-w-sm overflow-hidden rounded-xl border bg-input-background">
-          <Image src={value} alt="Uploaded asset" fill className="object-cover" />
+          {isCloudinaryUrl(value) ? (
+            <Image
+              src={value}
+              alt="Uploaded asset"
+              fill
+              sizes="(max-width: 640px) 100vw, 24rem"
+              className="object-cover"
+            />
+          ) : (
+            // Arbitrary pasted URLs are not in next.config remotePatterns.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={value}
+              alt="Uploaded asset"
+              className="absolute inset-0 size-full object-cover"
+            />
+          )}
           <button
             type="button"
             onClick={() => onChange("")}

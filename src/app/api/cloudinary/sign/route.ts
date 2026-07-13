@@ -33,5 +33,5 @@ export async function POST(request: Request) {
       { status: 503 }
     );
   }
-  return NextResponse.json(signUpload({}));
+  return NextResponse.json(await signUpload({}));
 }

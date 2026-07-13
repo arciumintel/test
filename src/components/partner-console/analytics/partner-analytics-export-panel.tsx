@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { exportPartnerPlusReport } from "@/app/actions/partner-analytics";
 import type { AnalyticsRangePreset } from "@/lib/analytics-date-range";
 
+type ExportFormat = "html" | "markdown" | "csv";
+
 export function PartnerAnalyticsExportPanel({
   productId,
   rangePreset,
@@ -14,10 +16,10 @@ export function PartnerAnalyticsExportPanel({
   productId: string;
   rangePreset: AnalyticsRangePreset;
 }) {
-  const [busy, setBusy] = React.useState<"markdown" | "csv" | null>(null);
+  const [busy, setBusy] = React.useState<ExportFormat | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
-  async function handleExport(format: "markdown" | "csv") {
+  async function handleExport(format: ExportFormat) {
     setBusy(format);
     setError(null);
     const res = await exportPartnerPlusReport({
@@ -44,9 +46,22 @@ export function PartnerAnalyticsExportPanel({
       <CardContent className="py-5">
         <h2 className="text-sm font-semibold">Export report</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Download a summary for your team. Reports include aggregated metrics only.
+          Download a summary for your team. HTML includes charts. Reports use
+          aggregated metrics only.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            disabled={busy !== null}
+            onClick={() => handleExport("html")}
+          >
+            {busy === "html" ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Download />
+            )}
+            HTML
+          </Button>
           <Button
             size="sm"
             variant="outline"

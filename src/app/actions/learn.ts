@@ -6,6 +6,11 @@ import { authorizeUser } from "@/lib/access-control";
 import { evaluateCourseCompletion } from "@/lib/completion";
 import { trackEventFireAndForget } from "@/lib/analytics-events";
 import { coursePath } from "@/lib/paths";
+import {
+  gradeQuestion,
+  isQuestionAnswered,
+  type QuizSubmissionAnswer,
+} from "@/lib/question-types";
 
 type ActionError = { error: string };
 
@@ -160,16 +165,27 @@ function normalizeDurationInSeconds(value: unknown): number | undefined {
   return rounded;
 }
 
+export type QuizQuestionResult = {
+  questionId: string;
+  correct: boolean;
+  explanation: string | null;
+  correctAnswer?: number;
+  correctAnswers?: number[];
+  correctOrder?: number[];
+  correctMatches?: number[];
+  acceptableAnswers?: string[];
+};
+
 export async function submitQuiz(
   quizId: string,
-  answers: number[],
+  answers: QuizSubmissionAnswer[],
   durationInSeconds?: number
 ): Promise<
   | {
       ok: true;
       score: number;
       passed: boolean;
-      results: { questionId: string; correct: boolean; correctAnswer: number; explanation: string | null }[];
+      results: QuizQuestionResult[];
       courseCompleted: boolean;
       newBadge: boolean;
       verificationSlug?: string;
@@ -194,20 +210,31 @@ export async function submitQuiz(
   if (!Array.isArray(answers) || answers.length !== quiz.questions.length) {
     return { error: "Please answer every question before submitting." };
   }
-  const answersValid = quiz.questions.every((q, i) => {
-    const a = answers[i];
-    return Number.isInteger(a) && a >= 0 && a < q.answerOptions.length;
-  });
+  const answersValid = quiz.questions.every((q, i) =>
+    isQuestionAnswered(
+      q.type,
+      q.answerOptions.length,
+      q.leftItems.length,
+      answers[i]
+    )
+  );
   if (!answersValid) {
     return { error: "Please answer every question before submitting." };
   }
 
-  const results = quiz.questions.map((q, i) => ({
-    questionId: q.id,
-    correct: answers[i] === q.correctAnswer,
-    correctAnswer: q.correctAnswer,
-    explanation: q.explanation,
-  }));
+  const results: QuizQuestionResult[] = quiz.questions.map((q, i) => {
+    const graded = gradeQuestion(q, answers[i]);
+    return {
+      questionId: q.id,
+      correct: graded.correct,
+      explanation: graded.explanation,
+      correctAnswer: graded.correctAnswer,
+      correctAnswers: graded.correctAnswers,
+      correctOrder: graded.correctOrder,
+      correctMatches: graded.correctMatches,
+      acceptableAnswers: graded.acceptableAnswers,
+    };
+  });
 
   const correctCount = results.filter((r) => r.correct).length;
   const score = Math.round((correctCount / quiz.questions.length) * 100);
@@ -226,7 +253,7 @@ export async function submitQuiz(
       quizId,
       score,
       passed,
-      answers: answers,
+      answers: answers as unknown as import("@prisma/client").Prisma.InputJsonValue,
       durationInSeconds: normalizedDuration,
     },
   });

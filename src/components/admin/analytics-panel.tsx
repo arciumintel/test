@@ -3,7 +3,7 @@ import type { CourseAnalytics } from "@/lib/analytics";
 import type {
   AttemptsBeforePassBucket,
   QuizQuestionDiagnostic,
-} from "@/lib/quiz-diagnostics";
+} from "@/lib/quiz-diagnostics-shared";
 
 export function AnalyticsPanel({
   data,

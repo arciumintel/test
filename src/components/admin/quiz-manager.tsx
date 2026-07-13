@@ -2,23 +2,13 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import {
-  Plus,
-  Loader2,
-  Save,
-  Trash2,
-  Pencil,
-  X,
-  CheckCircle2,
-  Circle,
-} from "lucide-react";
+import { Plus, Loader2, Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import type { QuizStatus } from "@prisma/client";
-import { cn } from "@/lib/utils";
 import { LearnerVisibilityField } from "@/components/admin/learner-visibility-field";
 import {
   isVisibleToLearners,
@@ -27,20 +17,17 @@ import {
 import {
   upsertFinalQuiz,
   upsertLessonKnowledgeCheck,
-  createQuestion,
-  updateQuestion,
   deleteQuestion,
 } from "@/app/actions/course-editing";
 import { courseEditorContext } from "@/lib/course-editor-context";
 import { FIELD_LIMITS as L } from "@/lib/field-limits";
+import {
+  QuestionForm,
+  QuestionPreviewCard,
+  type AdminQuestion,
+} from "@/components/admin/question-form";
 
-export type AdminQuestion = {
-  id: string;
-  prompt: string;
-  answerOptions: string[];
-  correctAnswer: number;
-  explanation: string | null;
-};
+export type { AdminQuestion };
 
 export type AdminQuiz = {
   id: string;
@@ -231,51 +218,22 @@ export function QuizManager({
             ) : (
               <Card key={q.id}>
                 <CardContent className="py-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="font-medium">
-                      <span className="text-muted-foreground">{i + 1}. </span>
-                      {q.prompt}
-                    </p>
-                    <div className="flex shrink-0 items-center">
-                      {!readOnly && (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setEditing(q.id)}
-                          >
-                            <Pencil />
-                          </Button>
-                          <DeleteQuestionButton
-                            questionId={q.id}
-                            variant={variant}
-                            partnerProductId={partnerProductId}
-                            onDeleted={() => router.refresh()}
-                          />
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <ul className="mt-2 space-y-1 pl-5 text-sm">
-                    {q.answerOptions.map((opt, oi) => (
-                      <li
-                        key={oi}
-                        className={cn(
-                          "flex items-center gap-2",
-                          oi === q.correctAnswer
-                            ? "text-success font-medium"
-                            : "text-muted-foreground"
-                        )}
-                      >
-                        {oi === q.correctAnswer ? (
-                          <CheckCircle2 className="size-3.5" />
-                        ) : (
-                          <Circle className="size-3.5" />
-                        )}
-                        {opt}
-                      </li>
-                    ))}
-                  </ul>
+                  <QuestionPreviewCard
+                    question={q}
+                    index={i}
+                    readOnly={readOnly}
+                    onEdit={readOnly ? undefined : () => setEditing(q.id)}
+                    onDelete={
+                      readOnly ? undefined : (
+                        <DeleteQuestionButton
+                          questionId={q.id}
+                          variant={variant}
+                          partnerProductId={partnerProductId}
+                          onDeleted={() => router.refresh()}
+                        />
+                      )
+                    }
+                  />
                 </CardContent>
               </Card>
             )
@@ -292,157 +250,6 @@ export function QuizManager({
         </p>
       )}
     </div>
-  );
-}
-
-function QuestionForm({
-  quizId,
-  question,
-  variant = "admin",
-  partnerProductId,
-  onDone,
-  onCancel,
-}: {
-  quizId: string;
-  question?: AdminQuestion;
-  variant?: "admin" | "partner";
-  partnerProductId?: string;
-  onDone: () => void;
-  onCancel: () => void;
-}) {
-  const [prompt, setPrompt] = React.useState(question?.prompt ?? "");
-  const [options, setOptions] = React.useState<string[]>(
-    question?.answerOptions ?? ["", ""]
-  );
-  const [correct, setCorrect] = React.useState(question?.correctAnswer ?? 0);
-  const [explanation, setExplanation] = React.useState(
-    question?.explanation ?? ""
-  );
-  const [busy, setBusy] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    setError(null);
-    const cleanOptions = options.map((o) => o.trim()).filter(Boolean);
-    const payload = {
-      prompt,
-      answerOptions: cleanOptions,
-      correctAnswer: correct,
-      explanation: explanation || null,
-    };
-    const editorCtx = courseEditorContext(variant, partnerProductId);
-    const res = question
-      ? await updateQuestion(editorCtx, question.id, payload)
-      : await createQuestion(editorCtx, quizId, payload);
-    setBusy(false);
-    if ("error" in res) {
-      setError(res.error);
-      return;
-    }
-    onDone();
-  }
-
-  return (
-    <form onSubmit={submit} className="space-y-4 rounded-lg border bg-muted/20 p-4">
-      <div className="grid gap-2">
-        <Label htmlFor="q-prompt">Question</Label>
-        <Textarea
-          id="q-prompt"
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          rows={2}
-          maxLength={L.questionPrompt}
-          required
-        />
-      </div>
-
-      <div className="grid gap-2">
-        <Label>Answer options (select the correct one)</Label>
-        <div className="space-y-2">
-          {options.map((opt, i) => (
-            <div key={i} className="flex min-w-0 items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setCorrect(i)}
-                className="shrink-0 cursor-pointer"
-                aria-label="Mark as correct"
-              >
-                {correct === i ? (
-                  <CheckCircle2 className="size-5 text-success" />
-                ) : (
-                  <Circle className="size-5 text-muted-foreground" />
-                )}
-              </button>
-              <Input
-                value={opt}
-                onChange={(e) =>
-                  setOptions((prev) =>
-                    prev.map((o, idx) => (idx === i ? e.target.value : o))
-                  )
-                }
-                placeholder={`Option ${String.fromCharCode(65 + i)}`}
-                maxLength={L.questionOption}
-                className="min-w-0"
-                required
-              />
-              {options.length > 2 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    setOptions((prev) => prev.filter((_, idx) => idx !== i));
-                    if (correct >= i && correct > 0) setCorrect((c) => c - 1);
-                  }}
-                >
-                  <Trash2 className="text-muted-foreground" />
-                </Button>
-              )}
-            </div>
-          ))}
-        </div>
-        {options.length < 6 && (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="w-fit"
-            onClick={() => setOptions((prev) => [...prev, ""])}
-          >
-            <Plus />
-            Add option
-          </Button>
-        )}
-      </div>
-
-      <div className="grid gap-2">
-        <Label htmlFor="q-explanation">
-          Explanation <span className="text-muted-foreground">(optional)</span>
-        </Label>
-        <Textarea
-          id="q-explanation"
-          value={explanation}
-          onChange={(e) => setExplanation(e.target.value)}
-          rows={2}
-          maxLength={L.questionExplanation}
-          placeholder="Shown after the learner answers."
-        />
-      </div>
-
-      <div className="flex items-center gap-3">
-        <Button type="submit" disabled={busy}>
-          {busy ? <Loader2 className="animate-spin" /> : <Save />}
-          {question ? "Save question" : "Add question"}
-        </Button>
-        <Button type="button" variant="ghost" onClick={onCancel}>
-          <X />
-          Cancel
-        </Button>
-        {error && <span className="text-sm text-destructive">{error}</span>}
-      </div>
-    </form>
   );
 }
 

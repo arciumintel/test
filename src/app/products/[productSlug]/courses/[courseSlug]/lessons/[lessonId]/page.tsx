@@ -12,6 +12,7 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { TrackView } from "@/components/analytics/track-view";
 import { Separator } from "@/components/ui/separator";
 import { getCourseBySlugs, getFinalQuiz, buildCourseModuleOutline } from "@/lib/courses";
+import { toLearnerQuestion } from "@/lib/question-types";
 import { KnowledgeCheckRunner } from "@/components/knowledge-check-runner";
 import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
@@ -166,11 +167,7 @@ export default async function LessonPage({
                   ecosystemProjectId={course.product.id}
                   ecosystemProjectSlug={course.product.slug}
                   passThreshold={knowledgeCheckQuiz.passThreshold}
-                  questions={knowledgeCheckQuiz.questions.map((q) => ({
-                    id: q.id,
-                    prompt: q.prompt,
-                    answerOptions: q.answerOptions,
-                  }))}
+                  questions={knowledgeCheckQuiz.questions.map(toLearnerQuestion)}
                   lessonPath={lessonPagePath}
                 />
               </div>

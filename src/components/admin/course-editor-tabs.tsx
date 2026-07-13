@@ -75,8 +75,8 @@ export function CourseEditorTabs({
   quiz: AdminQuiz;
   badge: BadgeInitial;
   analytics: CourseAnalytics;
-  quizDiagnostics?: import("@/lib/quiz-diagnostics").QuizQuestionDiagnostic[];
-  attemptsBeforePass?: import("@/lib/quiz-diagnostics").AttemptsBeforePassBucket[];
+  quizDiagnostics?: import("@/lib/quiz-diagnostics-shared").QuizQuestionDiagnostic[];
+  attemptsBeforePass?: import("@/lib/quiz-diagnostics-shared").AttemptsBeforePassBucket[];
   products: ProductOption[];
   prerequisiteOptions?: PrerequisiteOption[];
   variant?: "admin" | "partner";

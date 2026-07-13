@@ -26,15 +26,8 @@ export const lessonSchema = z.object({
   estimatedDuration: z.coerce.number().int().min(0).max(100000).optional().nullable(),
 });
 
-export const questionSchema = z.object({
-  prompt: z.string().min(2, "Prompt is required").max(L.questionPrompt),
-  answerOptions: z
-    .array(z.string().min(1).max(L.questionOption))
-    .min(2, "Add at least two options")
-    .max(6),
-  correctAnswer: z.coerce.number().int().min(0),
-  explanation: z.string().max(L.questionExplanation).optional().nullable(),
-});
+export { questionSchema, normalizeQuestionInput } from "@/lib/question-schemas";
+export type { QuestionFormInput } from "@/lib/question-schemas";
 
 export const badgeSchema = z.object({
   name: z

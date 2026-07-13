@@ -13,8 +13,8 @@ import type { CourseAnalytics } from "@/lib/analytics";
 import type {
   AttemptsBeforePassBucket,
   QuizQuestionDiagnostic,
-} from "@/lib/quiz-diagnostics";
-import { formatQuizDuration } from "@/lib/quiz-diagnostics";
+} from "@/lib/quiz-diagnostics-shared";
+import { formatQuizDuration } from "@/lib/quiz-diagnostics-shared";
 import { QuizDiagnosticsPanel } from "@/components/analytics/quiz-diagnostics-panel";
 
 function formatOptionalPercent(value: number | null): string {

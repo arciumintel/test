@@ -13,6 +13,17 @@ import {
   type QuizQuestionDiagnostic,
   type AttemptsBeforePassBucket,
 } from "@/lib/quiz-diagnostics";
+import {
+  buildHtmlDocument,
+  escapeHtml,
+  formatNullablePct,
+  formatNumber,
+  renderChartPlaceholder,
+  renderKpiGrid,
+  renderSection,
+  renderTable,
+  type ChartConfig,
+} from "@/lib/analytics-html-report";
 
 export type { QuizQuestionDiagnostic, AttemptsBeforePassBucket };
 export { getQuizDiagnostics, getAttemptsBeforePass };
@@ -347,7 +358,7 @@ export function partnerPlusReportToMarkdown(
       .slice(0, 3)
       .map(
         (q) =>
-          `- **${c.title}** — Q${q.order + 1}: ${q.missRate}% miss rate (${q.prompt.slice(0, 80)}${q.prompt.length > 80 ? "…" : ""})`
+          `- **${c.title}** — Q${q.order + 1} (${q.typeLabel}): ${q.missRate}% miss rate (${q.prompt.slice(0, 80)}${q.prompt.length > 80 ? "…" : ""})`
       )
   );
 
@@ -431,4 +442,347 @@ export function partnerPlusReportToCsv(data: PartnerPlusAnalytics): string {
   ];
 
   return rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
+}
+
+export function partnerPlusReportToHtml(
+  data: PartnerPlusAnalytics,
+  courseDetails: PartnerPlusCourseAnalytics[]
+): string {
+  const generatedAt = new Date().toISOString().slice(0, 10);
+  const charts: ChartConfig[] = [];
+
+  if (data.funnel.length > 0) {
+    charts.push({
+      id: "partner-funnel",
+      type: "bar",
+      indexAxis: "y",
+      labels: data.funnel.map((s) => s.label),
+      datasets: [
+        {
+          label: "Learners",
+          data: data.funnel.map((s) => s.count),
+        },
+      ],
+      heightClass: "tall",
+    });
+  }
+
+  if (data.courses.length > 0) {
+    charts.push({
+      id: "partner-courses",
+      type: "bar",
+      labels: data.courses.map((c) => c.title),
+      datasets: [
+        { label: "Starts", data: data.courses.map((c) => c.starts) },
+        { label: "Completions", data: data.courses.map((c) => c.completions) },
+      ],
+      heightClass: data.courses.length > 4 ? "tall" : "",
+    });
+  }
+
+  if (data.weeklyTrends.length > 0) {
+    charts.push({
+      id: "partner-weekly",
+      type: "line",
+      labels: data.weeklyTrends.map((w) => w.weekStart),
+      datasets: [
+        {
+          label: "Starts",
+          data: data.weeklyTrends.map((w) => w.starts),
+          fill: false,
+        },
+        {
+          label: "Completions",
+          data: data.weeklyTrends.map((w) => w.completions),
+          fill: false,
+        },
+      ],
+    });
+  }
+
+  for (const course of courseDetails) {
+    const slug = course.courseId.replace(/[^a-zA-Z0-9]/g, "").slice(0, 12);
+    if (course.lessonFunnel.length > 0) {
+      charts.push({
+        id: `lesson-funnel-${slug}`,
+        type: "bar",
+        labels: course.lessonFunnel.map((l) => `L${l.order + 1}`),
+        datasets: [
+          {
+            label: "Completed",
+            data: course.lessonFunnel.map((l) => l.completed),
+          },
+        ],
+        heightClass: "short",
+      });
+    }
+    if (course.attemptsBeforePass.length > 0) {
+      charts.push({
+        id: `attempts-${slug}`,
+        type: "bar",
+        labels: course.attemptsBeforePass.map((b) => b.label),
+        datasets: [
+          {
+            label: "Learners",
+            data: course.attemptsBeforePass.map((b) => b.count),
+          },
+        ],
+        heightClass: "short",
+      });
+    }
+  }
+
+  const summarySection = renderSection(
+    "Performance summary",
+    renderKpiGrid([
+      { label: "Course starts", value: formatNumber(data.summary.starts) },
+      {
+        label: "Completions",
+        value: formatNumber(data.summary.completions),
+        hint: `${data.summary.completionRate}% of starts`,
+      },
+      { label: "Badge awards", value: formatNumber(data.summary.badgeAwards) },
+      {
+        label: "Quiz pass rate",
+        value: formatNullablePct(data.summary.quizPassRate),
+      },
+      {
+        label: "Published courses",
+        value: formatNumber(data.summary.publishedCourses),
+      },
+    ])
+  );
+
+  const discoverySection = renderSection(
+    "Discovery",
+    renderKpiGrid([
+      {
+        label: "Project page views",
+        value: formatNumber(data.discovery.projectPageViews),
+      },
+      {
+        label: "Course detail views",
+        value: formatNumber(data.discovery.courseDetailViews),
+      },
+      {
+        label: "Start conversion",
+        value: formatNullablePct(data.discovery.startConversionRate),
+      },
+      {
+        label: "Badge verification views",
+        value: formatNumber(data.discovery.badgeVerificationViews),
+      },
+    ])
+  );
+
+  const funnelTable = renderTable(
+    [
+      { key: "label", label: "Step" },
+      { key: "count", label: "Count", align: "right" },
+      { key: "rate", label: "From previous", align: "right" },
+    ],
+    data.funnel.map((s) => ({
+      label: s.label,
+      count: s.count,
+      rate:
+        s.rateFromPrevious === null ? "—" : `${s.rateFromPrevious}%`,
+    }))
+  );
+
+  const funnelSection = renderSection(
+    "Learner funnel",
+    `${funnelTable}${
+      charts.some((c) => c.id === "partner-funnel")
+        ? renderChartPlaceholder({
+            id: "partner-funnel",
+            type: "bar",
+            labels: [],
+            datasets: [],
+            heightClass: "tall",
+          })
+        : ""
+    }`
+  );
+
+  const coursesTable = renderTable(
+    [
+      { key: "title", label: "Course" },
+      { key: "starts", label: "Starts", align: "right" },
+      { key: "completions", label: "Completions", align: "right" },
+      { key: "badges", label: "Badges", align: "right" },
+      { key: "pass", label: "Quiz pass", align: "right" },
+      { key: "avg", label: "Avg score", align: "right" },
+    ],
+    data.courses.map((c) => ({
+      title: c.title,
+      starts: c.starts,
+      completions: c.completions,
+      badges: c.badgeAwards,
+      pass: formatNullablePct(c.quizPassRate),
+      avg: formatNullablePct(c.averageQuizScore),
+    }))
+  );
+
+  const coursesSection = renderSection(
+    "Published courses",
+    `${coursesTable}${
+      charts.some((c) => c.id === "partner-courses")
+        ? renderChartPlaceholder({
+            id: "partner-courses",
+            type: "bar",
+            labels: [],
+            datasets: [],
+          })
+        : ""
+    }`
+  );
+
+  const weeklySection = renderSection(
+    "Weekly trends",
+    charts.some((c) => c.id === "partner-weekly")
+      ? renderChartPlaceholder({
+          id: "partner-weekly",
+          type: "line",
+          labels: [],
+          datasets: [],
+        })
+      : `<p class="muted">No activity in this period.</p>`
+  );
+
+  const insightSection =
+    data.insights.length > 0
+      ? renderSection(
+          "Insights",
+          `<ul>${data.insights
+            .map((i) => `<li>${escapeHtml(i)}</li>`)
+            .join("")}</ul>`
+        )
+      : "";
+
+  const topMissed = courseDetails.flatMap((c) =>
+    c.quizDiagnostics
+      .filter((q) => q.attemptCount > 0)
+      .sort((a, b) => b.missRate - a.missRate)
+      .slice(0, 3)
+      .map((q) => ({
+        course: c.title,
+        question: `Q${q.order + 1} (${q.typeLabel})`,
+        miss: `${q.missRate}%`,
+        prompt:
+          q.prompt.length > 80 ? `${q.prompt.slice(0, 80)}…` : q.prompt,
+      }))
+  );
+
+  const quizSection = renderSection(
+    "Quiz diagnostics (top missed)",
+    topMissed.length > 0
+      ? renderTable(
+          [
+            { key: "course", label: "Course" },
+            { key: "question", label: "Question" },
+            { key: "miss", label: "Miss rate", align: "right" },
+            { key: "prompt", label: "Prompt" },
+          ],
+          topMissed
+        )
+      : `<p class="muted">No quiz attempts in this period.</p>`
+  );
+
+  const courseDetailBlocks = courseDetails
+    .map((course) => {
+      const slug = course.courseId.replace(/[^a-zA-Z0-9]/g, "").slice(0, 12);
+      const lessonChartId = `lesson-funnel-${slug}`;
+      const attemptsChartId = `attempts-${slug}`;
+      const hasLesson = charts.some((c) => c.id === lessonChartId);
+      const hasAttempts = charts.some((c) => c.id === attemptsChartId);
+
+      const dropOff = course.dropOff
+        ? `<p class="muted">Drop-off: ${escapeHtml(course.dropOff.lessonTitle)} (lesson ${course.dropOff.order + 1})</p>`
+        : "";
+
+      return `<div class="course-block">
+  <h3>${escapeHtml(course.title)}</h3>
+  ${renderKpiGrid([
+    { label: "Starts", value: formatNumber(course.starts) },
+    { label: "Completions", value: formatNumber(course.completions) },
+    { label: "Quiz pass", value: formatNullablePct(course.quizPassRate) },
+    {
+      label: "Avg attempts to pass",
+      value:
+        course.averageAttemptsBeforePass === null
+          ? "n/a"
+          : String(course.averageAttemptsBeforePass),
+    },
+  ])}
+  ${dropOff}
+  <div class="two-col">
+    <div>
+      <p class="muted" style="margin:0.75rem 0 0.25rem;font-size:0.75rem;font-weight:600;">Lesson funnel</p>
+      ${
+        hasLesson
+          ? renderChartPlaceholder({
+              id: lessonChartId,
+              type: "bar",
+              labels: [],
+              datasets: [],
+              heightClass: "short",
+            })
+          : `<p class="muted">No lesson completions.</p>`
+      }
+    </div>
+    <div>
+      <p class="muted" style="margin:0.75rem 0 0.25rem;font-size:0.75rem;font-weight:600;">Attempts before pass</p>
+      ${
+        hasAttempts
+          ? renderChartPlaceholder({
+              id: attemptsChartId,
+              type: "bar",
+              labels: [],
+              datasets: [],
+              heightClass: "short",
+            })
+          : `<p class="muted">No quiz attempt data.</p>`
+      }
+    </div>
+  </div>
+</div>`;
+    })
+    .join("\n");
+
+  const courseDetailsSection =
+    courseDetails.length > 0
+      ? renderSection("Course detail", courseDetailBlocks)
+      : "";
+
+  const notesSection = data.staffNotes
+    ? renderSection(
+        "Staff notes",
+        `<div class="notes">${escapeHtml(data.staffNotes)}</div>`
+      )
+    : "";
+
+  const bodyHtml = [
+    summarySection,
+    discoverySection,
+    funnelSection,
+    coursesSection,
+    weeklySection,
+    insightSection,
+    quizSection,
+    courseDetailsSection,
+    notesSection,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return buildHtmlDocument({
+    title: `Partner Analytics — ${data.productName}`,
+    subtitle: data.productName,
+    generatedAt,
+    rangeLabel: data.rangeLabel,
+    bodyHtml,
+    charts,
+    footerNote:
+      "Individual learner data is not included in this report. Referral and UTM attribution are excluded.",
+  });
 }

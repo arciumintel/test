@@ -3,8 +3,9 @@ import Link from "next/link";
 import { Plus, BookOpen, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge, StatusBadge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/badge";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
+import { AdminAnalyticsExportButton } from "@/components/admin/admin-analytics-export-button";
 import { prisma } from "@/lib/prisma";
 import { getPlatformSummary } from "@/lib/analytics";
 import { formatCourseStatus } from "@/lib/course-status";
@@ -80,15 +81,18 @@ export default async function AdminDashboard() {
             </p>
           )}
         </div>
-        <Button asChild className="shrink-0 self-start">
-          <Link href="/admin/courses/new">
-            <Plus />
-            New course
-          </Link>
-        </Button>
-        <Button asChild variant="outline" className="shrink-0 self-start">
-          <Link href="/admin/analytics/referrals">Referral analytics</Link>
-        </Button>
+        <div className="flex flex-wrap items-start gap-2 shrink-0 self-start">
+          <AdminAnalyticsExportButton />
+          <Button asChild className="shrink-0">
+            <Link href="/admin/courses/new">
+              <Plus />
+              New course
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="shrink-0">
+            <Link href="/admin/analytics/referrals">Referral analytics</Link>
+          </Button>
+        </div>
       </div>
 
       {dbError ? (

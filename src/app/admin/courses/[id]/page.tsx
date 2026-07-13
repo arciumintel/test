@@ -15,6 +15,7 @@ import {
 import { getCoursePublishReadiness } from "@/lib/publish-readiness";
 import { coursePath } from "@/lib/paths";
 import { formatCourseStatus } from "@/lib/course-status";
+import { toAdminQuestion } from "@/lib/question-types";
 import type { CourseStatus } from "@prisma/client";
 
 const STATUS_VARIANT: Record<
@@ -134,13 +135,7 @@ export default async function CourseEditorPage({
           passThreshold: q.passThreshold,
           description: q.description,
           status: q.status,
-          questions: q.questions.map((question) => ({
-            id: question.id,
-            prompt: question.prompt,
-            answerOptions: question.answerOptions,
-            correctAnswer: question.correctAnswer,
-            explanation: question.explanation,
-          })),
+          questions: q.questions.map(toAdminQuestion),
         },
       ])
   );
@@ -248,13 +243,7 @@ export default async function CourseEditorPage({
                 passThreshold: finalQuiz.passThreshold,
                 description: finalQuiz.description,
                 status: finalQuiz.status,
-                questions: finalQuiz.questions.map((q) => ({
-                  id: q.id,
-                  prompt: q.prompt,
-                  answerOptions: q.answerOptions,
-                  correctAnswer: q.correctAnswer,
-                  explanation: q.explanation,
-                })),
+                questions: finalQuiz.questions.map(toAdminQuestion),
               }
             : null
         }

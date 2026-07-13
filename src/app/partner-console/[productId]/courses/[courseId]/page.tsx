@@ -7,6 +7,7 @@ import { CourseEditorTabs } from "@/components/admin/course-editor-tabs";
 import { PartnerCourseStatusControls } from "@/components/partner-console/partner-course-status-controls";
 import { getCourseAnalytics } from "@/lib/analytics";
 import { formatCourseStatus } from "@/lib/course-status";
+import { toAdminQuestion } from "@/lib/question-types";
 import { prisma } from "@/lib/prisma";
 import type { CourseStatus } from "@prisma/client";
 
@@ -154,13 +155,7 @@ export default async function PartnerCourseEditorPage({
                 passThreshold: finalQuiz.passThreshold,
                 description: finalQuiz.description,
                 status: finalQuiz.status,
-                questions: finalQuiz.questions.map((q) => ({
-                  id: q.id,
-                  prompt: q.prompt,
-                  answerOptions: q.answerOptions,
-                  correctAnswer: q.correctAnswer,
-                  explanation: q.explanation,
-                })),
+                questions: finalQuiz.questions.map(toAdminQuestion),
               }
             : null
         }

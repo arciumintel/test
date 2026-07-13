@@ -74,6 +74,17 @@ enum QuizStatus {
   published
 }
 
+enum QuestionType {
+  single_select
+  true_false
+  image_select
+  scenario_select
+  multi_select
+  ordering
+  matching
+  fill_blank
+}
+
 enum BadgeStatus {
   draft
   published
@@ -363,17 +374,24 @@ model Notification {
   @@index([userId, createdAt])
 }
 
-/// One multiple-choice quiz question.
+/// A quiz question. Supports multiple auto-graded question types.
 model Question {
-  id            String   @id @default(cuid())
-  quizId        String
-  prompt        String
-  answerOptions String[] // ordered options
-  correctAnswer Int // index into answerOptions
-  explanation   String?
-  order         Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                String       @id @default(cuid())
+  quizId            String
+  type              QuestionType @default(single_select)
+  prompt            String
+  mediaUrl          String?
+  answerOptions     String[] // MC options, ordering items, or matching right column
+  leftItems         String[] // matching left column prompts
+  correctAnswer     Int        @default(0) // single-select family
+  correctAnswers    Int[] // multi-select correct indices
+  correctOrder      Int[] // ordering: permutation of answerOptions indices
+  correctMatches    Int[] // matching: right-column index per left item
+  acceptableAnswers String[] // fill-in-the-blank accepted responses
+  explanation       String?
+  order             Int        @default(0)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 
   quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
