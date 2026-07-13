@@ -15,7 +15,6 @@ import {
 } from "@/lib/analytics-date-range";
 import { getBehaviourAnalytics } from "@/lib/analytics-behaviour";
 import { getCohortAnalytics } from "@/lib/analytics-cohorts";
-import { getConversionAnalytics } from "@/lib/analytics-conversions";
 import { ensureAnalyticsProfileForProduct } from "@/lib/analytics-profile";
 import {
   buildAnalyticsRecommendations,
@@ -59,7 +58,8 @@ export type AnalyticsEngineResult = {
     funnel: FunnelStep[];
     weeklyTrends: WeeklyTrendPoint[];
     staffNotes: string | null;
-    conversions: Awaited<ReturnType<typeof getConversionAnalytics>>;
+    /** Partner conversion panel — deferred to Analytics V2. */
+    conversions: null;
     cohorts: Awaited<ReturnType<typeof getCohortAnalytics>>;
     behaviour: Awaited<ReturnType<typeof getBehaviourAnalytics>>;
   };
@@ -123,9 +123,8 @@ export async function runAnalyticsEngine(input: {
   const plus = await getPartnerPlusAnalytics(product.id, range);
   if (!plus) return null;
 
-  const [conversions, cohorts, behaviour, readiness, certs, concepts, questions] =
+  const [cohorts, behaviour, readiness, certs, concepts, questions] =
     await Promise.all([
-      getConversionAnalytics(product.id, range),
       getCohortAnalytics(product.id, range),
       getBehaviourAnalytics(product.id, range),
       evaluateReadinessModels(product.id, range),
@@ -179,7 +178,6 @@ export async function runAnalyticsEngine(input: {
       certs.learnersStarted > 0 && certs.awardsInRange >= 0
         ? Math.round((certs.awardsInRange / Math.max(1, certs.learnersStarted)) * 100)
         : null,
-    conversionSetupNeeded: conversions.setupNeeded,
   });
 
   return {
@@ -196,7 +194,7 @@ export async function runAnalyticsEngine(input: {
       funnel: plus.funnel,
       weeklyTrends: plus.weeklyTrends,
       staffNotes: plus.staffNotes,
-      conversions,
+      conversions: null,
       cohorts,
       behaviour,
     },

@@ -436,6 +436,8 @@ Prefer host + label over full URLs when the destination may include sensitive qu
 
 #### `docs_visited`
 
+> **Deferred to Analytics V2** (reserved event; not emitted in V1).
+
 Emitted when a learner opens partner developer documentation from Arcademy (conversion-capable).
 
 Required properties: `ecosystemProjectId`, `ecosystemProjectSlug`, `destinationUrl` or `destinationHost`.
@@ -545,6 +547,10 @@ Required properties: `certificationId` or `certificationAwardId`, `path`.
 Optional properties: `userId`, `ecosystemProjectId`, `verificationSlug`.
 
 ### Partner conversions
+
+> **Deferred to Analytics V2.** Event names and `conversionKey` contracts below are reserved.
+> V1 does not emit these events or surface partner conversion analytics. Learning-funnel
+> start conversion (`course_started` / `course_detail_viewed`) remains separate and live.
 
 #### `conversion_triggered`
 

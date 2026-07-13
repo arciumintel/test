@@ -86,10 +86,15 @@ Distinct from certifications.
 
 ## Conversion KPIs
 
+> **Deferred to Analytics V2.** Partner-defined conversion keys (`conversion_triggered` /
+> `conversionKey`, docs visit CTA outcomes, etc.) are not instrumented or shown in V1.
+> Schema stubs (`ConversionDefinition`, catalogue ids below) remain for V2.
+> Do not confuse with `start_conversion_rate` (course starts ÷ page views), which remains live.
+
 | id | formula | inputs | partnerSafe | providerId |
 | --- | --- | --- | --- | --- |
-| `conversion_count` | Count of `conversion_triggered` (optionally by `conversionKey`) | AnalyticsEvent, ConversionDefinition | true | core |
-| `conversion_rate` | Conversions / starts (or / completers per definition) × 100 | conversions, starts/completions | true | core |
+| `conversion_count` | V2: Count of `conversion_triggered` (optionally by `conversionKey`) | AnalyticsEvent, ConversionDefinition | false (V1) | core |
+| `conversion_rate` | V2: Conversions / starts (or / completers per definition) × 100 | conversions, starts/completions | false (V1) | core |
 
 ## Behaviour KPIs
 

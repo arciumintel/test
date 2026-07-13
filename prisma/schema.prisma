@@ -709,6 +709,7 @@ model ContentConceptTag {
   @@index([conceptId, lessonId])
 }
 
+/// Partner conversion key definitions. Product UI / instrumentation deferred to Analytics V2.
 model ConversionDefinition {
   id          String   @id @default(cuid())
   productId   String

@@ -3,6 +3,7 @@
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { AnalyticsInfoTip } from "@/components/partner-console/analytics/analytics-info-tip";
 import type { AnalyticsCompareBaseline } from "@/lib/analytics-date-range";
 
 const OPTIONS: { value: AnalyticsCompareBaseline; label: string }[] = [
@@ -31,8 +32,12 @@ export function HistoricalCompareControls({
 
   return (
     <div className="flex items-center gap-2">
-      <Label htmlFor="analytics-compare" className="sr-only">
+      <Label
+        htmlFor="analytics-compare"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground"
+      >
         Compare to
+        <AnalyticsInfoTip helpKey="compare_to" />
       </Label>
       <Select
         id="analytics-compare"

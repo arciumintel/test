@@ -40,11 +40,6 @@ const BEHAVIOUR_EVENTS: Array<{ id: string; label: string; eventName: string }> 
       label: "Searches",
       eventName: "search_performed",
     },
-    {
-      id: "docs",
-      label: "Docs visits",
-      eventName: "docs_visited",
-    },
   ];
 
 export async function getBehaviourAnalytics(

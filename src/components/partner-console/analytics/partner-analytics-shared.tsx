@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Label } from "@/components/ui/label";
+import { AnalyticsInfoTip } from "@/components/partner-console/analytics/analytics-info-tip";
 import type { AnalyticsRangePreset } from "@/lib/analytics-date-range";
 
 const OPTIONS: { value: AnalyticsRangePreset; label: string }[] = [
@@ -29,8 +30,12 @@ export function PartnerAnalyticsDateRange({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Label htmlFor="analytics-range" className="text-sm text-muted-foreground">
+      <Label
+        htmlFor="analytics-range"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground"
+      >
         Period
+        <AnalyticsInfoTip helpKey="period" />
       </Label>
       <select
         id="analytics-range"

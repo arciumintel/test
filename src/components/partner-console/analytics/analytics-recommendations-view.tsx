@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { AnalyticsRecommendation } from "@/lib/analytics-recommendations";
+import { AnalyticsInfoTip } from "@/components/partner-console/analytics/analytics-info-tip";
 
 export function AnalyticsRecommendationsView({
   recommendations,
@@ -11,7 +12,10 @@ export function AnalyticsRecommendationsView({
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-lg font-semibold tracking-tight">Recommendations</h2>
+        <h2 className="inline-flex items-center gap-1.5 text-lg font-semibold tracking-tight">
+          Recommendations
+          <AnalyticsInfoTip helpKey="recommendation_priority" />
+        </h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Prioritized actions from your analytics.
         </p>

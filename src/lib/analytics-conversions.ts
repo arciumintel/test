@@ -1,5 +1,9 @@
 /**
  * Conversion analytics depth — keyed by ConversionDefinition.
+ *
+ * Partner conversion metrics (conversionKey panels, event instrumentation,
+ * pack stubs) are deferred to Analytics V2. This module and the Prisma
+ * `ConversionDefinition` model are kept as schema stubs only.
  */
 
 import "server-only";

@@ -71,8 +71,8 @@ export async function getProjectAdminAccess(productId: string) {
       user: null,
       canManage: false,
       isStaff: false,
-      projectRole: null as const,
-      analyticsLevel: null as const,
+      projectRole: null,
+      analyticsLevel: null,
     };
   }
 

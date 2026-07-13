@@ -49,21 +49,6 @@ function metric(
   };
 }
 
-async function countConversions(
-  productId: string,
-  range: MetricContext["range"]
-): Promise<number> {
-  const { occurredAtFilter } = await import("@/lib/analytics-date-range");
-  const occurredAt = occurredAtFilter(range);
-  return prisma.analyticsEvent.count({
-    where: {
-      ecosystemProjectId: productId,
-      eventName: { in: ["conversion_triggered", "docs_visited"] },
-      ...(occurredAt ? { occurredAt } : {}),
-    },
-  });
-}
-
 async function computeBagForRange(
   ctx: MetricContext,
   range: MetricContext["range"]
@@ -71,7 +56,6 @@ async function computeBagForRange(
   const data = await getPartnerPlusAnalytics(ctx.productId, range);
   if (!data) return {};
 
-  const conversions = await countConversions(ctx.productId, range);
   const starts = data.summary.starts;
 
   return {
@@ -82,9 +66,6 @@ async function computeBagForRange(
     course_detail_views: data.discovery.courseDetailViews,
     start_conversion_rate: data.discovery.startConversionRate,
     badge_verification_views: data.discovery.badgeVerificationViews,
-    conversion_count: conversions,
-    conversion_rate:
-      starts > 0 ? Math.round((conversions / starts) * 100) : null,
     health_score: computeHealthScore({
       completionRate: data.summary.completionRate,
       quizPassRate: data.summary.quizPassRate,
@@ -136,8 +117,6 @@ export const coreMetricProvider: MetricProvider = {
       course_detail_views: "count",
       start_conversion_rate: "percent",
       badge_verification_views: "count",
-      conversion_count: "count",
-      conversion_rate: "percent",
       health_score: "score",
       certifications_awarded: "count",
     };
@@ -151,8 +130,6 @@ export const coreMetricProvider: MetricProvider = {
       "course_detail_views",
       "start_conversion_rate",
       "badge_verification_views",
-      "conversion_count",
-      "conversion_rate",
       "certifications_awarded",
     ] as const;
 

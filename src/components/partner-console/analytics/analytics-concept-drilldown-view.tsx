@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ConceptDrilldown } from "@/lib/concept-mastery";
 import type { ConceptCoverageSummary } from "@/lib/concept-mastery";
 import { ConceptCoverageBanner } from "@/components/partner-console/analytics/analytics-concepts-view";
+import { MetricHelpLabel } from "@/components/partner-console/analytics/analytics-info-tip";
 
 export function AnalyticsConceptDrilldownView({
   productId,
@@ -37,13 +38,17 @@ export function AnalyticsConceptDrilldownView({
         ) : null}
         <dl className="mt-4 grid gap-3 sm:grid-cols-4">
           <div className="rounded-lg border px-3 py-2">
-            <dt className="text-xs text-muted-foreground">Mastery</dt>
+            <dt className="text-xs text-muted-foreground">
+              <MetricHelpLabel helpKey="mastery">Mastery</MetricHelpLabel>
+            </dt>
             <dd className="mt-0.5 text-lg font-semibold tabular-nums">
               {concept.masteryPct === null ? "—" : `${concept.masteryPct}%`}
             </dd>
           </div>
           <div className="rounded-lg border px-3 py-2">
-            <dt className="text-xs text-muted-foreground">Gap score</dt>
+            <dt className="text-xs text-muted-foreground">
+              <MetricHelpLabel helpKey="gap_score">Gap score</MetricHelpLabel>
+            </dt>
             <dd className="mt-0.5 text-lg font-semibold tabular-nums">
               {concept.gapScore === null ? "—" : concept.gapScore}
             </dd>
@@ -55,7 +60,9 @@ export function AnalyticsConceptDrilldownView({
             </dd>
           </div>
           <div className="rounded-lg border px-3 py-2">
-            <dt className="text-xs text-muted-foreground">Importance</dt>
+            <dt className="text-xs text-muted-foreground">
+              <MetricHelpLabel helpKey="importance">Importance</MetricHelpLabel>
+            </dt>
             <dd className="mt-0.5 text-lg font-semibold capitalize">
               {concept.importance}
             </dd>

@@ -262,21 +262,23 @@ export const METRIC_CATALOGUE: readonly MetricDefinition[] = [
     providerId: CORE_PROVIDER_ID,
   },
 
-  // Conversion
+  // Conversion — deferred to Analytics V2 (schema stubs only; not computed in V1)
   {
     id: "conversion_count",
     category: "conversion",
-    formula: "Count of conversion_triggered (by conversionKey when set)",
+    formula:
+      "V2: Count of conversion_triggered (by conversionKey when set). Not instrumented in V1.",
     inputs: ["AnalyticsEvent", "ConversionDefinition"],
-    partnerSafe: true,
+    partnerSafe: false,
     providerId: CORE_PROVIDER_ID,
   },
   {
     id: "conversion_rate",
     category: "conversion",
-    formula: "Conversions / starts (or completers per definition) × 100",
+    formula:
+      "V2: Conversions / starts (or completers per definition) × 100. Not instrumented in V1.",
     inputs: ["conversion_count", "starts", "courseCompletion"],
-    partnerSafe: true,
+    partnerSafe: false,
     providerId: CORE_PROVIDER_ID,
   },
 

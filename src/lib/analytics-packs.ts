@@ -4,6 +4,9 @@
  * Developer Education is the default. Documentation, Community, and Hackathon
  * are full installable definitions (Phase 4).
  *
+ * Partner conversion stubs (`conversionStubs`) are deferred to Analytics V2 —
+ * packs keep an empty array so installs do not seed untracked conversion keys.
+ *
  * @see docs/adr/2026-07-13-configurable-analytics-platform.md
  */
 
@@ -100,11 +103,10 @@ export const DEFAULT_LEARNING_READINESS: PackReadinessSeed = {
   description:
     "Generic equal-weight readiness model. Partners rename and reweight for their ecosystem.",
   requirements: [
-    { type: "course_completion", weight: 0.2 },
-    { type: "quiz_performance", weight: 0.2 },
-    { type: "concept_mastery", weight: 0.2 },
-    { type: "required_path_completion", weight: 0.2 },
-    { type: "partner_conversion_events", weight: 0.2 },
+    { type: "course_completion", weight: 0.25 },
+    { type: "quiz_performance", weight: 0.25 },
+    { type: "concept_mastery", weight: 0.25 },
+    { type: "required_path_completion", weight: 0.25 },
   ],
   levels: [
     { id: "exploring", label: "Exploring", minScore: 0 },
@@ -141,7 +143,6 @@ export const DEVELOPER_EDUCATION_PACK: AnalyticsPackManifest = {
     "assessments",
     "readiness",
     "certifications",
-    "conversions",
     "cohorts",
     "behaviour",
     "recommendations",
@@ -155,7 +156,6 @@ export const DEVELOPER_EDUCATION_PACK: AnalyticsPackManifest = {
     "readiness_score_avg",
     "certifications_awarded",
     "badges_awarded",
-    "conversion_rate",
   ],
   funnelStages: [
     "course_detail_viewed",
@@ -208,21 +208,8 @@ export const DEVELOPER_EDUCATION_PACK: AnalyticsPackManifest = {
   ],
   recommendationThresholds: DEFAULT_RECOMMENDATION_THRESHOLDS,
   enabledProviderIds: ["core"],
-  conversionStubs: [
-    {
-      key: "docs_visit",
-      label: "Developer docs visit",
-      eventName: "docs_visited",
-      description:
-        "Learner opened partner developer documentation from Arcademy.",
-    },
-    {
-      key: "external_product_cta",
-      label: "Product CTA click",
-      eventName: "conversion_triggered",
-      description: "Learner clicked a partner-defined product conversion CTA.",
-    },
-  ],
+  // Partner conversion stubs deferred to Analytics V2.
+  conversionStubs: [],
   readiness: DEFAULT_LEARNING_READINESS,
   terminology: {
     learnerLabel: "Learner",
@@ -245,7 +232,6 @@ export const DOCUMENTATION_PACK: AnalyticsPackManifest = {
     "concepts",
     "assessments",
     "behaviour",
-    "conversions",
     "recommendations",
     "trends",
   ],
@@ -255,15 +241,12 @@ export const DOCUMENTATION_PACK: AnalyticsPackManifest = {
     "concept_mastery",
     "glossary_lookups",
     "search_performed_count",
-    "conversion_rate",
   ],
   funnelStages: [
     "course_detail_viewed",
     "lesson_viewed",
     "glossary_lookup",
     "search_performed",
-    "docs_visited",
-    "conversion_triggered",
   ],
   starterConcepts: [
     {
@@ -292,20 +275,8 @@ export const DOCUMENTATION_PACK: AnalyticsPackManifest = {
     questionMissRateMaxPct: 35,
   },
   enabledProviderIds: ["core"],
-  conversionStubs: [
-    {
-      key: "docs_visit",
-      label: "Docs visit",
-      eventName: "docs_visited",
-      description: "Learner opened partner documentation.",
-    },
-    {
-      key: "docs_cta",
-      label: "Docs CTA",
-      eventName: "conversion_triggered",
-      description: "Learner clicked a docs-linked conversion CTA.",
-    },
-  ],
+  // Partner conversion stubs deferred to Analytics V2.
+  conversionStubs: [],
   readiness: {
     ...DEFAULT_LEARNING_READINESS,
     name: "Documentation Readiness",
@@ -332,7 +303,6 @@ export const COMMUNITY_PACK: AnalyticsPackManifest = {
     "overview",
     "courses",
     "certifications",
-    "conversions",
     "cohorts",
     "behaviour",
     "recommendations",
@@ -342,7 +312,6 @@ export const COMMUNITY_PACK: AnalyticsPackManifest = {
     "completion_rate",
     "badges_awarded",
     "certifications_awarded",
-    "conversion_rate",
     "cohort_completion_rate",
   ],
   funnelStages: [
@@ -351,7 +320,6 @@ export const COMMUNITY_PACK: AnalyticsPackManifest = {
     "lesson_completed",
     "badge_awarded",
     "badge_shared",
-    "conversion_triggered",
   ],
   starterConcepts: [
     {
@@ -380,20 +348,8 @@ export const COMMUNITY_PACK: AnalyticsPackManifest = {
     funnelStageConversionMinPct: 45,
   },
   enabledProviderIds: ["core"],
-  conversionStubs: [
-    {
-      key: "community_join",
-      label: "Community join",
-      eventName: "conversion_triggered",
-      description: "Learner joined a community surface from Arcademy.",
-    },
-    {
-      key: "event_rsvp",
-      label: "Event RSVP",
-      eventName: "conversion_triggered",
-      description: "Learner RSVP’d to a community event.",
-    },
-  ],
+  // Partner conversion stubs deferred to Analytics V2.
+  conversionStubs: [],
   readiness: {
     ...DEFAULT_LEARNING_READINESS,
     name: "Community Readiness",
@@ -423,7 +379,6 @@ export const HACKATHON_PACK: AnalyticsPackManifest = {
     "concepts",
     "readiness",
     "certifications",
-    "conversions",
     "recommendations",
   ],
   kpiSet: [
@@ -433,7 +388,6 @@ export const HACKATHON_PACK: AnalyticsPackManifest = {
     "quiz_pass_rate",
     "readiness_score_avg",
     "certifications_awarded",
-    "conversion_rate",
   ],
   funnelStages: [
     "course_detail_viewed",
@@ -441,7 +395,6 @@ export const HACKATHON_PACK: AnalyticsPackManifest = {
     "course_started",
     "lesson_completed",
     "quiz_passed",
-    "conversion_triggered",
   ],
   starterConcepts: [
     {
@@ -474,26 +427,8 @@ export const HACKATHON_PACK: AnalyticsPackManifest = {
     minVolumeForAlerts: 5,
   },
   enabledProviderIds: ["core"],
-  conversionStubs: [
-    {
-      key: "sdk_install",
-      label: "SDK install",
-      eventName: "conversion_triggered",
-      description: "Learner signaled SDK install / project bootstrap.",
-    },
-    {
-      key: "submission",
-      label: "Project submission",
-      eventName: "conversion_triggered",
-      description: "Learner submitted a hackathon project.",
-    },
-    {
-      key: "demo_complete",
-      label: "Demo complete",
-      eventName: "conversion_triggered",
-      description: "Learner completed a demo milestone.",
-    },
-  ],
+  // Partner conversion stubs deferred to Analytics V2.
+  conversionStubs: [],
   readiness: {
     ...DEFAULT_LEARNING_READINESS,
     name: "Builder Readiness",

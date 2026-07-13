@@ -1,5 +1,9 @@
 import Link from "next/link";
 import type { ReadinessModelEval } from "@/lib/readiness-eval";
+import {
+  AnalyticsInfoTip,
+  MetricHelpLabel,
+} from "@/components/partner-console/analytics/analytics-info-tip";
 
 export function AnalyticsReadinessView({
   productId,
@@ -42,7 +46,11 @@ export function AnalyticsReadinessView({
 
           <dl className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-lg border px-3 py-2">
-              <dt className="text-xs text-muted-foreground">Average score</dt>
+              <dt className="text-xs text-muted-foreground">
+                <MetricHelpLabel helpKey="readiness_average_score">
+                  Average score
+                </MetricHelpLabel>
+              </dt>
               <dd className="mt-0.5 text-2xl font-semibold tabular-nums">
                 {model.averageScore === null ? "—" : model.averageScore}
               </dd>
@@ -54,7 +62,11 @@ export function AnalyticsReadinessView({
               </dd>
             </div>
             <div className="rounded-lg border px-3 py-2">
-              <dt className="text-xs text-muted-foreground">Ready threshold</dt>
+              <dt className="text-xs text-muted-foreground">
+                <MetricHelpLabel helpKey="ready_threshold">
+                  Ready threshold
+                </MetricHelpLabel>
+              </dt>
               <dd className="mt-0.5 text-2xl font-semibold tabular-nums">
                 {model.readyThreshold}
               </dd>
@@ -62,10 +74,13 @@ export function AnalyticsReadinessView({
           </dl>
 
           <div>
-            <h3 className="text-sm font-semibold tracking-tight">Components</h3>
+            <h3 className="inline-flex items-center gap-1.5 text-sm font-semibold tracking-tight">
+              Components
+              <AnalyticsInfoTip helpKey="readiness_components" />
+            </h3>
             <p className="mt-1 text-xs text-muted-foreground">
-              Missing conversions or paths contribute neutrally (50) with setup
-              CTAs — scores do not silently fail.
+              If a component isn’t set up yet, it scores a neutral 50 so missing
+              setup doesn’t crash the model — finish setup for a real signal.
             </p>
             <ul className="mt-3 space-y-2">
               {model.components.map((c) => (

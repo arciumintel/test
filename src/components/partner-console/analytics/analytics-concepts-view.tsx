@@ -3,6 +3,10 @@ import type {
   ConceptCoverageSummary,
   ConceptMasteryRow,
 } from "@/lib/concept-mastery";
+import {
+  AnalyticsInfoTip,
+  MetricHelpLabel,
+} from "@/components/partner-console/analytics/analytics-info-tip";
 
 export function ConceptCoverageBanner({
   productId,
@@ -17,8 +21,9 @@ export function ConceptCoverageBanner({
     <div className="rounded-lg border border-dashed px-4 py-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-medium">
+          <p className="inline-flex items-center gap-1.5 text-sm font-medium">
             Concept coverage {coverage.coveragePct}%
+            <AnalyticsInfoTip helpKey="concept_coverage" />
           </p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {coverage.lessonTagged}/{coverage.lessonTotal} lessons and{" "}
@@ -61,7 +66,10 @@ export function AnalyticsConceptsView({
       <ConceptCoverageBanner productId={productId} coverage={coverage} />
 
       <section>
-        <h2 className="text-lg font-semibold tracking-tight">Knowledge gaps</h2>
+        <h2 className="inline-flex items-center gap-1.5 text-lg font-semibold tracking-tight">
+          Knowledge gaps
+          <AnalyticsInfoTip helpKey="gap_score" />
+        </h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Highest gap scores first — importance × (1 − mastery).
         </p>
@@ -103,7 +111,10 @@ export function AnalyticsConceptsView({
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold tracking-tight">Concept mastery</h2>
+        <h2 className="inline-flex items-center gap-1.5 text-lg font-semibold tracking-tight">
+          Concept mastery
+          <AnalyticsInfoTip helpKey="mastery" />
+        </h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Weighted correct rate on tagged questions.
         </p>
@@ -112,11 +123,17 @@ export function AnalyticsConceptsView({
             <thead className="border-b bg-muted/40 text-xs text-muted-foreground">
               <tr>
                 <th className="px-3 py-2 font-medium">Concept</th>
-                <th className="px-3 py-2 font-medium">Importance</th>
+                <th className="px-3 py-2 font-medium">
+                  <MetricHelpLabel helpKey="importance">Importance</MetricHelpLabel>
+                </th>
                 <th className="px-3 py-2 font-medium">Tags</th>
                 <th className="px-3 py-2 font-medium">Attempts</th>
-                <th className="px-3 py-2 font-medium">Mastery</th>
-                <th className="px-3 py-2 font-medium">Gap</th>
+                <th className="px-3 py-2 font-medium">
+                  <MetricHelpLabel helpKey="mastery">Mastery</MetricHelpLabel>
+                </th>
+                <th className="px-3 py-2 font-medium">
+                  <MetricHelpLabel helpKey="gap_score">Gap</MetricHelpLabel>
+                </th>
               </tr>
             </thead>
             <tbody>

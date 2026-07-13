@@ -54,8 +54,8 @@ export default async function PartnerAnalyticsSettingsPage({
             Analytics settings
           </h1>
           <p className="mt-1 text-pretty text-sm text-muted-foreground">
-            Configure concepts, terminology, readiness, and conversions for this
-            project. Role: {data.accessLevel.replace("_", " ")}.
+            Configure concepts, terminology, and readiness for this project.
+            Role: {data.accessLevel.replace("_", " ")}.
           </p>
         </div>
       </div>
@@ -79,13 +79,6 @@ export default async function PartnerAnalyticsSettingsPage({
             description: c.description,
             importance: c.importance,
             category: c.category,
-          }))}
-          conversions={bundle.conversions.map((c) => ({
-            id: c.id,
-            key: c.key,
-            label: c.label,
-            eventName: c.eventName,
-            description: c.description,
           }))}
           readinessModels={bundle.readinessModels.map((r) => ({
             id: r.id,

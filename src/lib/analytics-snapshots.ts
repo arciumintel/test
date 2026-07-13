@@ -269,8 +269,8 @@ export async function getAnalyticsEngineView(input: {
     latest.snapshot?.payload &&
     latest.freshness.displayStatus === "fresh" &&
     latest.snapshot.schemaVersion === ANALYTICS_ENGINE_SCHEMA_VERSION &&
-    (latest.snapshot.payload as { overview?: { conversions?: unknown } })
-      .overview?.conversions != null
+    (latest.snapshot.payload as { overview?: { cohorts?: unknown } })
+      .overview?.cohorts != null
   ) {
     return {
       data: latest.snapshot.payload,

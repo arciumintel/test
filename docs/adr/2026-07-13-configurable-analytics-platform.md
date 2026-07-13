@@ -38,8 +38,8 @@ Adopt the configuration-driven analytics architecture described below. Settled q
 Four-role permission model:
 
 - **Platform Admin** (`User.role = staff_admin`): templates, packs definitions, engine config, feature flags, global section availability, recommendation rule templates, default terminology/readiness templates, migrations, any partner profile, manual snapshot refresh for any project.
-- **Partner Owner**: full project analytics config — concepts, objectives, skill categories, readiness formulas/weights, conversions, terminology, dashboard configuration, badges, certifications, recommendation thresholds, pack install/switch, manual snapshot refresh. Cannot edit platform-wide templates or engine logic.
-- **Partner Manager**: concepts, learning objectives, content tagging, terminology, dashboard layout, course metadata. Cannot edit readiness formulas, conversion definitions, or recommendation policies.
+- **Partner Owner**: full project analytics config — concepts, objectives, skill categories, readiness formulas/weights, terminology, dashboard configuration, badges, certifications, recommendation thresholds, pack install/switch, manual snapshot refresh. Cannot edit platform-wide templates or engine logic. *(Partner conversion definitions deferred to Analytics V2.)*
+- **Partner Manager**: concepts, learning objectives, content tagging, terminology, dashboard layout, course metadata. Cannot edit readiness formulas or recommendation policies.
 - **Partner Analyst**: view analytics, export, save report views (later), compare date ranges. No configuration.
 
 Capability matrix and `access-control` helpers are specified in the design plan §3. Implementation is Phase 1+.
@@ -48,11 +48,12 @@ Capability matrix and `access-control` helpers are specified in the design plan 
 
 Do not ship empty readiness. Every new project receives **"Learning Readiness"** with equal weights:
 
-- 20% Course Completion
-- 20% Quiz Performance
-- 20% Concept Mastery
-- 20% Required Learning Path Completion
-- 20% Partner Conversion Events
+- 25% Course Completion
+- 25% Quiz Performance
+- 25% Concept Mastery
+- 25% Required Learning Path Completion
+
+*(Original ADR also listed 20% Partner Conversion Events; that component is deferred to Analytics V2. New defaults redistribute equally across the four live components.)*
 
 Partners rename/reweight (e.g. Builder / Protocol / Validator / Creator / Community Readiness). Missing components show setup CTAs or contribute neutrally—do not silently fail the whole score.
 
@@ -75,7 +76,7 @@ Hybrid: automatic **hourly** snapshots + **manual refresh** for Partner Owner an
 
 Normalize question attempts into a dedicated model. Dual-write + backfill from `QuizAttempt.answers` JSON before mastery/assessment scale features depend on it. Phase 3 gated on backfill.
 
-**Implemented (Phase 4):** `Certification` / `CertificationRequirement` / `CertificationAward` (`phase23_certifications`), Certifications + Readiness nav views, conversion/cohort/behaviour Overview panels, recommendations v2 with evidence links, Documentation/Community/Hackathon pack definitions with merge + Owner terminology resolution.
+**Implemented (Phase 4):** `Certification` / `CertificationRequirement` / `CertificationAward` (`phase23_certifications`), Certifications + Readiness nav views, cohort/behaviour Overview panels, recommendations v2 with evidence links, Documentation/Community/Hackathon pack definitions with merge + Owner terminology resolution. Partner conversion Overview panels deferred to Analytics V2.
 
 **Implemented (Phase 5):** Custom metric provider registry + Owner+ `enabledProviderIds` toggles; unified export via `analytics-export.ts` (legacy `/analytics/reports` redirects); read-path indexes + concept/question drill-down completeness; `EcosystemBenchmarkRollup` schema + `analytics-benchmarks.ts` (flag off, no partner UI); versioning notes in [`docs/analytics_versioning.md`](../analytics_versioning.md).
 
@@ -93,7 +94,7 @@ Installable curated setups (sections, KPI sets, funnel stages, starter concepts,
 
 ## Information architecture (locked summary)
 
-Nav destinations (design plan §4): Overview → Courses → Concepts → Assessments → Readiness → Certifications → Recommendations; Export as action. Funnel/conversions on Overview; badge progress signals under Courses/Overview; Certifications remain first-class.
+Nav destinations (design plan §4): Overview → Courses → Concepts → Assessments → Readiness → Certifications → Recommendations; Export as action. Funnel on Overview (partner conversion keys deferred to V2); badge progress signals under Courses/Overview; Certifications remain first-class.
 
 ## Related Phase 0 artifacts
 

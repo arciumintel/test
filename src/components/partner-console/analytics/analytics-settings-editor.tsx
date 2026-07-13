@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import {
   createConcept,
-  createConversionDefinition,
   deleteConcept,
-  deleteConversionDefinition,
   installAnalyticsPack,
   previewAnalyticsPackInstall,
   updateAnalyticsProfileConfig,
@@ -23,6 +21,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  AnalyticsInfoTip,
+  MetricHelpLabel,
+} from "@/components/partner-console/analytics/analytics-info-tip";
+import { analyticsSectionLabel } from "@/lib/analytics-help";
 import { ANALYTICS_SECTION_IDS } from "@/lib/analytics-packs";
 
 type Terminology = {
@@ -49,14 +52,6 @@ type ConceptRow = {
   description: string | null;
   importance: string;
   category: string | null;
-};
-
-type ConversionRow = {
-  id: string;
-  key: string;
-  label: string;
-  eventName: string;
-  description: string | null;
 };
 
 type ReadinessRow = {
@@ -94,7 +89,6 @@ export type AnalyticsSettingsEditorProps = {
   funnelStages: string[];
   recommendationPolicy: RecommendationPolicy;
   concepts: ConceptRow[];
-  conversions: ConversionRow[];
   readinessModels: ReadinessRow[];
   packInstalls: PackInstall[];
   installablePacks: Array<{
@@ -128,7 +122,6 @@ export function AnalyticsSettingsEditor({
   funnelStages,
   recommendationPolicy,
   concepts,
-  conversions,
   readinessModels,
   packInstalls,
   installablePacks,
@@ -157,8 +150,12 @@ export function AnalyticsSettingsEditor({
   const [badgeLabel, setBadgeLabel] = React.useState(
     terminology.badgeLabel ?? "Badge"
   );
-  const [sections, setSections] = React.useState<string[]>(sectionVisibility);
-  const [kpiText, setKpiText] = React.useState(kpiSet.join("\n"));
+  const [sections, setSections] = React.useState<string[]>(
+    sectionVisibility.filter((id) => id !== "conversions")
+  );
+  const [kpiText, setKpiText] = React.useState(
+    kpiSet.filter((id) => id !== "conversion_rate" && id !== "conversion_count").join("\n")
+  );
   const [funnelText, setFunnelText] = React.useState(funnelStages.join("\n"));
 
   const [conceptName, setConceptName] = React.useState("");
@@ -176,17 +173,12 @@ export function AnalyticsSettingsEditor({
   const [weights, setWeights] = React.useState(
     () =>
       defaultReadiness?.requirements ?? [
-        { type: "course_completion", weight: 0.2 },
-        { type: "quiz_performance", weight: 0.2 },
-        { type: "concept_mastery", weight: 0.2 },
-        { type: "required_path_completion", weight: 0.2 },
-        { type: "partner_conversion_events", weight: 0.2 },
+        { type: "course_completion", weight: 0.25 },
+        { type: "quiz_performance", weight: 0.25 },
+        { type: "concept_mastery", weight: 0.25 },
+        { type: "required_path_completion", weight: 0.25 },
       ]
   );
-
-  const [convKey, setConvKey] = React.useState("");
-  const [convLabel, setConvLabel] = React.useState("");
-  const [convEvent, setConvEvent] = React.useState("conversion_triggered");
 
   const [funnelMin, setFunnelMin] = React.useState(
     String(recommendationPolicy.funnelStageConversionMinPct ?? 50)
@@ -299,7 +291,10 @@ export function AnalyticsSettingsEditor({
             onChange={(e) => setV2Enabled(e.target.checked)}
           />
           <span>
-            <span className="font-medium">Enable Analytics V2</span>
+            <span className="inline-flex items-center gap-1.5 font-medium">
+              Enable Analytics V2
+              <AnalyticsInfoTip helpKey="settings_v2_flag" />
+            </span>
             <span className="mt-0.5 block text-muted-foreground">
               Owner or Platform Admin only. Classic Plus remains available when
               this is off.
@@ -326,8 +321,13 @@ export function AnalyticsSettingsEditor({
       </FormSection>
 
       <FormSection
-        title="Terminology & layout"
-        description="Manager+ can rename labels and choose which analytics sections appear."
+        title={
+          <span className="inline-flex items-center gap-1.5">
+            Terminology & layout
+            <AnalyticsInfoTip helpKey="settings_terminology" />
+          </span>
+        }
+        description="Manager+ can rename labels and choose which analytics sections appear. Renaming does not change how metrics are calculated."
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
@@ -369,9 +369,13 @@ export function AnalyticsSettingsEditor({
         </div>
 
         <div className="space-y-2">
-          <Label>Dashboard sections</Label>
+          <Label className="inline-flex items-center gap-1.5">
+            Dashboard sections
+            <AnalyticsInfoTip helpKey="settings_sections" />
+          </Label>
           <ul className="flex flex-wrap gap-2">
-            {ANALYTICS_SECTION_IDS.map((id) => {
+            {ANALYTICS_SECTION_IDS.filter((id) => id !== "conversions").map(
+              (id) => {
               const active = sections.includes(id);
               return (
                 <li key={id}>
@@ -385,7 +389,7 @@ export function AnalyticsSettingsEditor({
                         : "rounded-full border px-2.5 py-1 text-xs text-muted-foreground"
                     }
                   >
-                    {id}
+                    {analyticsSectionLabel(id)}
                   </button>
                 </li>
               );
@@ -395,7 +399,10 @@ export function AnalyticsSettingsEditor({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="kpi-set">KPI set (one id per line)</Label>
+            <Label htmlFor="kpi-set" className="inline-flex items-center gap-1.5">
+              KPI set (one id per line)
+              <AnalyticsInfoTip helpKey="settings_kpi_set" />
+            </Label>
             <Textarea
               id="kpi-set"
               rows={6}
@@ -451,8 +458,13 @@ export function AnalyticsSettingsEditor({
       </FormSection>
 
       <FormSection
-        title="Concepts"
-        description="Manager+ maintains the concept taxonomy used for tagging and mastery."
+        title={
+          <span className="inline-flex items-center gap-1.5">
+            Concepts
+            <AnalyticsInfoTip helpKey="importance" />
+          </span>
+        }
+        description="Manager+ maintains the concept taxonomy used for tagging and mastery. Importance affects gap scoring (critical ≈ 1.5×, core ≈ 1×, supporting ≈ 0.6×)."
       >
         {concepts.length === 0 ? (
           <p className="text-sm text-muted-foreground">No concepts yet.</p>
@@ -529,7 +541,12 @@ export function AnalyticsSettingsEditor({
       </FormSection>
 
       <FormSection
-        title="Readiness model"
+        title={
+          <span className="inline-flex items-center gap-1.5">
+            Readiness model
+            <AnalyticsInfoTip helpKey="settings_readiness_weights" />
+          </span>
+        }
         description="Owner+ only. Default Learning Readiness uses equal 20% weights across five components."
       >
         {!defaultReadiness ? (
@@ -549,7 +566,13 @@ export function AnalyticsSettingsEditor({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="ready-threshold">Ready threshold</Label>
+                <Label
+                  htmlFor="ready-threshold"
+                  className="inline-flex items-center gap-1.5"
+                >
+                  Ready threshold
+                  <AnalyticsInfoTip helpKey="ready_threshold" />
+                </Label>
                 <Input
                   id="ready-threshold"
                   type="number"
@@ -621,87 +644,17 @@ export function AnalyticsSettingsEditor({
       </FormSection>
 
       <FormSection
-        title="Conversion events"
-        description="Owner+ defines partner conversion keys used by the analytics engine."
+        title={
+          <span className="inline-flex items-center gap-1.5">
+            Partner conversion events
+            <AnalyticsInfoTip helpKey="conversion_analytics" />
+          </span>
+        }
+        description="Partner-defined conversion keys (for example docs visit or community join) are deferred to Analytics V2. Schema stubs remain for future use; they are not tracked or configurable in V1."
       >
-        {conversions.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No conversions defined.</p>
-        ) : (
-          <ul className="divide-y rounded-md border">
-            {conversions.map((c) => (
-              <li
-                key={c.id}
-                className="flex items-center justify-between gap-3 px-3 py-2 text-sm"
-              >
-                <div>
-                  <p className="font-medium">{c.label}</p>
-                  <p className="font-mono text-xs text-muted-foreground">
-                    {c.key} → {c.eventName}
-                  </p>
-                </div>
-                {canEditSensitive && (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    disabled={busy}
-                    onClick={() =>
-                      run(() => deleteConversionDefinition(productId, c.id))
-                    }
-                  >
-                    <Trash2 className="size-3.5" />
-                  </Button>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-        {canEditSensitive && (
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Input
-              placeholder="key (snake_case)"
-              value={convKey}
-              disabled={busy}
-              onChange={(e) => setConvKey(e.target.value)}
-              className="font-mono text-xs"
-            />
-            <Input
-              placeholder="Label"
-              value={convLabel}
-              disabled={busy}
-              onChange={(e) => setConvLabel(e.target.value)}
-            />
-            <Input
-              placeholder="event_name"
-              value={convEvent}
-              disabled={busy}
-              onChange={(e) => setConvEvent(e.target.value)}
-              className="font-mono text-xs"
-            />
-            <Button
-              type="button"
-              className="sm:col-span-3 sm:w-fit"
-              disabled={busy || !convKey.trim() || !convLabel.trim()}
-              onClick={() =>
-                run(async () => {
-                  const res = await createConversionDefinition(productId, {
-                    key: convKey.trim(),
-                    label: convLabel.trim(),
-                    eventName: convEvent.trim() || "conversion_triggered",
-                  });
-                  if (!("error" in res)) {
-                    setConvKey("");
-                    setConvLabel("");
-                  }
-                  return res;
-                })
-              }
-            >
-              <Plus className="size-4" />
-              Add conversion
-            </Button>
-          </div>
-        )}
+        <p className="text-sm text-muted-foreground">
+          Implementation planned for V2.
+        </p>
       </FormSection>
 
       <FormSection
@@ -793,17 +746,48 @@ export function AnalyticsSettingsEditor({
         <div className="grid gap-4 sm:grid-cols-2">
           {(
             [
-              ["Funnel stage min %", funnelMin, setFunnelMin],
-              ["Critical mastery min %", masteryMin, setMasteryMin],
-              ["Question miss max %", missMax, setMissMax],
-              ["Completion min %", completionMin, setCompletionMin],
-              ["Min volume for alerts", minVolume, setMinVolume],
-              ["Readiness score min", readinessMin, setReadinessMin],
-              ["Certification attainment min %", certMin, setCertMin],
+              [
+                "Funnel stage min %",
+                funnelMin,
+                setFunnelMin,
+                "settings_threshold_funnel_drop" as const,
+              ],
+              [
+                "Critical mastery min %",
+                masteryMin,
+                setMasteryMin,
+                "settings_threshold_critical_mastery" as const,
+              ],
+              [
+                "Question miss max %",
+                missMax,
+                setMissMax,
+                "settings_threshold_miss_rate" as const,
+              ],
+              [
+                "Completion min %",
+                completionMin,
+                setCompletionMin,
+                "settings_threshold_completion" as const,
+              ],
+              ["Min volume for alerts", minVolume, setMinVolume, null],
+              [
+                "Readiness score min",
+                readinessMin,
+                setReadinessMin,
+                "settings_threshold_readiness" as const,
+              ],
+              ["Certification attainment min %", certMin, setCertMin, null],
             ] as const
-          ).map(([label, value, setter]) => (
+          ).map(([label, value, setter, helpKey]) => (
             <div key={label} className="space-y-2">
-              <Label>{label}</Label>
+              <Label className="inline-flex items-center gap-1.5">
+                {helpKey ? (
+                  <MetricHelpLabel helpKey={helpKey}>{label}</MetricHelpLabel>
+                ) : (
+                  label
+                )}
+              </Label>
               <Input
                 type="number"
                 value={value}
@@ -837,7 +821,12 @@ export function AnalyticsSettingsEditor({
       </FormSection>
 
       <FormSection
-        title="Custom metric providers"
+        title={
+          <span className="inline-flex items-center gap-1.5">
+            Custom metric providers
+            <AnalyticsInfoTip helpKey="settings_custom_providers" />
+          </span>
+        }
         description="Owner+ enables advanced providers. Core metrics are always on. All custom metrics are partner-safe aggregates for this project only."
       >
         {enableableProviders.length === 0 ? (
@@ -904,7 +893,12 @@ export function AnalyticsSettingsEditor({
       </FormSection>
 
       <FormSection
-        title="Analytics packs"
+        title={
+          <span className="inline-flex items-center gap-1.5">
+            Analytics packs
+            <AnalyticsInfoTip helpKey="settings_packs" />
+          </span>
+        }
         description="Owner+ installs packs. Merge unions sections/KPIs; terminology conflicts need Owner review (keep vs overwrite)."
       >
         {packNote ? (

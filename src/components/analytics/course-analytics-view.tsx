@@ -16,6 +16,8 @@ import type {
 } from "@/lib/quiz-diagnostics-shared";
 import { formatQuizDuration } from "@/lib/quiz-diagnostics-shared";
 import { QuizDiagnosticsPanel } from "@/components/analytics/quiz-diagnostics-panel";
+import { MetricHelpLabel } from "@/components/partner-console/analytics/analytics-info-tip";
+import type { AnalyticsHelpKey } from "@/lib/analytics-help";
 
 function formatOptionalPercent(value: number | null): string {
   return value === null ? "n/a" : `${value}%`;
@@ -29,6 +31,20 @@ type CompactStat = {
   label: string;
   value: string | number;
   detail?: string;
+  helpKey?: AnalyticsHelpKey;
+};
+
+const COURSE_STAT_HELP: Record<string, AnalyticsHelpKey> = {
+  "Course starts": "course_starts",
+  Completions: "course_completions",
+  "Quiz pass rate": "quiz_pass_rate",
+  "Within-2-attempt pass rate": "within_2_attempt_pass_rate",
+  "Avg time to complete": "avg_time_to_complete",
+  "Avg quiz score": "avg_quiz_score",
+  "Avg attempts to pass": "avg_attempts_to_pass",
+  "Badge awards": "badges_awarded",
+  "Drop-off lesson": "drop_off_lesson",
+  "badge verification views": "badge_verification_views",
 };
 
 function CourseAnalyticsCompactSummary({
@@ -42,46 +58,63 @@ function CourseAnalyticsCompactSummary({
     data.starts > 0 ? Math.round((data.completions / data.starts) * 100) : 0;
 
   const stats: CompactStat[] = [
-    { label: "Course starts", value: data.starts },
+    {
+      label: "Course starts",
+      value: data.starts,
+      helpKey: "course_starts",
+    },
     {
       label: "Completions",
       value: data.completions,
       detail: `${completionRate}% of starts`,
+      helpKey: "course_completions",
     },
     {
       label: "Quiz pass rate",
       value: formatOptionalPercent(data.quizPassRate),
       detail: `${data.attempts} attempts`,
+      helpKey: "quiz_pass_rate",
     },
     {
       label: "Within-2-attempt pass rate",
       value: formatOptionalPercent(data.withinTwoAttemptPassRate),
+      helpKey: "within_2_attempt_pass_rate",
     },
     {
       label: "Avg time to complete",
       value: formatQuizDuration(data.averageQuizDurationSeconds),
+      helpKey: "avg_time_to_complete",
     },
     {
       label: "Avg quiz score",
       value: formatOptionalPercent(data.averageQuizScore),
+      helpKey: "avg_quiz_score",
     },
     {
       label: "Avg attempts to pass",
       value: formatOptionalNumber(data.averageAttemptsBeforePass),
+      helpKey: "avg_attempts_to_pass",
     },
-    { label: "Badge awards", value: data.badgeAwards },
+    {
+      label: "Badge awards",
+      value: data.badgeAwards,
+      helpKey: "badges_awarded",
+    },
     {
       label: "Drop-off lesson",
       value: data.dropOff ? `Lesson ${data.dropOff.order + 1}` : "n/a",
       detail: data.dropOff?.lessonTitle,
+      helpKey: "drop_off_lesson",
     },
   ];
 
   if (compactExtra) {
     const [value, ...labelParts] = compactExtra.split(" ");
+    const label = labelParts.join(" ") || "Additional metric";
     stats.push({
-      label: labelParts.join(" ") || "Additional metric",
+      label,
       value: value ?? compactExtra,
+      helpKey: COURSE_STAT_HELP[label],
     });
   }
 
@@ -100,7 +133,7 @@ function CourseAnalyticsCompactSummary({
         {stats.map((stat) => (
           <div key={stat.label} className="min-w-0">
             <dt className="text-xs font-medium leading-snug text-muted-foreground">
-              {stat.label}
+              <MetricHelpLabel helpKey={stat.helpKey}>{stat.label}</MetricHelpLabel>
             </dt>
             <dd className="mt-1 text-lg font-semibold tabular-nums leading-none tracking-tight text-foreground">
               {stat.value}
@@ -133,19 +166,32 @@ export function CourseAnalyticsView({
   const completionRate =
     data.starts > 0 ? Math.round((data.completions / data.starts) * 100) : 0;
 
-  const metrics = [
-    { label: "Course starts", value: data.starts, icon: PlayCircle },
+  const metrics: Array<{
+    label: string;
+    value: string | number;
+    hint?: string;
+    icon: typeof PlayCircle;
+    helpKey?: AnalyticsHelpKey;
+  }> = [
+    {
+      label: "Course starts",
+      value: data.starts,
+      icon: PlayCircle,
+      helpKey: "course_starts",
+    },
     {
       label: "Completions",
       value: data.completions,
       hint: `${completionRate}% of starts`,
       icon: GraduationCap,
+      helpKey: "course_completions",
     },
     {
       label: "Quiz pass rate",
       value: formatOptionalPercent(data.quizPassRate),
       hint: `${data.attempts} attempts`,
       icon: Target,
+      helpKey: "quiz_pass_rate",
     },
     {
       label: "Within-2-attempt pass rate",
@@ -155,29 +201,39 @@ export function CourseAnalyticsView({
           ? `${data.quizAbandonmentRate}% abandonment before submit`
           : undefined,
       icon: Repeat2,
+      helpKey: "within_2_attempt_pass_rate",
     },
     {
       label: "Avg time to complete",
       value: formatQuizDuration(data.averageQuizDurationSeconds),
       icon: Timer,
+      helpKey: "avg_time_to_complete",
     },
     {
       label: "Avg quiz score",
       value: formatOptionalPercent(data.averageQuizScore),
       icon: Gauge,
+      helpKey: "avg_quiz_score",
     },
     {
       label: "Avg attempts to pass",
       value: formatOptionalNumber(data.averageAttemptsBeforePass),
       icon: Target,
+      helpKey: "avg_attempts_to_pass",
     },
     {
       label: "Drop-off lesson",
       value: data.dropOff ? `Lesson ${data.dropOff.order + 1}` : "n/a",
       hint: data.dropOff?.lessonTitle,
       icon: TrendingDown,
+      helpKey: "drop_off_lesson",
     },
-    { label: "Badge awards", value: data.badgeAwards, icon: Award },
+    {
+      label: "Badge awards",
+      value: data.badgeAwards,
+      icon: Award,
+      helpKey: "badges_awarded",
+    },
   ];
 
   return (
@@ -194,7 +250,7 @@ export function CourseAnalyticsView({
               <CardContent className="py-5">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <m.icon className="size-4" />
-                  {m.label}
+                  <MetricHelpLabel helpKey={m.helpKey}>{m.label}</MetricHelpLabel>
                 </div>
                 <p className="mt-2 text-2xl font-semibold tabular-nums">{m.value}</p>
                 {m.hint && (

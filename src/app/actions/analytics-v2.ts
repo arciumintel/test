@@ -37,7 +37,18 @@ export async function getAnalyticsV2Overview(
   productId: string,
   rangePreset?: string,
   compareBaseline?: string
-): Promise<Result> {
+): Promise<
+  Result<{
+    data: Awaited<ReturnType<typeof getAnalyticsEngineView>>["data"];
+    freshness: Omit<
+      Awaited<ReturnType<typeof getAnalyticsEngineView>>["freshness"],
+      "builtAt"
+    > & { builtAt: string | null };
+    fromSnapshot: boolean;
+    accessLevel: string;
+    canRefresh: boolean;
+  }>
+> {
   const auth = await authorizeAnalyticsRead(productId);
   if (!auth.ok) return toAnalyticsActionError(auth);
 
@@ -68,7 +79,7 @@ export async function refreshAnalyticsSnapshot(
   productId: string,
   rangePreset?: string,
   compareBaseline?: string
-): Promise<Result> {
+): Promise<Result<{ snapshotId: string }>> {
   const auth = await authorizeAnalyticsSensitiveConfig(productId);
   if (!auth.ok) return toAnalyticsActionError(auth);
 
@@ -93,7 +104,7 @@ export async function refreshAnalyticsSnapshot(
 export async function setProductAnalyticsV2Flag(
   productId: string,
   enabled: boolean
-): Promise<Result> {
+): Promise<Result<{ enabled: boolean }>> {
   const auth = await authorizeAnalyticsSensitiveConfig(productId);
   if (!auth.ok) return toAnalyticsActionError(auth);
 

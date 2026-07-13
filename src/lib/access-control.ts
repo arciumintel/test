@@ -15,7 +15,7 @@ export const ACCESS_MESSAGES = {
   analyticsConfigForbidden:
     "Analysts can view analytics but cannot change configuration.",
   analyticsSensitiveForbidden:
-    "Only project owners and Arcademy staff can edit readiness, conversions, and recommendation policies.",
+    "Only project owners and Arcademy staff can edit readiness and recommendation policies.",
 } as const;
 
 export type AccessDenialReason = "unauthenticated" | "forbidden";
@@ -140,7 +140,7 @@ export async function authorizeAnalyticsConfig(
 
 /**
  * Platform Admin or Partner Owner only.
- * Capability: readiness formulas, conversion definitions, recommendation thresholds, pack install.
+ * Capability: readiness formulas, recommendation thresholds, pack install.
  */
 export async function authorizeAnalyticsSensitiveConfig(
   productId: string,

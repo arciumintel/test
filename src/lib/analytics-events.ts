@@ -27,6 +27,7 @@ export const ANALYTICS_EVENT_NAMES = [
   "badge_shared",
   "certification_awarded",
   "certificate_viewed",
+  // Partner conversion events — reserved; instrumentation deferred to Analytics V2.
   "conversion_triggered",
   "docs_visited",
   "glossary_lookup",

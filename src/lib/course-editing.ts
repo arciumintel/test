@@ -249,7 +249,7 @@ export async function updateCourseForEditor(
   raw: z.input<typeof courseSchema>
 ): Promise<ActionResult> {
   const gate = await gateCourseEdit(scope, courseId);
-  if ("error" in gate) return gate;
+  if ("error" in gate) return { error: gate.error as string };
 
   const productId =
     scope.role === "partner"
@@ -311,7 +311,7 @@ export async function createLessonForEditor(
   raw: z.input<typeof lessonSchema>
 ): Promise<ActionResult<{ id: string }>> {
   const gate = await gateCourseEdit(scope, courseId);
-  if ("error" in gate) return gate;
+  if ("error" in gate) return { error: gate.error as string };
 
   const parsed = lessonSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
@@ -346,7 +346,7 @@ export async function updateLessonForEditor(
   raw: z.input<typeof lessonSchema>
 ): Promise<ActionResult> {
   const gate = await gateLessonById(scope, lessonId);
-  if ("error" in gate) return gate;
+  if ("error" in gate) return { error: gate.error as string };
 
   const parsed = lessonSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
@@ -373,7 +373,7 @@ export async function deleteLessonForEditor(
   lessonId: string
 ): Promise<ActionResult> {
   const gate = await gateLessonById(scope, lessonId);
-  if ("error" in gate) return gate;
+  if ("error" in gate) return { error: gate.error as string };
 
   await prisma.lesson.delete({ where: { id: lessonId } });
   revalidateCourseEditorPaths(scope, gate.lesson.courseId);
@@ -386,7 +386,7 @@ export async function reorderLessonsForEditor(
   orderedIds: string[]
 ): Promise<ActionResult> {
   const gate = await gateCourseEdit(scope, courseId);
-  if ("error" in gate) return gate;
+  if ("error" in gate) return { error: gate.error as string };
 
   await prisma.$transaction([
     ...orderedIds.map((id, i) =>
@@ -413,7 +413,7 @@ export async function createModuleForEditor(
   raw: z.input<typeof moduleSchema>
 ): Promise<ActionResult<{ id: string }>> {
   const gate = await gateCourseEdit(scope, courseId);
-  if ("error" in gate) return gate;
+  if ("error" in gate) return { error: gate.error as string };
 
   const parsed = moduleSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
@@ -443,7 +443,7 @@ export async function updateModuleForEditor(
   raw: z.input<typeof moduleSchema>
 ): Promise<ActionResult> {
   const gate = await gateModuleById(scope, moduleId);
-  if ("error" in gate) return gate;
+  if ("error" in gate) return { error: gate.error as string };
 
   const parsed = moduleSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
@@ -465,7 +465,7 @@ export async function deleteModuleForEditor(
   moduleId: string
 ): Promise<ActionResult> {
   const gate = await gateModuleById(scope, moduleId);
-  if ("error" in gate) return gate;
+  if ("error" in gate) return { error: gate.error as string };
 
   await prisma.module.delete({ where: { id: moduleId } });
   await prisma.lesson.updateMany({
@@ -483,7 +483,7 @@ export async function reorderModulesForEditor(
   orderedIds: string[]
 ): Promise<ActionResult> {
   const gate = await gateCourseEdit(scope, courseId);
-  if ("error" in gate) return gate;
+  if ("error" in gate) return { error: gate.error as string };
 
   await prisma.$transaction([
     ...orderedIds.map((id, i) =>
@@ -515,7 +515,7 @@ export async function upsertFinalQuizForEditor(
   }
 ): Promise<ActionResult<{ id: string; created: boolean }>> {
   const gate = await gateCourseEdit(scope, courseId);
-  if ("error" in gate) return gate;
+  if ("error" in gate) return { error: gate.error as string };
 
   const threshold = Math.min(100, Math.max(1, Math.round(raw.passThreshold)));
   const title = raw.title?.trim() || "Course Quiz";
@@ -561,7 +561,7 @@ export async function upsertLessonKnowledgeCheckForEditor(
   }
 
   const gate = await gateCourseEdit(scope, courseId);
-  if ("error" in gate) return gate;
+  if ("error" in gate) return { error: gate.error as string };
 
   const lesson = await prisma.lesson.findFirst({
     where: { id: lessonId, courseId },
@@ -608,7 +608,7 @@ export async function createQuestionForEditor(
   raw: z.input<typeof questionSchema>
 ): Promise<ActionResult> {
   const gate = await gateQuizById(scope, quizId);
-  if ("error" in gate) return gate;
+  if ("error" in gate) return { error: gate.error as string };
 
   const parsed = questionSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
@@ -638,7 +638,7 @@ export async function updateQuestionForEditor(
   raw: z.input<typeof questionSchema>
 ): Promise<ActionResult> {
   const gate = await gateQuestionById(scope, questionId);
-  if ("error" in gate) return gate;
+  if ("error" in gate) return { error: gate.error as string };
 
   const parsed = questionSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };
@@ -658,7 +658,7 @@ export async function deleteQuestionForEditor(
   questionId: string
 ): Promise<ActionResult> {
   const gate = await gateQuestionById(scope, questionId);
-  if ("error" in gate) return gate;
+  if ("error" in gate) return { error: gate.error as string };
 
   await prisma.question.delete({ where: { id: questionId } });
   revalidateCourseEditorPaths(scope, gate.question.quiz.courseId);
@@ -671,7 +671,7 @@ export async function upsertBadgeForEditor(
   raw: z.input<typeof badgeSchema>
 ): Promise<ActionResult<{ created: boolean }>> {
   const gate = await gateCourseEdit(scope, courseId);
-  if ("error" in gate) return gate;
+  if ("error" in gate) return { error: gate.error as string };
 
   const parsed = badgeSchema.safeParse(raw);
   if (!parsed.success) return { error: parsed.error.issues[0].message };

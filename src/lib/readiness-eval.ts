@@ -1,6 +1,7 @@
 /**
  * Learning Readiness / custom model evaluation (aggregate + per-learner).
- * Missing conversions/paths contribute neutrally with setup CTAs (§9).
+ * Missing path components contribute neutrally with setup CTAs (§9).
+ * Partner conversion readiness weight is deferred to Analytics V2.
  */
 
 import "server-only";
@@ -372,7 +373,7 @@ async function evalComponent(
         score: r.status === "setup_needed" ? 50 : r.score,
         setupMessage:
           r.status === "setup_needed"
-            ? "Define conversion events in Analytics settings."
+            ? "Partner conversion events are deferred to Analytics V2."
             : undefined,
         setupHref: r.setupHref,
       };

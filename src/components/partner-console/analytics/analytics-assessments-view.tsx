@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { QuestionIntelligenceRow } from "@/lib/question-intelligence";
 import type { ConceptCoverageSummary } from "@/lib/concept-mastery";
 import { ConceptCoverageBanner } from "@/components/partner-console/analytics/analytics-concepts-view";
+import { MetricHelpLabel } from "@/components/partner-console/analytics/analytics-info-tip";
 
 export function AnalyticsAssessmentsView({
   productId,
@@ -46,9 +47,19 @@ export function AnalyticsAssessmentsView({
                 <th className="px-3 py-2 font-medium">Question</th>
                 <th className="px-3 py-2 font-medium">Quiz</th>
                 <th className="px-3 py-2 font-medium">Attempts</th>
-                <th className="px-3 py-2 font-medium">Miss %</th>
-                <th className="px-3 py-2 font-medium">Avg time</th>
-                <th className="px-3 py-2 font-medium">Disc.</th>
+                <th className="px-3 py-2 font-medium">
+                  <MetricHelpLabel helpKey="miss_rate">Miss %</MetricHelpLabel>
+                </th>
+                <th className="px-3 py-2 font-medium">
+                  <MetricHelpLabel helpKey="avg_time_on_question">
+                    Avg time
+                  </MetricHelpLabel>
+                </th>
+                <th className="px-3 py-2 font-medium">
+                  <MetricHelpLabel helpKey="discrimination">
+                    Discrimination
+                  </MetricHelpLabel>
+                </th>
                 <th className="px-3 py-2 font-medium">Concepts</th>
               </tr>
             </thead>

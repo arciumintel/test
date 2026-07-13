@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { QuestionDrilldown } from "@/lib/question-intelligence";
+import { MetricHelpLabel } from "@/components/partner-console/analytics/analytics-info-tip";
 
 export function AnalyticsQuestionDrilldownView({
   productId,
@@ -58,7 +59,9 @@ export function AnalyticsQuestionDrilldownView({
 
       <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border px-3 py-2">
-          <dt className="text-xs text-muted-foreground">Miss rate</dt>
+          <dt className="text-xs text-muted-foreground">
+            <MetricHelpLabel helpKey="miss_rate">Miss rate</MetricHelpLabel>
+          </dt>
           <dd className="mt-0.5 text-lg font-semibold tabular-nums">
             {question.missRatePct === null ? "—" : `${question.missRatePct}%`}
           </dd>
@@ -70,7 +73,9 @@ export function AnalyticsQuestionDrilldownView({
           </dd>
         </div>
         <div className="rounded-lg border px-3 py-2">
-          <dt className="text-xs text-muted-foreground">Avg time</dt>
+          <dt className="text-xs text-muted-foreground">
+            <MetricHelpLabel helpKey="avg_time_on_question">Avg time</MetricHelpLabel>
+          </dt>
           <dd className="mt-0.5 text-lg font-semibold tabular-nums">
             {question.avgDurationMs == null
               ? "—"
@@ -78,7 +83,9 @@ export function AnalyticsQuestionDrilldownView({
           </dd>
         </div>
         <div className="rounded-lg border px-3 py-2">
-          <dt className="text-xs text-muted-foreground">Discrimination</dt>
+          <dt className="text-xs text-muted-foreground">
+            <MetricHelpLabel helpKey="discrimination">Discrimination</MetricHelpLabel>
+          </dt>
           <dd className="mt-0.5 text-lg font-semibold tabular-nums">
             {question.discriminationProxy === null
               ? "—"

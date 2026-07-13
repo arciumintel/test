@@ -311,7 +311,7 @@ const conversionSchema = z.object({
   description: z.string().max(500).optional().nullable(),
 });
 
-/** Owner+: create conversion definition. */
+/** Owner+: create conversion definition — deferred to Analytics V2 (kept for schema stubs). */
 export async function createConversionDefinition(
   productId: string,
   raw: z.input<typeof conversionSchema>
@@ -341,7 +341,7 @@ export async function createConversionDefinition(
   }
 }
 
-/** Owner+: update conversion. */
+/** Owner+: update conversion — deferred to Analytics V2. */
 export async function updateConversionDefinition(
   productId: string,
   conversionId: string,
@@ -372,7 +372,7 @@ export async function updateConversionDefinition(
   return { ok: true };
 }
 
-/** Owner+: delete conversion. */
+/** Owner+: delete conversion — deferred to Analytics V2. */
 export async function deleteConversionDefinition(
   productId: string,
   conversionId: string
@@ -636,7 +636,16 @@ export async function getContentConceptTagIds(
 }
 
 /** Staff: list pack definitions (platform templates). */
-export async function listAnalyticsPackDefinitions(): Promise<Result> {
+export async function listAnalyticsPackDefinitions(): Promise<
+  Result<{
+    packs: Array<{
+      id: string;
+      displayName: string;
+      version: string;
+      stub: boolean;
+    }>;
+  }>
+> {
   const auth = await authorizeAnalyticsPlatformAdmin();
   if (!auth.ok) return toActionError(auth);
 

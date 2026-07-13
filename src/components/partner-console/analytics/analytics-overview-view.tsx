@@ -1,21 +1,30 @@
 import Link from "next/link";
 import type { AnalyticsEngineResult } from "@/lib/analytics-engine";
 import { PartnerAnalyticsWeeklyChart } from "@/components/partner-console/analytics/partner-analytics-weekly-chart";
+import {
+  AnalyticsInfoTip,
+  MetricHelpLabel,
+} from "@/components/partner-console/analytics/analytics-info-tip";
+import type { AnalyticsHelpKey } from "@/lib/analytics-help";
 
 function MetricCard({
   label,
   value,
   deltaPct,
   suffix = "",
+  helpKey,
 }: {
   label: string;
   value: string;
   deltaPct?: number | null;
   suffix?: string;
+  helpKey?: AnalyticsHelpKey;
 }) {
   return (
     <div className="rounded-lg border px-4 py-3">
-      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-xs text-muted-foreground">
+        <MetricHelpLabel helpKey={helpKey}>{label}</MetricHelpLabel>
+      </p>
       <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight">
         {value}
         {suffix}
@@ -24,14 +33,20 @@ function MetricCard({
         <p
           className={
             deltaPct >= 0
-              ? "mt-1 text-xs text-emerald-700 dark:text-emerald-400"
-              : "mt-1 text-xs text-destructive"
+              ? "mt-1 inline-flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-400"
+              : "mt-1 inline-flex items-center gap-1 text-xs text-destructive"
           }
         >
-          {deltaPct >= 0 ? "↑" : "↓"} {Math.abs(deltaPct)}% vs comparison
+          <span>
+            {deltaPct >= 0 ? "↑" : "↓"} {Math.abs(deltaPct)}% vs comparison
+          </span>
+          <AnalyticsInfoTip helpKey="vs_comparison" />
         </p>
       ) : (
-        <p className="mt-1 text-xs text-muted-foreground">No prior period</p>
+        <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
+          <span>No prior period</span>
+          <AnalyticsInfoTip helpKey="vs_comparison" />
+        </p>
       )}
     </div>
   );
@@ -65,13 +80,6 @@ export function AnalyticsOverviewView({
   const startConv = formatMetric(data, "start_conversion_rate", "—");
 
   const topRecs = data.recommendations.slice(0, 3);
-  const conversions = data.overview.conversions ?? {
-    rows: [],
-    totalEvents: 0,
-    learnersStarted: 0,
-    setupNeeded: true,
-    setupMessage: "Refresh analytics to load conversion panels.",
-  };
   const cohorts = data.overview.cohorts ?? {
     cohorts: [],
     overallCompletionRatePct: null,
@@ -89,26 +97,44 @@ export function AnalyticsOverviewView({
           Are we healthy this period?
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <MetricCard label="Health score" value={health.value} deltaPct={health.deltaPct} />
-          <MetricCard label="Learners started" value={starts.value} deltaPct={starts.deltaPct} />
+          <MetricCard
+            label="Health score"
+            value={health.value}
+            deltaPct={health.deltaPct}
+            helpKey="health_score"
+          />
+          <MetricCard
+            label="Learners started"
+            value={starts.value}
+            deltaPct={starts.deltaPct}
+            helpKey="learners_started"
+          />
           <MetricCard
             label="Completion rate"
             value={completion.value}
             deltaPct={completion.deltaPct}
             suffix={completion.value === "—" ? "" : "%"}
+            helpKey="completion_rate"
           />
-          <MetricCard label="Badges awarded" value={badges.value} deltaPct={badges.deltaPct} />
+          <MetricCard
+            label="Badges awarded"
+            value={badges.value}
+            deltaPct={badges.deltaPct}
+            helpKey="badges_awarded"
+          />
           <MetricCard
             label="Quiz pass rate"
             value={quiz.value}
             deltaPct={quiz.deltaPct}
             suffix={quiz.value === "—" ? "" : "%"}
+            helpKey="quiz_pass_rate"
           />
           <MetricCard
             label="Start conversion"
             value={startConv.value}
             deltaPct={startConv.deltaPct}
             suffix={startConv.value === "—" ? "" : "%"}
+            helpKey="start_conversion"
           />
         </div>
       </section>
@@ -116,8 +142,9 @@ export function AnalyticsOverviewView({
       <section>
         <div className="flex items-end justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold tracking-tight">
+            <h2 className="inline-flex items-center gap-1.5 text-lg font-semibold tracking-tight">
               Top recommendations
+              <AnalyticsInfoTip helpKey="recommendation_priority" />
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
               What should we improve next?
@@ -158,7 +185,10 @@ export function AnalyticsOverviewView({
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold tracking-tight">Learning funnel</h2>
+        <h2 className="inline-flex items-center gap-1.5 text-lg font-semibold tracking-tight">
+          Learning funnel
+          <AnalyticsInfoTip helpKey="learning_funnel" />
+        </h2>
         <p className="mt-1 text-sm text-muted-foreground">Where do learners drop?</p>
         <ol className="mt-4 space-y-2">
           {data.overview.funnel.map((step) => (
@@ -178,70 +208,12 @@ export function AnalyticsOverviewView({
         </ol>
       </section>
 
-      <section>
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">
-              Conversion analytics
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Partner-defined conversion keys
-            </p>
-          </div>
-          <Link
-            href={`/partner-console/${productId}/analytics/settings`}
-            className="text-sm text-primary hover:underline"
-          >
-            Manage conversions
-          </Link>
-        </div>
-        {conversions.setupNeeded ? (
-          <p className="mt-4 text-sm text-muted-foreground">
-            {conversions.setupMessage}{" "}
-            <Link
-              href={`/partner-console/${productId}/analytics/settings`}
-              className="text-primary hover:underline"
-            >
-              Set up conversions
-            </Link>
-            .
-          </p>
-        ) : (
-          <div className="mt-4 overflow-x-auto rounded-lg border">
-            <table className="w-full min-w-[28rem] text-left text-sm">
-              <thead className="border-b bg-muted/40 text-xs text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 font-medium">Conversion</th>
-                  <th className="px-3 py-2 font-medium">Events</th>
-                  <th className="px-3 py-2 font-medium">Users</th>
-                  <th className="px-3 py-2 font-medium">Rate</th>
-                </tr>
-              </thead>
-              <tbody>
-                {conversions.rows.map((row) => (
-                  <tr key={row.key} className="border-b last:border-0">
-                    <td className="px-3 py-2">
-                      <span className="font-medium">{row.label}</span>
-                      <span className="mt-0.5 block text-xs text-muted-foreground">
-                        {row.key}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 tabular-nums">{row.count}</td>
-                    <td className="px-3 py-2 tabular-nums">{row.uniqueUsers}</td>
-                    <td className="px-3 py-2 tabular-nums">
-                      {row.ratePct === null ? "—" : `${row.ratePct}%`}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
-
       <section className="grid gap-8 lg:grid-cols-2">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight">Cohorts</h2>
+          <h2 className="inline-flex items-center gap-1.5 text-lg font-semibold tracking-tight">
+            Cohorts
+            <AnalyticsInfoTip helpKey="cohorts" />
+          </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Start-week completion
             {cohorts.overallCompletionRatePct !== null
@@ -269,8 +241,9 @@ export function AnalyticsOverviewView({
           )}
         </div>
         <div>
-          <h2 className="text-lg font-semibold tracking-tight">
+          <h2 className="inline-flex items-center gap-1.5 text-lg font-semibold tracking-tight">
             Learning behaviour
+            <AnalyticsInfoTip helpKey="learning_behaviour" />
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Aggregate engagement events

@@ -42,7 +42,6 @@ export type RecommendationContext = {
   readinessSetupNeeded?: boolean;
   certificationCount?: number;
   certificationAttainmentPct?: number | null;
-  conversionSetupNeeded?: boolean;
 };
 
 export function buildAnalyticsRecommendations(
@@ -59,7 +58,6 @@ export function buildAnalyticsRecommendations(
     readinessSetupNeeded = false,
     certificationCount = 0,
     certificationAttainmentPct = null,
-    conversionSetupNeeded = false,
   } = input;
 
   const minVol = policy.minVolumeForAlerts ?? 10;
@@ -223,20 +221,6 @@ export function buildAnalyticsRecommendations(
       evidenceMetricIds: ["certification_rate"],
       href: `${base}/certifications`,
       evidenceLabel: "Certifications",
-    });
-  }
-
-  if (conversionSetupNeeded) {
-    recs.push({
-      id: "conversion-setup",
-      priority: "low",
-      category: "opportunity",
-      title: "Define partner conversions",
-      rationale:
-        "Conversion analytics and readiness conversion components need at least one conversion definition.",
-      evidenceMetricIds: ["conversion_rate"],
-      href: `${base}/settings`,
-      evidenceLabel: "Analytics settings",
     });
   }
 

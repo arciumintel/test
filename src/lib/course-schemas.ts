@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 import { FIELD_LIMITS as L } from "@/lib/field-limits";
 import { slugify } from "@/lib/slugify";
 
@@ -24,6 +24,7 @@ export const lessonSchema = z.object({
   status: z.enum(["draft", "published"]),
   required: z.boolean(),
   estimatedDuration: z.coerce.number().int().min(0).max(100000).optional().nullable(),
+  moduleId: z.string().optional().nullable(),
 });
 
 export { questionSchema, normalizeQuestionInput } from "@/lib/question-schemas";

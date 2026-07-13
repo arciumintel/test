@@ -1,5 +1,9 @@
 import Link from "next/link";
 import type { CertificationAnalytics } from "@/lib/certifications";
+import {
+  AnalyticsInfoTip,
+  MetricHelpLabel,
+} from "@/components/partner-console/analytics/analytics-info-tip";
 
 export function AnalyticsCertificationsView({
   productId,
@@ -36,26 +40,34 @@ export function AnalyticsCertificationsView({
         <h2 className="text-lg font-semibold tracking-tight">Credential funnel</h2>
         <ol className="mt-4 space-y-2">
           {data.funnel.map((step) => (
-            <li
-              key={step.label}
-              className="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm"
-            >
-              <span>{step.label}</span>
-              <span className="tabular-nums text-muted-foreground">
-                {step.count}
-                {step.rateFromPrevious !== null
-                  ? ` · ${step.rateFromPrevious}%`
-                  : ""}
-              </span>
-            </li>
-          ))}
+              <li
+                key={step.label}
+                className="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm"
+              >
+                <span className="inline-flex items-center gap-1">
+                  {step.label}
+                  {step.label === "Published certifications configured" ? (
+                    <AnalyticsInfoTip helpKey="certifications_configured" />
+                  ) : null}
+                </span>
+                <span className="tabular-nums text-muted-foreground">
+                  {step.count}
+                  {step.rateFromPrevious !== null
+                    ? ` · ${step.rateFromPrevious}%`
+                    : ""}
+                </span>
+              </li>
+            ))}
         </ol>
       </section>
 
       <section>
         <div className="flex items-end justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold tracking-tight">Attainment</h2>
+            <h2 className="inline-flex items-center gap-1.5 text-lg font-semibold tracking-tight">
+              Attainment
+              <AnalyticsInfoTip helpKey="attainment" />
+            </h2>
             <p className="mt-1 text-sm text-muted-foreground">
               {data.awardsInRange} awards in period · {data.certificateViewsInRange}{" "}
               certificate views
@@ -74,7 +86,9 @@ export function AnalyticsCertificationsView({
                 <th className="px-3 py-2 font-medium">Requirements</th>
                 <th className="px-3 py-2 font-medium">Awards (period)</th>
                 <th className="px-3 py-2 font-medium">All-time</th>
-                <th className="px-3 py-2 font-medium">Attainment</th>
+                <th className="px-3 py-2 font-medium">
+                  <MetricHelpLabel helpKey="attainment">Attainment</MetricHelpLabel>
+                </th>
               </tr>
             </thead>
             <tbody>
