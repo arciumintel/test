@@ -2,7 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { authorizeProjectAdmin, authorizeStaffOrProjectAdmin } from "@/lib/access-control";
-import { isProjectAdmin } from "@/lib/project-admin-access";
+import { getProjectAdminRole, isProjectAdmin } from "@/lib/project-admin-access";
 import { getCurrentUser } from "@/lib/session";
 
 export { isProjectAdmin } from "@/lib/project-admin-access";
@@ -66,13 +66,37 @@ export async function getManagedProducts(userId: string, isStaff: boolean) {
 
 export async function getProjectAdminAccess(productId: string) {
   const user = await getCurrentUser();
-  if (!user) return { user: null, canManage: false, isStaff: false };
+  if (!user) {
+    return {
+      user: null,
+      canManage: false,
+      isStaff: false,
+      projectRole: null as const,
+      analyticsLevel: null as const,
+    };
+  }
 
   const isStaff = user.role === "staff_admin";
-  const canManage =
-    isStaff || (await isProjectAdmin(user.id, productId));
+  if (isStaff) {
+    return {
+      user,
+      canManage: true,
+      isStaff: true,
+      projectRole: null,
+      analyticsLevel: "platform_admin" as const,
+    };
+  }
 
-  return { user, canManage, isStaff };
+  const projectRole = await getProjectAdminRole(user.id, productId);
+  const canManage = Boolean(projectRole);
+
+  return {
+    user,
+    canManage,
+    isStaff: false,
+    projectRole,
+    analyticsLevel: projectRole,
+  };
 }
 
 export async function requireStaffOrProjectAdmin(productId: string) {

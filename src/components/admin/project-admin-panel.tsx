@@ -12,7 +12,7 @@ import { shortWallet } from "@/lib/utils";
 
 type AdminRow = {
   id: string;
-  role: "owner" | "manager";
+  role: "owner" | "manager" | "analyst";
   user: { walletAddress: string; displayName: string | null };
 };
 
@@ -24,7 +24,9 @@ type Props = {
 export function ProjectAdminPanel({ productId, admins }: Props) {
   const router = useRouter();
   const [walletAddress, setWalletAddress] = React.useState("");
-  const [role, setRole] = React.useState<"owner" | "manager">("manager");
+  const [role, setRole] = React.useState<"owner" | "manager" | "analyst">(
+    "manager"
+  );
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -54,8 +56,9 @@ export function ProjectAdminPanel({ productId, admins }: Props) {
     <section className="mt-12">
       <h2 className="text-lg font-semibold">Project admins</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Assign wallet users who can manage this project&apos;s Discord console.
-        They must sign in with their wallet at least once before assignment.
+        Assign wallet users as Owner (full analytics config), Manager (content
+        and concepts), or Analyst (read-only analytics). They must sign in with
+        their wallet at least once before assignment.
       </p>
 
       <form onSubmit={handleAssign} className="mt-4 grid gap-4 sm:grid-cols-[1fr_auto_auto]">
@@ -74,11 +77,14 @@ export function ProjectAdminPanel({ productId, admins }: Props) {
           <Select
             id="admin-role"
             value={role}
-            onChange={(e) => setRole(e.target.value as "owner" | "manager")}
+            onChange={(e) =>
+              setRole(e.target.value as "owner" | "manager" | "analyst")
+            }
             className="w-full sm:w-36"
           >
             <option value="owner">Owner</option>
             <option value="manager">Manager</option>
+            <option value="analyst">Analyst</option>
           </Select>
         </div>
         <div className="flex items-end">

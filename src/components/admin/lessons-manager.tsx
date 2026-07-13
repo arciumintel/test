@@ -44,6 +44,7 @@ import {
 import { courseEditorContext } from "@/lib/course-editor-context";
 import { FIELD_LIMITS as L } from "@/lib/field-limits";
 import type { LessonStatus } from "@prisma/client";
+import { ConceptTaggingFields } from "@/components/analytics/concept-tagging-fields";
 
 export type AdminLesson = {
   id: string;
@@ -66,6 +67,7 @@ export function LessonsManager({
   lessonQuizzes = {},
   variant = "admin",
   partnerProductId,
+  productId,
   readOnly = false,
 }: {
   courseId: string;
@@ -74,9 +76,12 @@ export function LessonsManager({
   lessonQuizzes?: Record<string, AdminLessonQuiz>;
   variant?: "admin" | "partner";
   partnerProductId?: string;
+  /** Ecosystem product id for concept tagging (course.productId). */
+  productId?: string;
   readOnly?: boolean;
 }) {
   const useGroupedModules = modules.length > 0;
+  const taggingProductId = productId ?? partnerProductId;
 
   if (useGroupedModules) {
     return (
@@ -87,6 +92,7 @@ export function LessonsManager({
         lessonQuizzes={lessonQuizzes}
         variant={variant}
         partnerProductId={partnerProductId}
+        productId={taggingProductId}
         readOnly={readOnly}
       />
     );
@@ -100,6 +106,7 @@ export function LessonsManager({
       lessonQuizzes={lessonQuizzes}
       variant={variant}
       partnerProductId={partnerProductId}
+      productId={taggingProductId}
       readOnly={readOnly}
     />
   );
@@ -112,6 +119,7 @@ function FlatLessonsManager({
   lessonQuizzes,
   variant,
   partnerProductId,
+  productId,
   readOnly,
 }: {
   courseId: string;
@@ -120,6 +128,7 @@ function FlatLessonsManager({
   lessonQuizzes: Record<string, AdminLessonQuiz>;
   variant: "admin" | "partner";
   partnerProductId?: string;
+  productId?: string;
   readOnly: boolean;
 }) {
   const router = useRouter();
@@ -166,6 +175,7 @@ function FlatLessonsManager({
           modules={modules}
           variant={variant}
           partnerProductId={partnerProductId}
+          productId={productId}
           onDone={() => {
             setEditing(null);
             router.refresh();
@@ -185,6 +195,7 @@ function FlatLessonsManager({
               modules={modules}
               variant={variant}
               partnerProductId={partnerProductId}
+              productId={productId}
               onDone={() => {
                 setEditing(null);
                 router.refresh();
@@ -226,6 +237,7 @@ function GroupedLessonsManager({
   lessonQuizzes,
   variant,
   partnerProductId,
+  productId,
   readOnly,
 }: {
   courseId: string;
@@ -234,6 +246,7 @@ function GroupedLessonsManager({
   lessonQuizzes: Record<string, AdminLessonQuiz>;
   variant: "admin" | "partner";
   partnerProductId?: string;
+  productId?: string;
   readOnly: boolean;
 }) {
   const router = useRouter();
@@ -310,6 +323,7 @@ function GroupedLessonsManager({
             modules={modules}
             variant={variant}
             partnerProductId={partnerProductId}
+            productId={productId}
             onDone={() => {
               setEditingLesson(null);
               router.refresh();
@@ -433,6 +447,7 @@ function GroupedLessonsManager({
           modules={modules}
           variant={variant}
           partnerProductId={partnerProductId}
+          productId={productId}
           onDone={() => {
             setEditingLesson(null);
             router.refresh();
@@ -583,6 +598,7 @@ function LessonForm({
   modules = [],
   variant = "admin",
   partnerProductId,
+  productId,
   onDone,
   onCancel,
 }: {
@@ -592,6 +608,7 @@ function LessonForm({
   modules?: AdminModule[];
   variant?: "admin" | "partner";
   partnerProductId?: string;
+  productId?: string;
   onDone: () => void;
   onCancel: () => void;
 }) {
@@ -722,6 +739,12 @@ function LessonForm({
         />
         Required for course completion
       </label>
+      {lesson && productId ? (
+        <ConceptTaggingFields
+          productId={productId}
+          target={{ type: "lesson", lessonId: lesson.id }}
+        />
+      ) : null}
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={busy}>
           {busy ? <Loader2 className="animate-spin" /> : <Save />}
@@ -742,6 +765,7 @@ function LessonForm({
             lessonId={lesson.id}
             quiz={lessonQuiz}
             scope="lesson"
+            productId={productId}
           />
         </div>
       )}

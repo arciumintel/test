@@ -223,17 +223,23 @@ Failure events should support content improvement and should not be used to pena
 
 ### Question-Level Analytics
 
-For V1, selected answers may remain in `QuizAttempt.answers` JSON if that is the smallest safe implementation. If a normalized `QuizAttemptAnswer` table is added later, it should support:
+V1 may keep selected answers in `QuizAttempt.answers` JSON. The configurable Analytics platform **locks** a normalized `QuestionAttempt` model (dual-write + backfill) before concept mastery and assessment scale features depend on answer-level data.
+
+**Status (Phase 3):** New quiz submissions dual-write `QuizAttempt.answers` and `QuestionAttempt` rows, and emit `question_answered` per question. Run `pnpm db:backfill-question-attempts` once per environment before Concepts/Assessments rely on historical data (gated via `getQuestionAttemptBackfillStatus`).
+
+Target fields:
 
 | Property | Notes |
 | --- | --- |
 | `quizAttemptId` | Parent attempt. |
 | `questionId` | Question answered. |
-| `selectedAnswer` | Selected option index. |
-| `correctAnswer` | Correct option index at submission time, if stored. |
 | `correct` | Boolean result. |
+| `answerPayload` | JSON selection / ordering / match payload. |
+| `durationMs` | Optional response timing. |
+| `hintUsed` | Optional; pairs with `hint_viewed`. |
+| `submittedAt` | Attempt answer time. |
 
-Question-level analytics should aggregate most-missed questions and incorrect answer distribution for staff. Do not expose individual learner answer histories publicly or in partner-facing reports.
+Also emit `question_answered` (see Platform extensions) for event-stream consumers. Question-level analytics should aggregate most-missed questions and incorrect answer distribution. Do not expose individual learner answer histories publicly or in partner-facing reports.
 
 ## Completion and Badge Events
 
@@ -386,6 +392,188 @@ The funnel should support filtering by ecosystem project, course, UTM campaign, 
 | Project badge awards | `badge_awarded` or `BadgeAward` rows grouped through course to product/project. |
 | Referral clicks | Count of `ecosystem_project_referral_clicked`. |
 
+## Platform extensions (Phase 0 freeze)
+
+Additive event contract for the configurable Analytics platform. Collect these early even when partner UI sections ship later. Do not rename existing V1 events. Instrumentation code is out of scope for Phase 0 — this section defines the contract only.
+
+See also: [`docs/adr/2026-07-13-configurable-analytics-platform.md`](adr/2026-07-13-configurable-analytics-platform.md).
+
+### Discovery and navigation
+
+#### `page_viewed`
+
+Generic page view when a more specific event is not applicable.
+
+Required properties: `path`.
+
+Optional properties: `ecosystemProjectId`, `ecosystemProjectSlug`, `anonymousId`, `sessionId`, UTM fields.
+
+#### `search_performed`
+
+Emitted when a learner runs search on Arcademy (catalog, docs overlay, or in-product search).
+
+Required properties: `path`, `queryLength` (integer; do not store raw query text if it may contain PII).
+
+Optional properties: `resultCount`, `ecosystemProjectId`, `courseId`, `sessionId`.
+
+#### `glossary_lookup`
+
+Emitted when a learner opens a glossary term.
+
+Required properties: `termSlug` or `termId`, `path`.
+
+Optional properties: `ecosystemProjectId`, `courseId`, `lessonId`, `sessionId`.
+
+#### `external_link_clicked`
+
+Emitted when a learner clicks an outbound link that is not already covered by `ecosystem_project_referral_clicked`.
+
+Required properties: `destinationHost`, `path`.
+
+Optional properties: `destinationUrl`, `linkLabel`, `placement`, `ecosystemProjectId`, `courseId`.
+
+Prefer host + label over full URLs when the destination may include sensitive query params.
+
+#### `docs_visited`
+
+Emitted when a learner opens partner developer documentation from Arcademy (conversion-capable).
+
+Required properties: `ecosystemProjectId`, `ecosystemProjectSlug`, `destinationUrl` or `destinationHost`.
+
+Optional properties: `courseId`, `placement`, `conversionKey`.
+
+### Learning behaviour
+
+#### `scroll_depth_reached`
+
+Emitted when scroll depth crosses configured thresholds (e.g. 25, 50, 75, 100).
+
+Required properties: `path`, `depthPercent`.
+
+Optional properties: `courseId`, `lessonId`, `ecosystemProjectId`, `sessionId`.
+
+Debounce / emit once per threshold per page session.
+
+#### `video_progress`
+
+Emitted at video progress milestones (e.g. 25, 50, 75).
+
+Required properties: `mediaId` or `mediaUrl`, `progressPercent`, `path`.
+
+Optional properties: `courseId`, `lessonId`, `ecosystemProjectId`, `durationSeconds`.
+
+#### `video_completed`
+
+Emitted when a lesson/course video reaches completion.
+
+Required properties: `mediaId` or `mediaUrl`, `path`.
+
+Optional properties: `courseId`, `lessonId`, `ecosystemProjectId`, `watchedSeconds`.
+
+#### `module_viewed`
+
+Emitted when a learner views a module grouping (when modules are used).
+
+Required properties: `courseId`, `moduleId`.
+
+Optional properties: `ecosystemProjectId`, `lessonCount`.
+
+Previously deferred; emit when Module UI is present.
+
+#### `learning_path_started`
+
+Emitted when a learner starts a learning path.
+
+Required properties: `userId`, `learningPathId`, `ecosystemProjectId`.
+
+Optional properties: `courseId` (first course).
+
+#### `learning_path_completed`
+
+Emitted when path completion criteria are met.
+
+Required properties: `userId`, `learningPathId`, `ecosystemProjectId`.
+
+Optional properties: `completedCourseCount`.
+
+### Assessment extensions
+
+#### `question_answered`
+
+Emitted when an individual question answer is recorded (prefer alongside normalized `QuestionAttempt` rows in later phases).
+
+Required properties: `userId`, `quizId`, `quizAttemptId`, `questionId`, `correct`.
+
+Optional properties: `courseId`, `durationMs`, `hintUsed`, `attemptNumber`, `ecosystemProjectId`.
+
+Do not include full free-text answers in partner-facing aggregates. Aggregate-only analytics for partners.
+
+#### `hint_viewed`
+
+Emitted when a learner reveals a hint on a question.
+
+Required properties: `userId`, `quizId`, `questionId`.
+
+Optional properties: `quizAttemptId`, `courseId`, `ecosystemProjectId`.
+
+### Credentials
+
+#### `badge_shared`
+
+Emitted when a learner shares a badge (native share, copy link, or social CTA).
+
+Required properties: `badgeId`, `badgeAwardId`, `shareChannel`.
+
+Optional properties: `userId`, `courseId`, `ecosystemProjectId`, `verificationSlug`.
+
+Recommended `shareChannel` values: `copy_link`, `native_share`, `x`, `discord`, `other`.
+
+#### `certification_awarded`
+
+Emitted after a `CertificationAward` is created (distinct from `badge_awarded`).
+
+Required properties: `userId`, `certificationId`, `certificationAwardId`, `ecosystemProjectId`.
+
+Optional properties: `readinessScore`, `courseIds`.
+
+#### `certificate_viewed`
+
+Emitted when a certification credential page is viewed.
+
+Required properties: `certificationId` or `certificationAwardId`, `path`.
+
+Optional properties: `userId`, `ecosystemProjectId`, `verificationSlug`.
+
+### Partner conversions
+
+#### `conversion_triggered`
+
+Generic partner conversion event. Prefer this plus `conversionKey` over one-off event names when possible.
+
+Required properties: `ecosystemProjectId`, `conversionKey`.
+
+Optional properties: `userId`, `courseId`, `destinationUrl`, `placement`, `value` (numeric, optional).
+
+`conversionKey` must match a `ConversionDefinition` on the project Analytics Profile when definitions exist.
+
+### Snapshot operations
+
+#### `analytics_snapshot_built`
+
+Emitted after an AnalyticsSnapshot is successfully written.
+
+Required properties: `ecosystemProjectId`, `snapshotId`, `rangeKey`, `builtAt`, `trigger` (`hourly` | `manual`).
+
+Optional properties: `schemaVersion`, `durationMs`, `metricCount`.
+
+#### `analytics_snapshot_refresh_requested`
+
+Emitted when Partner Owner or Platform Admin requests a manual refresh.
+
+Required properties: `ecosystemProjectId`, `requestedByUserId`, `rangeKey`.
+
+Optional properties: `previousSnapshotId`, `status` (`queued`).
+
 ## Privacy and Retention
 
 Do not store signed messages, signatures, raw nonces, private wallet adapter errors, or unnecessary personal details. The partner intake process may collect partner contact details for staff operations, but those details should not be mixed into learner analytics.
@@ -398,7 +586,16 @@ Retain raw analytics long enough to support launch learning and partner reportin
 
 The current codebase already computes course analytics from relational data in `src/lib/analytics.ts`. That should remain valid while event instrumentation is added. Event tracking should be additive and should not replace durable product records such as `Progress`, `QuizAttempt`, and `BadgeAward`.
 
-For server-side events, emit only after the state-changing write succeeds. For page-view events, client-side emission is acceptable, but public browsing must remain fast and should not block rendering. If an `AnalyticsEvent` table is added, index by `eventName`, `occurredAt`, `userId`, `courseId`, and the current `Product.id` value used as `ecosystemProjectId`.
+For server-side events, emit only after the state-changing write succeeds. For page-view events, client-side emission is acceptable, but public browsing must remain fast and should not block rendering. `AnalyticsEvent` is indexed by `eventName`, `occurredAt`, `userId`, `courseId`, and `Product.id` as `ecosystemProjectId`.
+
+Phase 0 platform stubs (no instrumentation yet):
+
+- ADR: `docs/adr/2026-07-13-configurable-analytics-platform.md`
+- Metric catalogue: `docs/analytics_metric_catalogue.md`, `src/lib/analytics-metrics.ts`
+- Provider interface: `src/lib/analytics-providers.ts`
+- Pack manifests: `src/lib/analytics-packs.ts`
+
+Do not add platform extension event names to `ANALYTICS_EVENT_NAMES` until the emitting code lands in a later phase.
 
 ## V1 Acceptance Checklist
 

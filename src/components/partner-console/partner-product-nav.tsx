@@ -32,7 +32,14 @@ const sections = (productId: string) =>
       label: "Analytics",
       href: `/partner-console/${productId}/analytics`,
       match: (pathname: string) =>
-        pathname.startsWith(`/partner-console/${productId}/analytics`),
+        pathname.startsWith(`/partner-console/${productId}/analytics`) &&
+        pathname !== `/partner-console/${productId}/analytics/settings`,
+    },
+    {
+      label: "Analytics settings",
+      href: `/partner-console/${productId}/analytics/settings`,
+      match: (pathname: string) =>
+        pathname === `/partner-console/${productId}/analytics/settings`,
     },
     {
       label: "Settings",

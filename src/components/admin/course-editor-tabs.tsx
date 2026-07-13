@@ -143,6 +143,7 @@ export function CourseEditorTabs({
           lessonQuizzes={lessonQuizzes}
           variant={variant}
           partnerProductId={partnerProductId}
+          productId={course.productId}
           readOnly={readOnly}
         />
       </TabsContent>
@@ -153,6 +154,7 @@ export function CourseEditorTabs({
           quiz={quiz}
           variant={variant}
           partnerProductId={partnerProductId}
+          productId={course.productId}
           readOnly={readOnly}
         />
       </TabsContent>

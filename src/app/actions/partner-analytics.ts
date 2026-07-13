@@ -9,9 +9,6 @@ import {
 import {
   getPartnerPlusAnalytics,
   getPartnerPlusCourseAnalytics,
-  partnerPlusReportToCsv,
-  partnerPlusReportToHtml,
-  partnerPlusReportToMarkdown,
 } from "@/lib/partner-analytics";
 import {
   ACCESS_MESSAGES,
@@ -76,71 +73,36 @@ export async function exportPartnerPlusReport(
     ACCESS_MESSAGES.analyticsForbidden
   );
   if (!auth.ok) return toActionError(auth);
-  const user = auth.user;
+
+  const { buildAnalyticsExport } = await import("@/lib/analytics-export");
+  const built = await buildAnalyticsExport({
+    productId: parsed.data.productId,
+    rangePreset: parsed.data.rangePreset,
+    compareBaseline: "none",
+    format: parsed.data.format,
+  });
+  if (!built) return { error: "Ecosystem project not found." };
 
   const range = resolveAnalyticsDateRange(
     parseAnalyticsRangePreset(parsed.data.rangePreset)
   );
-  const data = await getPartnerPlusAnalytics(parsed.data.productId, range);
-  if (!data) return { error: "Ecosystem project not found." };
-
-  const courseDetails = await Promise.all(
-    data.courses.map((c) =>
-      getPartnerPlusCourseAnalytics(parsed.data.productId, c.courseId, range)
-    )
-  );
-  const validCourses = courseDetails.filter(
-    (c): c is NonNullable<typeof c> => c !== null
-  );
-
-  const slug = data.productName
-    .replace(/[^a-z0-9-]/gi, "-")
-    .toLowerCase()
-    .slice(0, 40);
-  const date = new Date().toISOString().slice(0, 10);
 
   trackEventFireAndForget({
     eventName: "partner_report_generated",
     source: "server_action",
-    path: `/partner-console/${parsed.data.productId}/analytics/reports`,
-    userId: user.id,
+    path: `/partner-console/${parsed.data.productId}/analytics`,
+    userId: auth.user.id,
     ecosystemProjectId: parsed.data.productId,
     metadata: {
       reportPeriodStart: range.from?.toISOString().slice(0, 10) ?? "all",
       reportPeriodEnd: range.to.toISOString().slice(0, 10),
-      courseCount: data.summary.publishedCourses,
-      courseStarts: data.summary.starts,
-      courseCompletions: data.summary.completions,
-      badgeAwards: data.summary.badgeAwards,
       format: parsed.data.format,
-      generatedBy: user.role === "staff_admin" ? "staff" : "partner",
+      generatedBy: auth.user.role === "staff_admin" ? "staff" : "partner",
+      engine: "unified",
     },
   });
 
-  if (parsed.data.format === "csv") {
-    return {
-      ok: true,
-      content: partnerPlusReportToCsv(data),
-      filename: `arcademy-analytics-${slug}-${date}.csv`,
-      mimeType: "text/csv;charset=utf-8",
-    };
-  }
-
-  if (parsed.data.format === "html") {
-    return {
-      ok: true,
-      content: partnerPlusReportToHtml(data, validCourses),
-      filename: `arcademy-analytics-${slug}-${date}.html`,
-      mimeType: "text/html;charset=utf-8",
-    };
-  }
-
-  return {
-    ok: true,
-    content: partnerPlusReportToMarkdown(data, validCourses),
-    filename: `arcademy-analytics-${slug}-${date}.md`,
-    mimeType: "text/markdown;charset=utf-8",
-  };
+  return { ok: true, ...built };
 }
 
 export async function updatePartnerAnalyticsNotes(

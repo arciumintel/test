@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { AnalyticsRangePreset } from "@/lib/analytics-date-range";
 import { resolveAnalyticsDateRange } from "@/lib/analytics-date-range";
 import type { PartnerPlusAnalytics } from "@/lib/partner-analytics";
 import { PartnerAnalyticsWeeklyChart } from "@/components/partner-console/analytics/partner-analytics-weekly-chart";
+import { AnalyticsExportAction } from "@/components/partner-console/analytics/analytics-export-action";
 
 function formatOptionalPercent(value: number | null): string {
   return value === null ? "n/a" : `${value}%`;
@@ -41,13 +41,11 @@ export function PartnerAnalyticsOverview({
       <section>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">Published courses</h2>
-          <Link
-            href={`/partner-console/${productId}/analytics/reports?range=${rangePreset}`}
-            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-          >
-            Export report
-            <ArrowRight className="size-4" />
-          </Link>
+          <AnalyticsExportAction
+            productId={productId}
+            rangePreset={rangePreset}
+            compareBaseline="none"
+          />
         </div>
         {data.courses.length > 0 ? (
           <Card className="mt-4">

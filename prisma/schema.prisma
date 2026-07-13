@@ -104,6 +104,31 @@ enum PartnerIntakeReviewStatus {
 enum ProjectAdminRole {
   owner
   manager
+  analyst
+}
+
+enum ConceptImportance {
+  critical
+  core
+  supporting
+}
+
+enum ConceptRelationType {
+  prerequisite
+}
+
+enum CertificationStatus {
+  draft
+  published
+}
+
+enum CertificationRequirementType {
+  course_completion
+  quiz_pass
+  readiness_score
+  learning_path_completion
+  conversion_event
+  concept_mastery
 }
 
 enum ProjectDiscordIntegrationStatus {
@@ -155,6 +180,15 @@ model Product {
   projectDiscordIntegration ProjectDiscordIntegration?
   learningPaths           LearningPath[]
   ecosystemDirectoryEntry EcosystemDirectoryEntry?
+  analyticsProfile        AnalyticsProfile?
+  concepts                Concept[]
+  skillCategories         SkillCategory[]
+  learningObjectives      LearningObjective[]
+  conversionDefinitions   ConversionDefinition[]
+  readinessModels         ReadinessModel[]
+  certifications          Certification[]
+  analyticsPackInstalls   AnalyticsPackInstall[]
+  analyticsSnapshots      AnalyticsSnapshot[]
 
   @@index([status])
 }
@@ -197,7 +231,9 @@ model User {
 
   progress     Progress[]
   quizAttempts QuizAttempt[]
+  questionAttempts QuestionAttempt[]
   badgeAwards  BadgeAward[]
+  certificationAwards CertificationAward[]
   discordAccount DiscordAccount?
   projectAdmins  ProjectAdmin[] @relation("ProjectAdminUser")
   invitedProjectAdmins ProjectAdmin[] @relation("ProjectAdminInviter")
@@ -295,6 +331,7 @@ model Lesson {
   module   Module?    @relation(fields: [moduleId], references: [id], onDelete: SetNull)
   quizzes  Quiz[]
   progress Progress[]
+  conceptTags ContentConceptTag[]
 
   @@unique([courseId, order])
   @@index([courseId])
@@ -394,6 +431,8 @@ model Question {
   updatedAt         DateTime   @updatedAt
 
   quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  conceptTags ContentConceptTag[]
+  questionAttempts QuestionAttempt[]
 
   @@index([quizId])
 }
@@ -424,15 +463,38 @@ model QuizAttempt {
   quizId             String
   score              Int // percent 0-100
   passed             Boolean
-  answers            Json? // recorded selections for feedback
+  answers            Json? // recorded selections for feedback (compat)
   durationInSeconds  Int? // client-measured time from quiz start to submit
   submittedAt        DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz             Quiz              @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  questionAttempts QuestionAttempt[]
 
   @@index([userId])
   @@index([quizId])
+}
+
+/// Normalized per-question answer row (dual-written with QuizAttempt.answers JSON).
+model QuestionAttempt {
+  id            String   @id @default(cuid())
+  userId        String
+  quizAttemptId String
+  questionId    String
+  correct       Boolean
+  answerPayload Json
+  durationMs    Int?
+  hintUsed      Boolean  @default(false)
+  submittedAt   DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quizAttempt QuizAttempt @relation(fields: [quizAttemptId], references: [id], onDelete: Cascade)
+  question    Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([quizAttemptId, questionId])
+  @@index([questionId, submittedAt])
+  @@index([userId, submittedAt])
+  @@index([submittedAt])
 }
 
 /// Course completion badge definition.
@@ -489,7 +551,7 @@ model DiscordAccount {
   @@index([discordUserId])
 }
 
-/// Wallet-based project admin assignment (owner or manager).
+/// Wallet-based project admin assignment (owner, manager, or analyst).
 model ProjectAdmin {
   id              String           @id @default(cuid())
   productId       String
@@ -505,6 +567,239 @@ model ProjectAdmin {
 
   @@unique([productId, userId])
   @@index([userId])
+}
+
+/// Per-product analytics configuration (terminology, KPIs, funnel, packs).
+model AnalyticsProfile {
+  id                    String   @id @default(cuid())
+  productId             String   @unique
+  schemaVersion         Int      @default(1)
+  terminology           Json     @default("{}")
+  kpiSet                String[] @default([])
+  funnelStages          String[] @default([])
+  sectionVisibility     String[] @default([])
+  recommendationPolicy  Json     @default("{}")
+  enabledProviderIds    String[] @default(["core"])
+  featureFlags          Json     @default("{}")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+/// Installed Analytics Pack on a product.
+model AnalyticsPackInstall {
+  id          String   @id @default(cuid())
+  productId   String
+  packId      String
+  packVersion String
+  installedAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, packId])
+  @@index([productId])
+}
+
+/// Skill / domain category for concept grouping.
+model SkillCategory {
+  id        String   @id @default(cuid())
+  productId String
+  slug      String
+  name      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product  Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  concepts Concept[]
+
+  @@unique([productId, slug])
+  @@index([productId])
+}
+
+/// First-class learning concept for mastery analytics.
+model Concept {
+  id              String             @id @default(cuid())
+  productId       String
+  slug            String
+  name            String
+  description     String?
+  category        String?
+  skillCategoryId String?
+  importance      ConceptImportance  @default(core)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  product           Product              @relation(fields: [productId], references: [id], onDelete: Cascade)
+  skillCategory     SkillCategory?       @relation(fields: [skillCategoryId], references: [id], onDelete: SetNull)
+  tags              ContentConceptTag[]
+  relationsFrom     ConceptRelation[]    @relation("ConceptRelationFrom")
+  relationsTo       ConceptRelation[]    @relation("ConceptRelationTo")
+  objectiveLinks    LearningObjectiveConcept[]
+
+  @@unique([productId, slug])
+  @@index([productId])
+  @@index([skillCategoryId])
+}
+
+model ConceptRelation {
+  id           String              @id @default(cuid())
+  fromConceptId String
+  toConceptId   String
+  type         ConceptRelationType @default(prerequisite)
+  createdAt    DateTime            @default(now())
+
+  fromConcept Concept @relation("ConceptRelationFrom", fields: [fromConceptId], references: [id], onDelete: Cascade)
+  toConcept   Concept @relation("ConceptRelationTo", fields: [toConceptId], references: [id], onDelete: Cascade)
+
+  @@unique([fromConceptId, toConceptId, type])
+  @@index([toConceptId])
+}
+
+model LearningObjective {
+  id          String   @id @default(cuid())
+  productId   String
+  slug        String
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  product  Product                     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  concepts LearningObjectiveConcept[]
+
+  @@unique([productId, slug])
+  @@index([productId])
+}
+
+model LearningObjectiveConcept {
+  id                  String @id @default(cuid())
+  learningObjectiveId String
+  conceptId           String
+  weight              Float  @default(1)
+
+  learningObjective LearningObjective @relation(fields: [learningObjectiveId], references: [id], onDelete: Cascade)
+  concept           Concept           @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+
+  @@unique([learningObjectiveId, conceptId])
+  @@index([conceptId])
+}
+
+/// Tags a lesson or question with a concept (exactly one of lessonId / questionId).
+model ContentConceptTag {
+  id         String             @id @default(cuid())
+  conceptId  String
+  lessonId   String?
+  questionId String?
+  weight     Float              @default(1)
+  difficulty Int?
+  importance ConceptImportance?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  concept  Concept   @relation(fields: [conceptId], references: [id], onDelete: Cascade)
+  lesson   Lesson?   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  question Question? @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([conceptId])
+  @@index([lessonId])
+  @@index([questionId])
+  @@index([conceptId, questionId])
+  @@index([conceptId, lessonId])
+}
+
+model ConversionDefinition {
+  id          String   @id @default(cuid())
+  productId   String
+  key         String
+  label       String
+  eventName   String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, key])
+  @@index([productId])
+}
+
+/// Configurable readiness model (default: Learning Readiness).
+model ReadinessModel {
+  id             String   @id @default(cuid())
+  productId      String
+  name           String
+  description    String?
+  requirements   Json     @default("[]")
+  levels         Json     @default("[]")
+  readyThreshold Float    @default(70)
+  isDefault      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+/// Project-scoped competency credential (distinct from Badge / BadgeAward).
+model Certification {
+  id             String               @id @default(cuid())
+  productId      String
+  slug           String
+  name           String
+  description    String?
+  imageUrl       String?
+  status         CertificationStatus  @default(draft)
+  readyThreshold Float?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  product      Product                     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  requirements CertificationRequirement[]
+  awards       CertificationAward[]
+
+  @@unique([productId, slug])
+  @@index([productId])
+  @@index([status])
+}
+
+/// Requirement row for a certification (course, quiz, readiness, path, conversion, concept).
+model CertificationRequirement {
+  id              String                        @id @default(cuid())
+  certificationId String
+  type            CertificationRequirementType
+  label           String?
+  /// Type-specific config, e.g. { courseId }, { quizId, minScore }, { minReadinessScore }.
+  config          Json                          @default("{}")
+  weight          Float                         @default(1)
+  sortOrder       Int                           @default(0)
+  createdAt       DateTime                      @default(now())
+  updatedAt       DateTime                      @updatedAt
+
+  certification Certification @relation(fields: [certificationId], references: [id], onDelete: Cascade)
+
+  @@index([certificationId])
+}
+
+/// Off-chain certification award (never auto-promoted from BadgeAward).
+model CertificationAward {
+  id                    String   @id @default(cuid())
+  userId                String
+  certificationId       String
+  readinessScoreAtAward Float?
+  verificationSlug      String?  @unique
+  metadata              Json?
+  awardedAt             DateTime @default(now())
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  certification Certification @relation(fields: [certificationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, certificationId])
+  @@index([userId])
+  @@index([certificationId])
+  @@index([awardedAt])
 }
 
 /// One Discord guild integration per ecosystem product.
@@ -636,4 +931,57 @@ model AnalyticsEvent {
   @@index([courseId])
   @@index([ecosystemProjectId])
   @@index([ecosystemProjectId, eventName, occurredAt])
+  @@index([ecosystemProjectId, userId, eventName])
+}
+
+/// Anonymous ecosystem benchmark rollups (Phase 5 prep — no partner UI until approved).
+model EcosystemBenchmarkRollup {
+  id         String   @id @default(cuid())
+  metricId   String
+  periodKey  String
+  sampleSize Int
+  p25        Float?
+  p50        Float?
+  p75        Float?
+  computedAt DateTime @default(now())
+
+  @@unique([metricId, periodKey])
+  @@index([metricId, computedAt])
+}
+
+enum AnalyticsSnapshotStatus {
+  fresh
+  building
+  queued
+  stale
+  error
+}
+
+enum AnalyticsSnapshotTrigger {
+  hourly
+  manual
+}
+
+/// Pre-aggregated analytics payload for partner dashboard reads.
+model AnalyticsSnapshot {
+  id            String                    @id @default(cuid())
+  productId     String
+  rangeKey      String
+  periodStart   DateTime?
+  periodEnd     DateTime
+  compareKey    String                    @default("none")
+  status        AnalyticsSnapshotStatus   @default(fresh)
+  trigger       AnalyticsSnapshotTrigger  @default(hourly)
+  schemaVersion Int                       @default(1)
+  builtAt       DateTime                  @default(now())
+  errorMessage  String?
+  payload       Json                      @default("{}")
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, rangeKey, compareKey])
+  @@index([productId, builtAt])
+  @@index([status])
 }

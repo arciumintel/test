@@ -279,7 +279,7 @@ export async function runDiscordPermissionCheck(
 
 const assignAdminSchema = z.object({
   walletAddress: z.string().min(32).max(64),
-  role: z.enum(["owner", "manager"]),
+  role: z.enum(["owner", "manager", "analyst"]),
 });
 
 export async function assignProjectAdmin(

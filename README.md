@@ -71,10 +71,12 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 pnpm db:push     # create tables from prisma/schema.prisma
 pnpm db:seed     # seed Arcium product + two launch courses (+ staff admins from env)
 pnpm db:studio   # optional: browse data
+pnpm db:backfill-question-attempts  # one-time: normalize QuizAttempt.answers → QuestionAttempt
 ```
 
 For versioned migrations use `pnpm db:migrate` instead of `db:push`.
 
+Concepts/Assessments analytics (Analytics V2) require the QuestionAttempt backfill to cover ≥95% of quiz attempts in the environment. New submissions dual-write automatically.
 ## Run
 
 ```bash

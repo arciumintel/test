@@ -43,6 +43,7 @@ export function QuizManager({
   quiz,
   variant = "admin",
   partnerProductId,
+  productId,
   readOnly = false,
   scope = "final",
   lessonId,
@@ -51,6 +52,7 @@ export function QuizManager({
   quiz: AdminQuiz;
   variant?: "admin" | "partner";
   partnerProductId?: string;
+  productId?: string;
   readOnly?: boolean;
   scope?: "final" | "lesson";
   lessonId?: string;
@@ -193,6 +195,7 @@ export function QuizManager({
               quizId={quiz.id}
               variant={variant}
               partnerProductId={partnerProductId}
+              productId={productId}
               onDone={() => {
                 setEditing(null);
                 router.refresh();
@@ -209,6 +212,7 @@ export function QuizManager({
                 question={q}
                 variant={variant}
                 partnerProductId={partnerProductId}
+                productId={productId}
                 onDone={() => {
                   setEditing(null);
                   router.refresh();

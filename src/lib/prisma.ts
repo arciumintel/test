@@ -25,6 +25,11 @@ function isStaleDevClient(client: PrismaClient): boolean {
     analyticsEvent?: { create?: unknown };
     projectDiscordIntegration?: { upsert?: unknown };
     ecosystemDirectoryEntry?: { upsert?: unknown };
+    analyticsProfile?: { create?: unknown };
+    analyticsSnapshot?: { create?: unknown };
+    questionAttempt?: { create?: unknown };
+    certification?: { create?: unknown };
+    ecosystemBenchmarkRollup?: { create?: unknown };
   };
   return (
     !c.partnerIntake ||
@@ -34,7 +39,17 @@ function isStaleDevClient(client: PrismaClient): boolean {
     !c.projectDiscordIntegration ||
     typeof c.projectDiscordIntegration.upsert !== "function" ||
     !c.ecosystemDirectoryEntry ||
-    typeof c.ecosystemDirectoryEntry.upsert !== "function"
+    typeof c.ecosystemDirectoryEntry.upsert !== "function" ||
+    !c.analyticsProfile ||
+    typeof c.analyticsProfile.create !== "function" ||
+    !c.analyticsSnapshot ||
+    typeof c.analyticsSnapshot.create !== "function" ||
+    !c.questionAttempt ||
+    typeof c.questionAttempt.create !== "function" ||
+    !c.certification ||
+    typeof c.certification.create !== "function" ||
+    !c.ecosystemBenchmarkRollup ||
+    typeof c.ecosystemBenchmarkRollup.create !== "function"
   );
 }
 

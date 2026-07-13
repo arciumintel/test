@@ -216,6 +216,11 @@ export async function approvePartnerApplication(
     },
   });
 
+  const { ensureAnalyticsProfileForProduct } = await import(
+    "@/lib/analytics-profile"
+  );
+  await ensureAnalyticsProfileForProduct(product.id);
+
   await prisma.projectAdmin.upsert({
     where: {
       productId_userId: {

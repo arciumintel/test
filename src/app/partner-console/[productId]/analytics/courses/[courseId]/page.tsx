@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { AnalyticsExportAction } from "@/components/partner-console/analytics/analytics-export-action";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -49,10 +50,10 @@ function CourseAnalyticsBreadcrumb({
   return (
     <nav aria-label="Breadcrumb" className="mb-4 text-sm text-muted-foreground">
       <Link
-        href={`/partner-console/${productId}/analytics?range=${preset}`}
+        href={`/partner-console/${productId}/analytics/courses?range=${preset}`}
         className="hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
       >
-        Analytics
+        Courses
       </Link>
       {courseTitle && (
         <>
@@ -79,7 +80,6 @@ export default async function PartnerCourseAnalyticsPage({
   const range = resolveAnalyticsDateRange(preset);
   const basePath = `/partner-console/${productId}/analytics/courses/${courseId}`;
   const analyticsPath = `/partner-console/${productId}/analytics?range=${preset}`;
-  const reportsPath = `/partner-console/${productId}/analytics/reports?range=${preset}`;
 
   let data: Awaited<ReturnType<typeof getPartnerPlusCourseAnalytics>> = null;
   let loadError = false;
@@ -160,12 +160,11 @@ export default async function PartnerCourseAnalyticsPage({
 
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
         <PartnerAnalyticsPrivacyNote />
-        <Link
-          href={reportsPath}
-          className="text-sm text-primary hover:underline"
-        >
-          Export report
-        </Link>
+        <AnalyticsExportAction
+          productId={productId}
+          rangePreset={preset}
+          compareBaseline="none"
+        />
       </div>
 
       <div className="mt-8">

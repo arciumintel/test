@@ -113,6 +113,16 @@ export async function evaluateCourseCompletion(
     finalQuizId,
   });
 
+  // Certifications are evaluated separately from badges — never auto-promote BadgeAward.
+  try {
+    const { evaluateCertificationsForUser } = await import(
+      "@/lib/certifications"
+    );
+    await evaluateCertificationsForUser(userId, course.product.id);
+  } catch {
+    // best-effort; do not block badge award
+  }
+
   if (!course.badge || course.badge.status !== "published") {
     return { completed: true, newlyAwarded: false };
   }

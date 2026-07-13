@@ -4,7 +4,7 @@ import * as React from "react";
 import { Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { exportPartnerPlusReport } from "@/app/actions/partner-analytics";
+import { exportAnalyticsReport } from "@/app/actions/analytics-v2";
 import type { AnalyticsRangePreset } from "@/lib/analytics-date-range";
 
 type ExportFormat = "html" | "markdown" | "csv";
@@ -12,9 +12,11 @@ type ExportFormat = "html" | "markdown" | "csv";
 export function PartnerAnalyticsExportPanel({
   productId,
   rangePreset,
+  compareBaseline = "none",
 }: {
   productId: string;
   rangePreset: AnalyticsRangePreset;
+  compareBaseline?: string;
 }) {
   const [busy, setBusy] = React.useState<ExportFormat | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -22,9 +24,14 @@ export function PartnerAnalyticsExportPanel({
   async function handleExport(format: ExportFormat) {
     setBusy(format);
     setError(null);
-    const res = await exportPartnerPlusReport({
+    const res = await exportAnalyticsReport({
       productId,
       rangePreset,
+      compareBaseline: compareBaseline as
+        | "none"
+        | "previous_week"
+        | "previous_month"
+        | "previous_quarter",
       format,
     });
     setBusy(null);
@@ -44,10 +51,10 @@ export function PartnerAnalyticsExportPanel({
   return (
     <Card>
       <CardContent className="py-5">
-        <h2 className="text-sm font-semibold">Export report</h2>
+        <h2 className="text-sm font-semibold">Export</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Download a summary for your team. HTML includes charts. Reports use
-          aggregated metrics only.
+          Download analytics from the same engine as the dashboard. Aggregates
+          only.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Button

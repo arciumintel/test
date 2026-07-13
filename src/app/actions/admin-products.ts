@@ -66,6 +66,11 @@ export async function createProduct(
     },
   });
 
+  const { ensureAnalyticsProfileForProduct } = await import(
+    "@/lib/analytics-profile"
+  );
+  await ensureAnalyticsProfileForProduct(product.id);
+
   const staff = auth.user;
   trackEventFireAndForget({
     eventName: "admin_ecosystem_project_created",

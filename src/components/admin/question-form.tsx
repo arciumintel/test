@@ -23,6 +23,7 @@ import {
   updateQuestion,
 } from "@/app/actions/course-editing";
 import { courseEditorContext } from "@/lib/course-editor-context";
+import { ConceptTaggingFields } from "@/components/analytics/concept-tagging-fields";
 
 export type AdminQuestion = {
   id: string;
@@ -44,6 +45,7 @@ type QuestionFormProps = {
   question?: AdminQuestion;
   variant?: "admin" | "partner";
   partnerProductId?: string;
+  productId?: string;
   onDone: () => void;
   onCancel: () => void;
 };
@@ -53,6 +55,7 @@ export function QuestionForm({
   question,
   variant = "admin",
   partnerProductId,
+  productId,
   onDone,
   onCancel,
 }: QuestionFormProps) {
@@ -436,6 +439,13 @@ export function QuestionForm({
           placeholder="Shown after the learner answers."
         />
       </div>
+
+      {question && productId ? (
+        <ConceptTaggingFields
+          productId={productId}
+          target={{ type: "question", questionId: question.id }}
+        />
+      ) : null}
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={busy}>

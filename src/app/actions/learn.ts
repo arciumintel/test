@@ -6,6 +6,7 @@ import { authorizeUser } from "@/lib/access-control";
 import { evaluateCourseCompletion } from "@/lib/completion";
 import { trackEventFireAndForget } from "@/lib/analytics-events";
 import { coursePath } from "@/lib/paths";
+import { createQuestionAttemptsForQuizAttempt } from "@/lib/question-attempts";
 import {
   gradeQuestion,
   isQuestionAnswered,
@@ -257,6 +258,53 @@ export async function submitQuiz(
       durationInSeconds: normalizedDuration,
     },
   });
+
+  // Dual-write normalized QuestionAttempt rows (compat: JSON answers retained above).
+  const perQuestionMs =
+    normalizedDuration != null && quiz.questions.length > 0
+      ? Math.round((normalizedDuration * 1000) / quiz.questions.length)
+      : null;
+
+  await createQuestionAttemptsForQuizAttempt(
+    quiz.questions.map((q, i) => ({
+      userId: user.id,
+      quizAttemptId: attempt.id,
+      questionId: q.id,
+      correct: results[i].correct,
+      answer: answers[i],
+      submittedAt: attempt.submittedAt,
+      durationMs: perQuestionMs,
+    }))
+  );
+
+  for (let i = 0; i < quiz.questions.length; i++) {
+    const q = quiz.questions[i];
+    trackEventFireAndForget({
+      eventName: "question_answered",
+      ...{
+        source: "server_action" as const,
+        path:
+          quiz.lessonId != null
+            ? `${coursePath(quiz.course.product.slug, quiz.course.slug)}/lessons/${quiz.lessonId}`
+            : coursePath(quiz.course.product.slug, quiz.course.slug) + "/quiz",
+        userId: user.id,
+        courseId: quiz.courseId,
+        courseSlug: quiz.course.slug,
+        ecosystemProjectId: quiz.course.product.id,
+        ecosystemProjectSlug: quiz.course.product.slug,
+        quizId,
+        lessonId: quiz.lessonId,
+      },
+      metadata: {
+        quizAttemptId: attempt.id,
+        questionId: q.id,
+        correct: results[i].correct,
+        attemptNumber,
+        durationMs: perQuestionMs,
+        isLessonKnowledgeCheck: Boolean(quiz.lessonId),
+      },
+    });
+  }
 
   const isLessonCheck = Boolean(quiz.lessonId);
   const lessonPagePath =
