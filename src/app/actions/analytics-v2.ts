@@ -130,11 +130,33 @@ const exportSchema = z.object({
     .enum(["none", "previous_week", "previous_month", "previous_quarter"])
     .optional(),
   format: z.enum(["markdown", "csv", "html"]),
+  scope: z
+    .enum([
+      "overview",
+      "courses",
+      "course",
+      "concepts",
+      "assessments",
+      "readiness",
+      "certifications",
+      "recommendations",
+      "full",
+    ])
+    .optional()
+    .default("full"),
+  courseId: z.string().min(1).optional(),
+}).superRefine((val, ctx) => {
+  if (val.scope === "course" && !val.courseId) {
+    ctx.addIssue({
+      code: "custom",
+      message: "courseId is required when scope is course",
+      path: ["courseId"],
+    });
+  }
 });
 
 /**
- * Export uses the same engine DTOs as the Analytics UI (V2).
- * Falls back to Partner Plus serializers shaped from engine/overview data.
+ * Export uses scoped V2 serializers (or Plus when V2 is off).
  */
 export async function exportAnalyticsReport(
   raw: z.input<typeof exportSchema>
@@ -147,12 +169,15 @@ export async function exportAnalyticsReport(
 
   const preset = parseAnalyticsRangePreset(parsed.data.rangePreset);
   const compare = parseAnalyticsCompareBaseline(parsed.data.compareBaseline);
+  const v2 = await isAnalyticsV2Enabled(parsed.data.productId);
 
   const built = await buildAnalyticsExport({
     productId: parsed.data.productId,
     rangePreset: preset,
     compareBaseline: compare,
     format: parsed.data.format,
+    scope: parsed.data.scope,
+    courseId: parsed.data.courseId,
   });
   if (!built) return { error: "Ecosystem project not found." };
 
@@ -166,8 +191,9 @@ export async function exportAnalyticsReport(
       format: parsed.data.format,
       rangePreset: preset,
       compare,
+      scope: parsed.data.scope,
       generatorRole: auth.level,
-      engine: "v2",
+      engine: v2 ? "v2" : "plus",
     },
   });
 

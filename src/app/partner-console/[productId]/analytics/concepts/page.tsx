@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { AnalyticsBackfillGate } from "@/components/partner-console/analytics/analytics-backfill-gate";
 import { AnalyticsConceptsView } from "@/components/partner-console/analytics/analytics-concepts-view";
+import { AnalyticsExportAction } from "@/components/partner-console/analytics/analytics-export-action";
 import { PartnerAnalyticsDateRange } from "@/components/partner-console/analytics/partner-analytics-shared";
 import {
   parseAnalyticsRangePreset,
@@ -79,9 +80,17 @@ export default async function PartnerAnalyticsConceptsPage({
             Mastery and knowledge gaps from tagged assessment items.
           </p>
         </div>
-        <Suspense fallback={null}>
-          <PartnerAnalyticsDateRange basePath={basePath} current={preset} />
-        </Suspense>
+        <div className="flex flex-col items-stretch gap-3 sm:items-end">
+          <Suspense fallback={null}>
+            <PartnerAnalyticsDateRange basePath={basePath} current={preset} />
+          </Suspense>
+          <AnalyticsExportAction
+            productId={productId}
+            rangePreset={preset}
+            compareBaseline="none"
+            scope="concepts"
+          />
+        </div>
       </div>
 
       <div className="mt-8">

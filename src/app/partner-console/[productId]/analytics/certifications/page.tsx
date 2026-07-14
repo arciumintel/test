@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { AnalyticsCertificationsView } from "@/components/partner-console/analytics/analytics-certifications-view";
+import { AnalyticsExportAction } from "@/components/partner-console/analytics/analytics-export-action";
 import { PartnerAnalyticsDateRange } from "@/components/partner-console/analytics/partner-analytics-shared";
 import {
   parseAnalyticsRangePreset,
@@ -42,9 +43,17 @@ export default async function PartnerAnalyticsCertificationsPage({
               Credential funnel and attainment — distinct from badges.
             </p>
           </div>
-          <Suspense fallback={null}>
-            <PartnerAnalyticsDateRange basePath={basePath} current={preset} />
-          </Suspense>
+          <div className="flex flex-col items-stretch gap-3 sm:items-end">
+            <Suspense fallback={null}>
+              <PartnerAnalyticsDateRange basePath={basePath} current={preset} />
+            </Suspense>
+            <AnalyticsExportAction
+              productId={productId}
+              rangePreset={preset}
+              compareBaseline="none"
+              scope="certifications"
+            />
+          </div>
         </div>
         <div className="mt-8">
           <AnalyticsCertificationsView productId={productId} data={data} />

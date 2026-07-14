@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
+import { AnalyticsExportAction } from "@/components/partner-console/analytics/analytics-export-action";
 import { AnalyticsReadinessView } from "@/components/partner-console/analytics/analytics-readiness-view";
 import { PartnerAnalyticsDateRange } from "@/components/partner-console/analytics/partner-analytics-shared";
 import {
@@ -40,9 +41,17 @@ export default async function PartnerAnalyticsReadinessPage({
               Learning Readiness and custom models — pipeline quality.
             </p>
           </div>
-          <Suspense fallback={null}>
-            <PartnerAnalyticsDateRange basePath={basePath} current={preset} />
-          </Suspense>
+          <div className="flex flex-col items-stretch gap-3 sm:items-end">
+            <Suspense fallback={null}>
+              <PartnerAnalyticsDateRange basePath={basePath} current={preset} />
+            </Suspense>
+            <AnalyticsExportAction
+              productId={productId}
+              rangePreset={preset}
+              compareBaseline="none"
+              scope="readiness"
+            />
+          </div>
         </div>
         <div className="mt-8">
           <AnalyticsReadinessView productId={productId} models={models} />

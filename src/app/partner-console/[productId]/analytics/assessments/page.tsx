@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { AnalyticsAssessmentsView } from "@/components/partner-console/analytics/analytics-assessments-view";
 import { AnalyticsBackfillGate } from "@/components/partner-console/analytics/analytics-backfill-gate";
+import { AnalyticsExportAction } from "@/components/partner-console/analytics/analytics-export-action";
 import { PartnerAnalyticsDateRange } from "@/components/partner-console/analytics/partner-analytics-shared";
 import {
   parseAnalyticsRangePreset,
@@ -66,9 +67,17 @@ export default async function PartnerAnalyticsAssessmentsPage({
               Question intelligence and quiz quality from normalized attempts.
             </p>
           </div>
-          <Suspense fallback={null}>
-            <PartnerAnalyticsDateRange basePath={basePath} current={preset} />
-          </Suspense>
+          <div className="flex flex-col items-stretch gap-3 sm:items-end">
+            <Suspense fallback={null}>
+              <PartnerAnalyticsDateRange basePath={basePath} current={preset} />
+            </Suspense>
+            <AnalyticsExportAction
+              productId={productId}
+              rangePreset={preset}
+              compareBaseline="none"
+              scope="assessments"
+            />
+          </div>
         </div>
 
         <div className="mt-8">

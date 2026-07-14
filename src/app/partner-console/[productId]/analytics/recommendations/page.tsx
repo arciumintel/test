@@ -85,6 +85,7 @@ export default async function PartnerAnalyticsRecommendationsPage({
             productId={productId}
             rangePreset={preset}
             compareBaseline={compare}
+            scope="recommendations"
           />
         </div>
       </div>

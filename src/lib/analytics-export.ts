@@ -1,58 +1,59 @@
 /**
- * Unified Analytics export — single code path for partner + staff exports.
- * Uses engine DTOs; no divergence from dashboard metrics.
+ * Unified Analytics export — scoped V2 fragments with Plus fallback when V2 is off.
  */
 
 import "server-only";
 
-import type { AnalyticsCompareBaseline, AnalyticsRangePreset } from "@/lib/analytics-date-range";
+import type {
+  AnalyticsCompareBaseline,
+  AnalyticsRangePreset,
+} from "@/lib/analytics-date-range";
 import {
   parseAnalyticsCompareBaseline,
   parseAnalyticsRangePreset,
   resolveAnalyticsDateRange,
 } from "@/lib/analytics-date-range";
 import { runAnalyticsEngine } from "@/lib/analytics-engine";
+import { loadAnalyticsExportBundle } from "@/lib/analytics-export-data";
 import {
-  getPartnerPlusCourseAnalytics,
+  buildFilename,
+  composeCsv,
+  composeHtmlDocument,
+  composeMarkdown,
+  mimeFor,
+  slugifyName,
+} from "@/lib/analytics-export-format";
+import type {
+  AnalyticsExportFormat,
+  AnalyticsExportResult,
+  AnalyticsExportScope,
+} from "@/lib/analytics-export-types";
+import {
   getPartnerPlusAnalytics,
+  getPartnerPlusCourseAnalytics,
   partnerPlusReportToCsv,
   partnerPlusReportToHtml,
   partnerPlusReportToMarkdown,
 } from "@/lib/partner-analytics";
 
-export type AnalyticsExportFormat = "markdown" | "csv" | "html";
-
-export type AnalyticsExportResult = {
-  content: string;
-  filename: string;
-  mimeType: string;
+export type {
+  AnalyticsExportFormat,
+  AnalyticsExportResult,
+  AnalyticsExportScope,
 };
 
-function slugifyName(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 40);
-}
-
-/**
- * Build export payload from the same engine + Plus serializers as Analytics UI.
- */
-export async function buildAnalyticsExport(input: {
+async function buildLegacyPlusExport(input: {
   productId: string;
-  rangePreset?: string;
-  compareBaseline?: string;
+  rangePreset: AnalyticsRangePreset;
+  compareBaseline: AnalyticsCompareBaseline;
   format: AnalyticsExportFormat;
 }): Promise<AnalyticsExportResult | null> {
-  const preset = parseAnalyticsRangePreset(input.rangePreset);
-  const compare = parseAnalyticsCompareBaseline(input.compareBaseline);
-  const range = resolveAnalyticsDateRange(preset);
+  const range = resolveAnalyticsDateRange(input.rangePreset);
 
   const engine = await runAnalyticsEngine({
     productId: input.productId,
-    preset,
-    compare,
+    preset: input.rangePreset,
+    compare: input.compareBaseline,
   });
   if (!engine) return null;
 
@@ -74,7 +75,7 @@ export async function buildAnalyticsExport(input: {
   );
 
   const slug = slugifyName(engine.productName);
-  const date = new Date().toISOString().slice(0, 10);
+  const preset = input.rangePreset;
   const format = input.format;
 
   if (format === "csv") {
@@ -98,7 +99,64 @@ export async function buildAnalyticsExport(input: {
   };
 }
 
-/** Staff intake markdown — engine-backed summary with staff footer. */
+/**
+ * Build export payload from scoped V2 section serializers (or Plus when V2 off).
+ */
+export async function buildAnalyticsExport(input: {
+  productId: string;
+  rangePreset?: string;
+  compareBaseline?: string;
+  format: AnalyticsExportFormat;
+  scope?: AnalyticsExportScope;
+  courseId?: string;
+}): Promise<AnalyticsExportResult | null> {
+  const preset = parseAnalyticsRangePreset(input.rangePreset);
+  const compare = parseAnalyticsCompareBaseline(input.compareBaseline);
+  const scope: AnalyticsExportScope = input.scope ?? "full";
+
+  const bundle = await loadAnalyticsExportBundle({
+    productId: input.productId,
+    scope,
+    rangePreset: preset,
+    compareBaseline: compare,
+    courseId: input.courseId,
+  });
+  if (!bundle) return null;
+
+  if (!bundle.v2Enabled) {
+    return buildLegacyPlusExport({
+      productId: input.productId,
+      rangePreset: preset,
+      compareBaseline: compare,
+      format: input.format,
+    });
+  }
+
+  const meta = {
+    productId: input.productId,
+    productName: bundle.productName,
+    rangeLabel: bundle.rangeLabel,
+    rangePreset: preset,
+    compareBaseline: compare,
+    generatedAt: new Date().toISOString().slice(0, 10),
+    scope,
+  };
+
+  const content =
+    input.format === "csv"
+      ? composeCsv(meta, bundle.fragments)
+      : input.format === "html"
+        ? composeHtmlDocument(meta, bundle.fragments)
+        : composeMarkdown(meta, bundle.fragments);
+
+  return {
+    content,
+    filename: buildFilename(meta, input.format),
+    mimeType: mimeFor(input.format),
+  };
+}
+
+/** Staff intake markdown — full V2 pack (or Plus) with staff footer. */
 export async function buildStaffPartnerReportMarkdown(
   productId: string
 ): Promise<{ markdown: string; filename: string } | null> {
@@ -107,6 +165,7 @@ export async function buildStaffPartnerReportMarkdown(
     rangePreset: "all",
     compareBaseline: "none",
     format: "markdown",
+    scope: "full",
   });
   if (!result) return null;
 
@@ -119,7 +178,10 @@ _This report was generated by Arcademy staff from the Analytics engine export._
 
   return {
     markdown,
-    filename: result.filename.replace(/\.md$/, `-staff-${new Date().toISOString().slice(0, 10)}.md`),
+    filename: result.filename.replace(
+      /\.md$/,
+      `-staff-${new Date().toISOString().slice(0, 10)}.md`
+    ),
   };
 }
 

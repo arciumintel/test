@@ -164,6 +164,8 @@ export default async function PartnerCourseAnalyticsPage({
           productId={productId}
           rangePreset={preset}
           compareBaseline="none"
+          scope="course"
+          courseId={courseId}
         />
       </div>
 

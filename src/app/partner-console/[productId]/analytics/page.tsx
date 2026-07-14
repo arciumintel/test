@@ -175,6 +175,8 @@ export default async function PartnerAnalyticsPage({
           productId={productId}
           rangePreset={preset}
           compareBaseline={compare}
+          scope="overview"
+          showFullPack
         />
       </div>
 
