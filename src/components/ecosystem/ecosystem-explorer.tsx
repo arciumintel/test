@@ -41,6 +41,14 @@ export function EcosystemExplorer() {
     return () => media.removeEventListener("change", apply);
   }, [setReducedMotion]);
 
+  // Phone-first: default to list on narrow screens (once). Users can still open Galaxy.
+  React.useEffect(() => {
+    const narrow = window.matchMedia("(max-width: 1023px)").matches;
+    if (narrow) {
+      setViewMode("list");
+    }
+  }, [setViewMode]);
+
   React.useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -65,17 +73,17 @@ export function EcosystemExplorer() {
 
   return (
     <div className="eco-shell flex min-h-[calc(100vh-4rem)] flex-col">
-      <div className="border-b bg-page-header px-4 py-6 sm:px-6">
+      <div className="border-b bg-page-header px-4 py-5 sm:px-6 sm:py-6">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-sm font-medium text-primary">Arcium ecosystem</p>
             <h1
               id="ecosystem-heading"
-              className="mt-1 text-3xl font-semibold tracking-tight text-balance"
+              className="mt-1 text-2xl font-semibold tracking-tight text-balance sm:text-3xl"
             >
               Ecosystem Explorer
             </h1>
-            <p className="mt-2 max-w-2xl text-pretty text-muted-foreground">
+            <p className="mt-2 max-w-2xl text-pretty text-sm text-muted-foreground sm:text-base">
               Discover projects building on Arcium. Explore categories, follow
               connections, and learn about each team without leaving the map.{" "}
               <Link
@@ -107,7 +115,7 @@ export function EcosystemExplorer() {
       <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col lg:flex-row">
         <ExplorerSidebar className="hidden w-72 shrink-0 lg:flex" />
 
-        <div className="relative min-h-[28rem] flex-1 p-4 sm:p-6">
+        <div className="relative min-h-0 flex-1 p-4 sm:min-h-[28rem] sm:p-6">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="text-sm text-muted-foreground">
               <span className="font-medium text-foreground">{breadcrumb}</span>
@@ -139,7 +147,7 @@ export function EcosystemExplorer() {
           </div>
 
           {viewMode === "galaxy" ? (
-            <GalaxyCanvas className="eco-viz-frame h-[min(70vh,720px)] min-h-[420px] w-full" />
+            <GalaxyCanvas className="eco-viz-frame h-[min(70vh,720px)] min-h-[280px] w-full sm:min-h-[420px]" />
           ) : (
             <EcosystemListView
               projects={filteredProjects}

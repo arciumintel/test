@@ -7,6 +7,12 @@ export type NavLink = {
   label: string;
 };
 
+export type NavLinkGroup = {
+  id: "explore" | "account" | "partners";
+  label: string;
+  links: NavLink[];
+};
+
 export type SiteNavContext = {
   user: Awaited<ReturnType<typeof getCurrentUser>>;
   showPartnerConsole: boolean;
@@ -81,4 +87,37 @@ export function getFooterPartnerLinks({
   }
 
   return links;
+}
+
+/** Mobile sheet IA: Explore → Account → Partners (links only; utilities are separate). */
+export function getMobileNavGroups({ user, ...partnerCtx }: SiteNavContext): NavLinkGroup[] {
+  const groups: NavLinkGroup[] = [
+    {
+      id: "explore",
+      label: "Explore",
+      links: [
+        { href: "/start", label: "Start" },
+        { href: "/courses", label: "Courses" },
+        { href: "/ecosystem", label: "Ecosystem" },
+        { href: "/products", label: "Projects" },
+        { href: "/glossary", label: "Glossary" },
+      ],
+    },
+  ];
+
+  if (user) {
+    groups.push({
+      id: "account",
+      label: "Account",
+      links: [{ href: "/profile", label: "My learning" }],
+    });
+  }
+
+  groups.push({
+    id: "partners",
+    label: "Partners",
+    links: getFooterPartnerLinks({ user, ...partnerCtx }),
+  });
+
+  return groups;
 }

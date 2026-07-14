@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
-import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { isDiscordConfigured } from "@/lib/discord";
 import { WalletAuth } from "@/components/auth/wallet-auth";
@@ -12,7 +11,11 @@ import {
   getRecentNotifications,
   getUnreadNotificationCount,
 } from "@/lib/notifications";
-import { getHeaderNavLinks, getSiteNavContext } from "@/lib/site-nav";
+import {
+  getHeaderNavLinks,
+  getMobileNavGroups,
+  getSiteNavContext,
+} from "@/lib/site-nav";
 import { Button } from "@/components/ui/button";
 
 export async function SiteHeader() {
@@ -36,12 +39,25 @@ export async function SiteHeader() {
     : [[], 0];
 
   const navLinks = getHeaderNavLinks(navContext);
+  const mobileGroups = getMobileNavGroups(navContext);
+  const serializedNotifications = notifications.map((n) => ({
+    ...n,
+    createdAt: n.createdAt.toISOString(),
+    readAt: n.readAt?.toISOString() ?? null,
+  }));
 
   return (
     <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-2 sm:gap-4">
-          <MobileNav links={navLinks} />
+          <MobileNav
+            groups={mobileGroups}
+            notifications={serializedNotifications}
+            unreadCount={unreadCount}
+            discordLinked={discordAccount}
+            walletConnected={Boolean(user)}
+            discordEnabled={discordEnabled}
+          />
           <Link href="/" className="flex min-w-0 items-center gap-2 font-semibold">
             <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <GraduationCap className="size-5" />
@@ -57,21 +73,20 @@ export async function SiteHeader() {
           </nav>
         </div>
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-          <ThemeToggle />
-          {user && (
-            <NotificationBell
-              notifications={notifications.map((n) => ({
-                ...n,
-                createdAt: n.createdAt.toISOString(),
-              }))}
-              unreadCount={unreadCount}
+          <div className="hidden items-center gap-1.5 sm:gap-2 md:flex">
+            <ThemeToggle />
+            {user && (
+              <NotificationBell
+                notifications={serializedNotifications}
+                unreadCount={unreadCount}
+              />
+            )}
+            <DiscordAuth
+              linked={discordAccount}
+              walletConnected={Boolean(user)}
+              discordEnabled={discordEnabled}
             />
-          )}
-          <DiscordAuth
-            linked={discordAccount}
-            walletConnected={Boolean(user)}
-            discordEnabled={discordEnabled}
-          />
+          </div>
           <WalletAuth authedWallet={user?.walletAddress ?? null} />
         </div>
       </div>

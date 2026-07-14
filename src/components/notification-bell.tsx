@@ -19,23 +19,35 @@ import {
 import type { NotificationItem as ServerNotificationItem } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
 
-type BellNotification = Omit<ServerNotificationItem, "createdAt"> & {
+type BellNotification = Omit<ServerNotificationItem, "createdAt" | "readAt"> & {
   createdAt: string;
+  readAt: string | null;
 };
 
 export function NotificationBell({
   notifications,
   unreadCount,
+  presentation = "header",
+  onOpenChange,
 }: {
   notifications: BellNotification[];
   unreadCount: number;
+  /** `row` = full-width menu item for the mobile sheet. */
+  presentation?: "header" | "row";
+  onOpenChange?: (open: boolean) => void;
 }) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
+  const isRow = presentation === "row";
+
+  function handleOpenChange(next: boolean) {
+    setOpen(next);
+    onOpenChange?.(next);
+  }
 
   async function onOpenItem(id: string, actionUrl: string | null) {
     await markNotificationReadAction(id);
-    setOpen(false);
+    handleOpenChange(false);
     if (actionUrl) {
       router.push(actionUrl);
     } else {
@@ -49,25 +61,45 @@ export function NotificationBell({
   }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative"
-          aria-label={
-            unreadCount > 0
-              ? `Notifications, ${unreadCount} unread`
-              : "Notifications"
-          }
-        >
-          <Bell className="size-5" />
-          {unreadCount > 0 && (
-            <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-        </Button>
+        {isRow ? (
+          <Button
+            variant="ghost"
+            className="relative h-11 w-full justify-start gap-3 px-3 font-medium"
+            aria-label={
+              unreadCount > 0
+                ? `Notifications, ${unreadCount} unread`
+                : "Notifications"
+            }
+          >
+            <Bell className="size-[1.125rem] text-muted-foreground" />
+            <span>Notifications</span>
+            {unreadCount > 0 ? (
+              <span className="ml-auto flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            ) : null}
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative"
+            aria-label={
+              unreadCount > 0
+                ? `Notifications, ${unreadCount} unread`
+                : "Notifications"
+            }
+          >
+            <Bell className="size-5" />
+            {unreadCount > 0 && (
+              <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </Button>
+        )}
       </SheetTrigger>
       <SheetContent side="right" className="w-[min(100vw-2rem,24rem)]">
         <SheetHeader className="flex flex-row items-center justify-between gap-2 space-y-0">
