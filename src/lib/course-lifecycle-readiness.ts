@@ -49,7 +49,7 @@ function finalQuizBlockers(
   return [];
 }
 
-/** Minimum content before a partner can submit for staff review. */
+/** Minimum content before a partner can publish a course. */
 export function evaluatePartnerSubmitReadiness(
   course: CourseSubmitSnapshot
 ): SubmitReadinessReport {
@@ -58,20 +58,20 @@ export function evaluatePartnerSubmitReadiness(
   if (!course.title.trim()) blockers.push("Course title is required.");
   if (!course.summary.trim()) blockers.push("Course summary is required.");
   if (course.lessonCount === 0) {
-    blockers.push("Add at least one lesson before submitting.");
+    blockers.push("Add at least one lesson before publishing.");
   }
 
   blockers.push(
     ...finalQuizBlockers(course.finalQuiz, {
-      createMessage: "Create a final course quiz before submitting.",
-      questionsMessage: "Add at least one quiz question before submitting.",
+      createMessage: "Create a final course quiz before publishing.",
+      questionsMessage: "Add at least one quiz question before publishing.",
     })
   );
 
   return { ready: blockers.length === 0, blockers };
 }
 
-/** Staff publish gate — stricter than partner submit. */
+/** Full publish gate for staff and approved partners. */
 export function evaluateStaffPublishReadiness(
   course: CoursePublishSnapshot
 ): ReadinessReport {

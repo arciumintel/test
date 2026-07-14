@@ -90,7 +90,7 @@ export default async function HomePage() {
         <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
           <div className="mx-auto max-w-3xl text-center">
             <Badge variant="default" className="mx-auto mb-6">
-              Official Arcium learning platform
+              Arcium ecosystem learning
             </Badge>
             <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
               Learn Arcium step by step

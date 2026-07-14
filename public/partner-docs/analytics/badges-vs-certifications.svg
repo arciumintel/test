@@ -1,0 +1,12 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 260" role="img" aria-label="Badges versus certifications comparison">
+  <rect width="780" height="260" rx="12" fill="#0f172a"/>
+  <text x="390" y="32" text-anchor="middle" fill="#e5e7eb" font-family="system-ui,sans-serif" font-size="17" font-weight="600">Badges vs certifications</text>
+  <rect x="40" y="55" width="320" height="180" rx="10" fill="#172554" stroke="#3b82f6"/>
+  <text x="200" y="82" text-anchor="middle" fill="#93c5fd" font-family="system-ui,sans-serif" font-size="14" font-weight="700">Badge</text>
+  <text x="60" y="110" fill="#dbeafe" font-family="system-ui,sans-serif" font-size="11">Auto on course completion</text>
+  <text x="60" y="130" fill="#dbeafe" font-family="system-ui,sans-serif" font-size="11">Overview and Courses tabs</text>
+  <rect x="420" y="55" width="320" height="180" rx="10" fill="#312e81" stroke="#8b5cf6"/>
+  <text x="580" y="82" text-anchor="middle" fill="#ddd6fe" font-family="system-ui,sans-serif" font-size="14" font-weight="700">Certification</text>
+  <text x="440" y="110" fill="#ede9fe" font-family="system-ui,sans-serif" font-size="11">Partner-defined in Settings</text>
+  <text x="440" y="130" fill="#ede9fe" font-family="system-ui,sans-serif" font-size="11">Certifications tab only</text>
+</svg>

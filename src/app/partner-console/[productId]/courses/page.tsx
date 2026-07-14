@@ -19,7 +19,7 @@ export async function generateMetadata({
     where: { id: productId },
     select: { name: true },
   });
-  return { title: product ? `Courses: ${product.name}` : "Course drafts" };
+  return { title: product ? `Courses: ${product.name}` : "Courses" };
 }
 
 export default async function PartnerCoursesPage({
@@ -41,18 +41,16 @@ export default async function PartnerCoursesPage({
       <>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Course drafts
-            </h1>
+            <h1 className="text-2xl font-semibold tracking-tight">Courses</h1>
             <p className="mt-1 text-pretty text-sm text-muted-foreground">
-              Create and submit courses for Arcademy staff review.
+              Create and publish courses for your project.
             </p>
           </div>
         </div>
         <div className="mt-8">
           <HomeSectionLoadError
-            title="Course drafts did not load"
-            description="The draft list is unavailable right now. Refresh the page, or try again in a few minutes."
+            title="Courses did not load"
+            description="The course list is unavailable right now. Refresh the page, or try again in a few minutes."
           />
         </div>
       </>
@@ -65,17 +63,15 @@ export default async function PartnerCoursesPage({
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Course drafts
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Courses</h1>
           <p className="mt-1 text-pretty text-sm text-muted-foreground">
-            Create and submit courses for Arcademy staff review.
+            Create and publish courses for your project.
           </p>
         </div>
         <Button asChild>
           <Link href={`/partner-console/${productId}/courses/new`}>
             <Plus className="size-4" />
-            Create course draft
+            Create course
           </Link>
         </Button>
       </div>
@@ -84,13 +80,13 @@ export default async function PartnerCoursesPage({
         {courses.length === 0 ? (
           <Card>
             <CardContent className="py-10 text-center">
-              <p className="font-medium">No course drafts yet</p>
+              <p className="font-medium">No courses yet</p>
               <p className="mt-1 text-pretty text-sm text-muted-foreground">
-                Create your first draft to get started.
+                Create your first course to get started.
               </p>
               <Button asChild className="mt-4" size="sm">
                 <Link href={`/partner-console/${productId}/courses/new`}>
-                  Create course draft
+                  Create course
                 </Link>
               </Button>
             </CardContent>
@@ -120,7 +116,7 @@ export default async function PartnerCoursesPage({
                   <Link
                     href={`/partner-console/${productId}/courses/${course.id}`}
                   >
-                    Edit draft
+                    Edit
                   </Link>
                 </Button>
               </CardContent>

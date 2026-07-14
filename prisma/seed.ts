@@ -411,7 +411,7 @@ async function main() {
       update: {
         title: "Getting started with Arcium",
         description:
-          "Follow this official path from foundations to building your first private app.",
+          "Follow this path from foundations to building your first private app.",
         status: "published",
         order: 0,
       },
@@ -420,7 +420,7 @@ async function main() {
         slug: "getting-started",
         title: "Getting started with Arcium",
         description:
-          "Follow this official path from foundations to building your first private app.",
+          "Follow this path from foundations to building your first private app.",
         status: "published",
         order: 0,
       },
@@ -462,6 +462,7 @@ async function main() {
   }
 
   await seedEcosystemDirectoryStep();
+  await seedMockPartnerStep();
 
   console.log("\nSeed complete.");
 }
@@ -469,6 +470,11 @@ async function main() {
 async function seedEcosystemDirectoryStep() {
   const { seedEcosystemDirectory } = await import("./seed-ecosystem-directory");
   await seedEcosystemDirectory();
+}
+
+async function seedMockPartnerStep() {
+  const { seedMockPartner } = await import("./seed-mock-partner");
+  await seedMockPartner(prisma);
 }
 
 main()

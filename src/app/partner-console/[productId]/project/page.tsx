@@ -1,7 +1,9 @@
-import { notFound } from "next/navigation";
 import { ProductForm } from "@/components/admin/product-form";
+import { PartnerProductStatusControls } from "@/components/partner-console/partner-product-status-controls";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { getPartnerProduct } from "@/app/actions/partner-products";
+import { getProductPublishReadiness } from "@/lib/publish-readiness";
+import { Badge } from "@/components/ui/badge";
 
 export async function generateMetadata({
   params,
@@ -42,15 +44,32 @@ export default async function PartnerProjectSettingsPage({
   }
 
   const product = result.product;
+  const readiness = await getProductPublishReadiness(productId);
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">
-        Project settings
-      </h1>
-      <p className="mt-1 text-pretty text-sm text-muted-foreground">
-        Manage how {product.name} appears on Arcademy.
-      </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Project settings
+            </h1>
+            <Badge
+              variant={product.status === "published" ? "success" : "secondary"}
+            >
+              {product.status}
+            </Badge>
+          </div>
+          <p className="mt-1 text-pretty text-sm text-muted-foreground">
+            Manage how {product.name} appears on Arcademy.
+          </p>
+        </div>
+        <PartnerProductStatusControls
+          productId={productId}
+          status={product.status}
+          readiness={readiness}
+        />
+      </div>
 
       <div className="mt-8 max-w-3xl">
         <ProductForm

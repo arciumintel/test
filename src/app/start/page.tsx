@@ -17,7 +17,7 @@ import { getCurrentUser } from "@/lib/session";
 export const metadata: Metadata = {
   title: "Start with Arcium",
   description:
-    "Begin your Arcium learning journey with official foundations courses and guided paths on Arcademy.",
+    "Begin your Arcium learning journey with foundations courses and guided paths on Arcademy.",
 };
 
 export default async function StartPage() {

@@ -27,12 +27,15 @@ const moduleSchema = z.object({
 });
 
 export function assertPartnerEditable(status: CourseStatus): string | null {
+  if (status === "archived") {
+    return "Archived courses cannot be edited. Unarchive first or create a new draft.";
+  }
   if (
     !PARTNER_EDITABLE_STATUSES.includes(
       status as (typeof PARTNER_EDITABLE_STATUSES)[number]
     )
   ) {
-    return "This course cannot be edited in its current review state.";
+    return "This course cannot be edited in its current state.";
   }
   return null;
 }

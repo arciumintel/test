@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { AnalyticsPageHeading } from "@/components/partner-console/analytics/analytics-icons";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { AnalyticsExportAction } from "@/components/partner-console/analytics/analytics-export-action";
 import { AnalyticsReadinessView } from "@/components/partner-console/analytics/analytics-readiness-view";
@@ -35,12 +36,11 @@ export default async function PartnerAnalyticsReadinessPage({
     return (
       <>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Readiness</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Learning Readiness and custom models — pipeline quality.
-            </p>
-          </div>
+          <AnalyticsPageHeading
+            tab="readiness"
+            title="Readiness"
+            description="Learning Readiness and custom models — pipeline quality."
+          />
           <div className="flex flex-col items-stretch gap-3 sm:items-end">
             <Suspense fallback={null}>
               <PartnerAnalyticsDateRange basePath={basePath} current={preset} />

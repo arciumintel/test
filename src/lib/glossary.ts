@@ -553,7 +553,7 @@ export const GLOSSARY_TERMS: GlossaryTerm[] = [
     term: "Arcademy",
     categoryId: "arcademy",
     definition:
-      "The official learning platform for the Arcium ecosystem. It brings together guided courses, quizzes, progress tracking, and completion badges in one place.",
+      "A curated learning platform for the Arcium ecosystem. It brings together guided courses, quizzes, progress tracking, and completion badges in one place.",
   },
   {
     slug: "arcis",

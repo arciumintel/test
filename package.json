@@ -11,6 +11,8 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:mock-partner": "tsx prisma/seed-mock-partner.ts",
+    "db:seed:mock-partner-activity": "tsx prisma/seed-mock-partner-activity.ts",
     "db:studio": "prisma studio",
     "db:backfill-question-attempts": "tsx scripts/backfill-question-attempts.ts",
     "discord:deploy-commands": "tsx scripts/discord/deploy-commands.ts",

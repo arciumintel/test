@@ -40,6 +40,8 @@ export const ANALYTICS_EVENT_NAMES = [
   "admin_ecosystem_project_published",
   "admin_course_created",
   "admin_course_published",
+  "partner_course_published",
+  "partner_ecosystem_project_published",
   "admin_quiz_created",
   "admin_badge_created",
   "discord_connect_started",

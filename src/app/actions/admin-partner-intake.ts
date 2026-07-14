@@ -10,6 +10,17 @@ import { authorizeStaff, toActionError } from "@/lib/access-control";
 
 type Result<T = unknown> = ({ ok: true } & T) | { error: string };
 
+const optionalText = (max: number) =>
+  z
+    .union([z.string().max(max), z.literal(""), z.null()])
+    .optional()
+    .transform((v) => (v && String(v).trim() ? String(v).trim() : null));
+
+const optionalUrl = z
+  .union([z.string().url().max(500), z.literal(""), z.null()])
+  .optional()
+  .transform((v) => (v && String(v).trim() ? String(v).trim() : null));
+
 const intakeSchema = z.object({
   productId: z.string().optional().nullable(),
   partnerName: z.string().min(2, "Partner name is required").max(120),
@@ -18,12 +29,20 @@ const intakeSchema = z.object({
     .union([z.string().email().max(200), z.literal(""), z.null()])
     .optional()
     .transform((v) => (v && String(v).trim() ? String(v).trim() : null)),
+  contactX: optionalText(120),
+  contactDiscord: optionalText(200),
+  contactTelegram: optionalText(120),
+  preferredContactMethod: z
+    .enum(["email", "x", "discord", "telegram"])
+    .nullable()
+    .optional(),
   projectName: z.string().max(120).optional().nullable(),
   projectDescription: z.string().max(800).optional().nullable(),
-  sourceMaterialUrl: z
-    .union([z.string().url().max(500), z.literal(""), z.null()])
-    .optional()
-    .transform((v) => (v && String(v).trim() ? String(v).trim() : null)),
+  officialWebsite: optionalUrl,
+  officialX: optionalText(200),
+  officialDiscord: optionalText(300),
+  officialTelegram: optionalText(200),
+  sourceMaterialUrl: optionalUrl,
   requestedCourseTopic: z.string().max(400).optional().nullable(),
   reviewStatus: z.enum([
     "received",
@@ -67,8 +86,16 @@ export async function createPartnerIntake(
         partnerName: parsed.data.partnerName,
         contactName: parsed.data.contactName?.trim() || null,
         contactEmail: parsed.data.contactEmail,
+        contactX: parsed.data.contactX,
+        contactDiscord: parsed.data.contactDiscord,
+        contactTelegram: parsed.data.contactTelegram,
+        preferredContactMethod: parsed.data.preferredContactMethod,
         projectName: parsed.data.projectName?.trim() || null,
         projectDescription: parsed.data.projectDescription?.trim() || null,
+        officialWebsite: parsed.data.officialWebsite,
+        officialX: parsed.data.officialX,
+        officialDiscord: parsed.data.officialDiscord,
+        officialTelegram: parsed.data.officialTelegram,
         sourceMaterialUrl: parsed.data.sourceMaterialUrl,
         requestedCourseTopic: parsed.data.requestedCourseTopic?.trim() || null,
         reviewStatus: parsed.data.reviewStatus,
@@ -136,8 +163,16 @@ export async function updatePartnerIntake(
       partnerName: parsed.data.partnerName,
       contactName: parsed.data.contactName?.trim() || null,
       contactEmail: parsed.data.contactEmail,
+      contactX: parsed.data.contactX,
+      contactDiscord: parsed.data.contactDiscord,
+      contactTelegram: parsed.data.contactTelegram,
+      preferredContactMethod: parsed.data.preferredContactMethod,
       projectName: parsed.data.projectName?.trim() || null,
       projectDescription: parsed.data.projectDescription?.trim() || null,
+      officialWebsite: parsed.data.officialWebsite,
+      officialX: parsed.data.officialX,
+      officialDiscord: parsed.data.officialDiscord,
+      officialTelegram: parsed.data.officialTelegram,
       sourceMaterialUrl: parsed.data.sourceMaterialUrl,
       requestedCourseTopic: parsed.data.requestedCourseTopic?.trim() || null,
       reviewStatus: parsed.data.reviewStatus,

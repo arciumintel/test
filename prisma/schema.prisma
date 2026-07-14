@@ -101,6 +101,13 @@ enum PartnerIntakeReviewStatus {
   rejected
 }
 
+enum PartnerPreferredContactMethod {
+  email
+  x
+  discord
+  telegram
+}
+
 enum ProjectAdminRole {
   owner
   manager
@@ -875,20 +882,28 @@ model DiscordRoleGrant {
 
 /// Internal partner intake tracking and self-serve partner applications.
 model PartnerIntake {
-  id                   String                    @id @default(cuid())
-  productId            String?
-  applicantUserId      String?
-  partnerName          String
-  contactName          String?
-  contactEmail         String?
-  projectName          String?
-  projectDescription   String?
-  sourceMaterialUrl    String?
-  requestedCourseTopic String?
-  reviewStatus         PartnerIntakeReviewStatus @default(received)
-  notes                String?
-  createdAt            DateTime                  @default(now())
-  updatedAt            DateTime                  @updatedAt
+  id                      String                          @id @default(cuid())
+  productId               String?
+  applicantUserId         String?
+  partnerName             String
+  contactName             String?
+  contactEmail            String?
+  contactX                String?
+  contactDiscord          String?
+  contactTelegram         String?
+  preferredContactMethod  PartnerPreferredContactMethod?
+  projectName             String?
+  projectDescription      String?
+  officialWebsite         String?
+  officialX               String?
+  officialDiscord         String?
+  officialTelegram        String?
+  sourceMaterialUrl       String?
+  requestedCourseTopic    String?
+  reviewStatus            PartnerIntakeReviewStatus       @default(received)
+  notes                   String?
+  createdAt               DateTime                        @default(now())
+  updatedAt               DateTime                        @updatedAt
 
   product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   applicant User?    @relation("PartnerIntakeApplicant", fields: [applicantUserId], references: [id], onDelete: SetNull)

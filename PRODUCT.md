@@ -10,11 +10,11 @@ product
 
 **Staff admins:** Arcademy team members who curate products, courses, lessons, quizzes, and badges; publish content; preview learner flows; and review analytics.
 
-**Partner admins:** Ecosystem teams with limited self-service access to submit source material, draft or review assigned content, and view basic reporting. They do not publish directly.
+**Partner admins:** Ecosystem teams with Partner console access for assigned projects. They publish their own project pages and courses, update project settings (including documentation links), and view basic reporting. Staff owns application approval and can intervene on content when needed.
 
 ## Product Purpose
 
-Arcademy is the official learning platform for the Arcium ecosystem. It turns fragmented documentation into guided courses: browse products and courses publicly, connect a wallet to save progress, complete lessons, pass a final quiz, and earn an off-chain badge tied to the learner profile.
+Arcademy is a curated learning platform for the Arcium ecosystem. It turns fragmented documentation into guided courses: browse products and courses publicly, connect a wallet to save progress, complete lessons, pass a final quiz, and earn an off-chain badge tied to the learner profile.
 
 Success looks like learners finishing courses with confidence, partners referring users to a credible onboarding destination, and staff publishing without engineering support for routine content changes.
 

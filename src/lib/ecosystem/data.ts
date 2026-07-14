@@ -500,7 +500,7 @@ export const ECOSYSTEM_PROJECTS: EcosystemProject[] = [
     id: "arcademy",
     slug: "arcademy",
     name: "Arcademy",
-    tagline: "Official ecosystem learning",
+    tagline: "Curated ecosystem learning",
     description:
       "Curated courses and badges for learning Arcium ecosystem products. Browse publicly, connect a wallet to track progress and earn credentials.",
     logoUrl: null,

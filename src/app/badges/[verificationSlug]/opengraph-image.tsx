@@ -22,7 +22,7 @@ export default async function Image({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "#0f172a",
+            background: "#0b1220",
             color: "#f8fafc",
             fontSize: 48,
             fontWeight: 600,
@@ -45,7 +45,8 @@ export default async function Image({
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 64,
-          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #0f766e 100%)",
+          background:
+            "linear-gradient(135deg, #0b1220 0%, #132033 55%, #1a708f 100%)",
           color: "#f8fafc",
         }}
       >
@@ -88,7 +89,7 @@ export default async function Image({
         </div>
 
         <div style={{ fontSize: 22, color: "#94a3b8" }}>
-          Official Arcium ecosystem learning credential
+          Arcium ecosystem learning credential
         </div>
       </div>
     ),

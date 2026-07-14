@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PageHeaderAtmosphere } from "@/components/page-header-atmosphere";
 import { cn } from "@/lib/utils";
 
 type PageHeaderProps = {
@@ -39,11 +40,14 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "relative -mx-4 mb-8 border-b bg-page-header px-4 pb-8 pt-12 sm:-mx-6 sm:px-6",
+        "page-header relative isolate mt-6 -mx-4 mb-8 overflow-hidden border-b px-4 pb-8 pt-8 sm:-mx-6 sm:px-6",
         className,
       )}
     >
-      <header className={cn("max-w-2xl", innerClassName)}>{content}</header>
+      <PageHeaderAtmosphere />
+      <header className={cn("relative max-w-2xl", innerClassName)}>
+        {content}
+      </header>
     </div>
   );
 }

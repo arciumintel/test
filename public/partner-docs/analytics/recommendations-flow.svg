@@ -1,0 +1,19 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 200" role="img" aria-label="Recommendations engine flow">
+  <rect width="900" height="200" rx="12" fill="#0f172a"/>
+  <text x="450" y="28" text-anchor="middle" fill="#e5e7eb" font-family="system-ui,sans-serif" font-size="16" font-weight="600">How recommendations are generated</text>
+  <rect x="30" y="50" width="140" height="50" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="100" y="80" text-anchor="middle" fill="#f3f4f6" font-family="system-ui,sans-serif" font-size="11">Your metrics</text>
+  <text x="190" y="80" fill="#64748b" font-size="18">→</text>
+  <rect x="210" y="50" width="160" height="50" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="290" y="72" text-anchor="middle" fill="#f3f4f6" font-family="system-ui,sans-serif" font-size="11">Compare to thresholds</text>
+  <text x="290" y="88" text-anchor="middle" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="9">(Settings)</text>
+  <text x="390" y="80" fill="#64748b" font-size="18">→</text>
+  <rect x="410" y="50" width="160" height="50" rx="8" fill="#312e81" stroke="#8b5cf6"/>
+  <text x="490" y="80" text-anchor="middle" fill="#ede9fe" font-family="system-ui,sans-serif" font-size="11">Ranked alerts</text>
+  <text x="590" y="80" fill="#64748b" font-size="18">→</text>
+  <rect x="610" y="50" width="260" height="50" rx="8" fill="#1e293b" stroke="#475569"/>
+  <text x="740" y="72" text-anchor="middle" fill="#f3f4f6" font-family="system-ui,sans-serif" font-size="11">Deep link to evidence tab</text>
+  <text x="740" y="88" text-anchor="middle" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="9">Overview · Courses · Concepts · etc.</text>
+  <text x="450" y="140" text-anchor="middle" fill="#94a3b8" font-family="system-ui,sans-serif" font-size="11">Priority: high / medium / low · Category: opportunity (fix) · success (celebrate) · trend (change vs prior period)</text>
+  <text x="450" y="168" text-anchor="middle" fill="#64748b" font-family="system-ui,sans-serif" font-size="10">Minimum volume gate prevents noisy alerts when sample size is too small.</text>
+</svg>

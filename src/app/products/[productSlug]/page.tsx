@@ -82,7 +82,7 @@ export default async function ProductPage({
           <div className="mt-4 flex items-start gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
             <GraduationCap className="mt-0.5 size-4 shrink-0 text-primary" />
             <p>
-              Official Arcademy learning for {product.name}.
+              Structured Arcademy learning for {product.name}.
               {product.partnerName && product.partnerName !== product.name
                 ? ` Curated in partnership with ${product.partnerName}.`
                 : " Start with a structured course and earn recognition tied to your wallet."}
@@ -126,7 +126,7 @@ export default async function ProductPage({
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">Courses</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Start with the official learning paths for {product.name}.
+                Start with the learning paths for {product.name}.
               </p>
             </div>
             <Button variant="ghost" asChild>

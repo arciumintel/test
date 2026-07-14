@@ -12,23 +12,35 @@ type Result<T = unknown> = ({ ok: true } & T) | { error: string };
 
 const PENDING_APPLICATION_STATUSES = ["received", "in_review"] as const;
 
+const optionalText = (max: number) =>
+  z
+    .union([z.string().max(max), z.literal(""), z.null()])
+    .optional()
+    .transform((v) => (v && String(v).trim() ? String(v).trim() : null));
+
+const optionalUrl = z
+  .union([z.string().url().max(500), z.literal(""), z.null()])
+  .optional()
+  .transform((v) => (v && String(v).trim() ? String(v).trim() : null));
+
 const applicationSchema = z.object({
   partnerName: z.string().min(2, "Partner name is required").max(120),
   contactName: z.string().min(2, "Contact name is required").max(120),
-  contactEmail: z
-    .string()
-    .email("Enter a valid email")
-    .max(200),
+  contactEmail: z.string().email("Enter a valid email").max(200),
+  contactX: optionalText(120),
+  contactDiscord: optionalText(200),
+  contactTelegram: optionalText(120),
+  preferredContactMethod: z.enum(["email", "x", "discord", "telegram"]),
   projectName: z.string().min(2, "Project name is required").max(120),
   projectDescription: z
     .string()
     .min(10, "Provide a short project description")
     .max(800),
-  sourceMaterialUrl: z
-    .union([z.string().url().max(500), z.literal(""), z.null()])
-    .optional()
-    .transform((v) => (v && String(v).trim() ? String(v).trim() : null)),
-  requestedCourseTopic: z.string().max(400).optional().nullable(),
+  officialWebsite: optionalUrl,
+  officialX: optionalText(200),
+  officialDiscord: optionalText(300),
+  officialTelegram: optionalText(200),
+  sourceMaterialUrl: optionalUrl,
 });
 
 export type PartnerApplicationStatus = {
@@ -140,10 +152,17 @@ export async function submitPartnerApplication(
         partnerName: parsed.data.partnerName,
         contactName: parsed.data.contactName,
         contactEmail: parsed.data.contactEmail,
+        contactX: parsed.data.contactX,
+        contactDiscord: parsed.data.contactDiscord,
+        contactTelegram: parsed.data.contactTelegram,
+        preferredContactMethod: parsed.data.preferredContactMethod,
         projectName: parsed.data.projectName,
         projectDescription: parsed.data.projectDescription,
+        officialWebsite: parsed.data.officialWebsite,
+        officialX: parsed.data.officialX,
+        officialDiscord: parsed.data.officialDiscord,
+        officialTelegram: parsed.data.officialTelegram,
         sourceMaterialUrl: parsed.data.sourceMaterialUrl,
-        requestedCourseTopic: parsed.data.requestedCourseTopic?.trim() || null,
         reviewStatus: "received",
       },
     });

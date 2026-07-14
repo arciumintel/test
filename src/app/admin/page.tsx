@@ -71,7 +71,7 @@ export default async function AdminDashboard() {
             Dashboard
           </h1>
           <p className="mt-1 text-pretty text-sm text-muted-foreground">
-            Create and manage official Arcademy courses.
+            Create and manage Arcademy courses.
           </p>
           {!dbError && (
             <p className="mt-2 text-pretty text-sm text-muted-foreground">

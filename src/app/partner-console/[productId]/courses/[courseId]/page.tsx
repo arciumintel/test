@@ -7,6 +7,7 @@ import { CourseEditorTabs } from "@/components/admin/course-editor-tabs";
 import { PartnerCourseStatusControls } from "@/components/partner-console/partner-course-status-controls";
 import { getCourseAnalytics } from "@/lib/analytics";
 import { formatCourseStatus } from "@/lib/course-status";
+import { getCoursePublishReadiness } from "@/lib/publish-readiness";
 import { toAdminQuestion } from "@/lib/question-types";
 import { prisma } from "@/lib/prisma";
 import type { CourseStatus } from "@prisma/client";
@@ -60,6 +61,7 @@ export default async function PartnerCourseEditorPage({
   if (!course) notFound();
 
   const analytics = await getCourseAnalytics(course.id);
+  const readiness = await getCoursePublishReadiness(course.id);
   const finalQuiz = course.quizzes[0] ?? null;
   const prerequisiteOptions = await prisma.course.findMany({
     where: { productId, id: { not: course.id } },
@@ -88,13 +90,14 @@ export default async function PartnerCourseEditorPage({
             </Badge>
           </div>
           <p className="mt-1 text-pretty text-sm text-muted-foreground">
-            Partner course draft for {course.product.name}
+            Course for {course.product.name}
           </p>
         </div>
         <PartnerCourseStatusControls
           productId={productId}
           courseId={course.id}
           status={course.status}
+          readiness={readiness}
         />
       </div>
 
@@ -107,14 +110,19 @@ export default async function PartnerCourseEditorPage({
         </Alert>
       )}
 
-      {course.status === "submitted_for_review" && (
-        <Alert className="mt-4">
-          <AlertDescription>
-            This course is with Arcademy staff for review. You cannot edit it
-            until staff requests changes or publishes it.
-          </AlertDescription>
-        </Alert>
-      )}
+      {course.status !== "published" &&
+        readiness.warnings.length > 0 &&
+        readiness.ready && (
+          <Alert className="mt-4" variant="info">
+            <AlertDescription>
+              <ul className="list-disc space-y-1 pl-4">
+                {readiness.warnings.map((w) => (
+                  <li key={w}>{w}</li>
+                ))}
+              </ul>
+            </AlertDescription>
+          </Alert>
+        )}
 
       <CourseEditorTabs
         course={{

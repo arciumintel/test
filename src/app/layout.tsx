@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: "%s · Arcademy",
   },
   description:
-    "The official learning platform for the Arcium ecosystem. Take structured courses, pass assessments, and earn recognition tied to your Solana wallet.",
+    "A curated learning platform for the Arcium ecosystem. Take structured courses, pass assessments, and earn recognition tied to your Solana wallet.",
 };
 
 export default function RootLayout({

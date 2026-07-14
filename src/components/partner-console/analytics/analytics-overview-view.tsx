@@ -1,6 +1,11 @@
 import Link from "next/link";
+import type { LucideIcon } from "lucide-react";
 import type { AnalyticsEngineResult } from "@/lib/analytics-engine";
 import { PartnerAnalyticsWeeklyChart } from "@/components/partner-console/analytics/partner-analytics-weekly-chart";
+import {
+  AnalyticsIconBadge,
+  OVERVIEW_METRIC_ICONS,
+} from "@/components/partner-console/analytics/analytics-icons";
 import {
   AnalyticsInfoTip,
   MetricHelpLabel,
@@ -8,12 +13,14 @@ import {
 import type { AnalyticsHelpKey } from "@/lib/analytics-help";
 
 function MetricCard({
+  icon,
   label,
   value,
   deltaPct,
   suffix = "",
   helpKey,
 }: {
+  icon: LucideIcon;
   label: string;
   value: string;
   deltaPct?: number | null;
@@ -22,6 +29,7 @@ function MetricCard({
 }) {
   return (
     <div className="rounded-lg border px-4 py-3">
+      <AnalyticsIconBadge icon={icon} className="mb-3" />
       <p className="text-xs text-muted-foreground">
         <MetricHelpLabel helpKey={helpKey}>{label}</MetricHelpLabel>
       </p>
@@ -98,18 +106,21 @@ export function AnalyticsOverviewView({
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <MetricCard
+            icon={OVERVIEW_METRIC_ICONS.health_score}
             label="Health score"
             value={health.value}
             deltaPct={health.deltaPct}
             helpKey="health_score"
           />
           <MetricCard
+            icon={OVERVIEW_METRIC_ICONS.learners_started}
             label="Learners started"
             value={starts.value}
             deltaPct={starts.deltaPct}
             helpKey="learners_started"
           />
           <MetricCard
+            icon={OVERVIEW_METRIC_ICONS.completion_rate}
             label="Completion rate"
             value={completion.value}
             deltaPct={completion.deltaPct}
@@ -117,12 +128,14 @@ export function AnalyticsOverviewView({
             helpKey="completion_rate"
           />
           <MetricCard
+            icon={OVERVIEW_METRIC_ICONS.badges_awarded}
             label="Badges awarded"
             value={badges.value}
             deltaPct={badges.deltaPct}
             helpKey="badges_awarded"
           />
           <MetricCard
+            icon={OVERVIEW_METRIC_ICONS.quiz_pass_rate}
             label="Quiz pass rate"
             value={quiz.value}
             deltaPct={quiz.deltaPct}
@@ -130,6 +143,7 @@ export function AnalyticsOverviewView({
             helpKey="quiz_pass_rate"
           />
           <MetricCard
+            icon={OVERVIEW_METRIC_ICONS.start_conversion}
             label="Start conversion"
             value={startConv.value}
             deltaPct={startConv.deltaPct}

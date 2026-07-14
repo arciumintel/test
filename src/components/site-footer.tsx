@@ -44,7 +44,7 @@ export async function SiteFooter() {
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <GraduationCap className="size-4 text-primary" />
-            <span>Official learning platform for Arcium</span>
+            <span>Learning for the Arcium ecosystem</span>
           </div>
 
           <div className="grid grid-cols-2 gap-8 sm:gap-12">

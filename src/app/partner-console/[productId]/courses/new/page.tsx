@@ -30,10 +30,10 @@ export default async function NewPartnerCoursePage({
 
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">New course draft</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">New course</h1>
       <p className="mt-1 text-pretty text-sm text-muted-foreground">
-        Create a course for {product.name}. After authoring, submit it for
-        Arcademy staff review before it can go live.
+        Create a course for {product.name}. When it is ready, publish it from
+        the course editor.
       </p>
       <div className="mt-8 max-w-3xl">
         <CourseDetailsForm

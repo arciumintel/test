@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 export const metadata: Metadata = {
   title: "Partners",
   description:
-    "Partner with Arcademy to educate Arcium ecosystem users through official, structured courses.",
+    "Partner with Arcademy to educate Arcium ecosystem users through curated, structured courses.",
 };
 
 export default function PartnersPage() {
@@ -29,11 +29,11 @@ export default function PartnersPage() {
       </div>
 
       <p className="mt-8 text-pretty leading-relaxed text-muted-foreground">
-        Arcademy helps Arcium ecosystem projects educate users through official,
-        structured courses. Partners submit source material and review factual
-        accuracy; Arcademy staff handles learner-facing copy, course design,
-        publishing, and quality. You get stable URLs, wallet-linked badges, and
-        basic performance reporting through the Partner console.
+        Arcademy helps Arcium ecosystem projects educate users through curated,
+        structured courses. After approval, partners publish their own project
+        pages and courses from the Partner console. You get stable URLs,
+        wallet-linked badges, and performance reporting — with Arcademy staff
+        able to step in on quality when needed.
       </p>
 
       <div className="mt-8 flex flex-wrap gap-3">
@@ -58,7 +58,7 @@ export default function PartnersPage() {
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               <li>Professional ecosystem project page</li>
               <li>Curated beginner-friendly course</li>
-              <li>Partner console for materials and analytics</li>
+              <li>Partner console for courses and analytics</li>
               <li>Stable referral URLs for docs and onboarding</li>
             </ul>
           </CardContent>
@@ -67,10 +67,10 @@ export default function PartnersPage() {
           <CardContent className="py-5">
             <h2 className="text-sm font-semibold">How it works</h2>
             <ol className="mt-3 list-decimal space-y-2 pl-4 text-sm text-muted-foreground">
-              <li>Apply and submit source material</li>
-              <li>Arcademy staff builds your course</li>
-              <li>You review for factual accuracy</li>
-              <li>Staff publishes; you refer users</li>
+              <li>Apply with your project details and docs</li>
+              <li>Staff approves and grants console access</li>
+              <li>You publish your project page and courses</li>
+              <li>Refer users and track aggregate performance</li>
             </ol>
           </CardContent>
         </Card>

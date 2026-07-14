@@ -25,6 +25,10 @@ type ThemeColors = {
   warning: string;
 };
 
+/** Option C signal-cyan approx for SSR / unparsable fallbacks */
+const PRIMARY_FALLBACK = "oklch(0.48 0.12 230)";
+const PRIMARY_FALLBACK_RGB: [number, number, number] = [26, 112, 143];
+
 function parseCssColor(value: string): [number, number, number] {
   if (value.startsWith("#")) {
     const hex = value.slice(1);
@@ -38,17 +42,34 @@ function parseCssColor(value: string): [number, number, number] {
     const int = Number.parseInt(normalized, 16);
     return [(int >> 16) & 255, (int >> 8) & 255, int & 255];
   }
-  return [103, 85, 255];
+
+  if (typeof document !== "undefined") {
+    const el = document.createElement("div");
+    el.style.color = value;
+    document.body.appendChild(el);
+    const computed = getComputedStyle(el).color;
+    document.body.removeChild(el);
+    const match = computed.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+      return [
+        Number.parseInt(match[1], 10),
+        Number.parseInt(match[2], 10),
+        Number.parseInt(match[3], 10),
+      ];
+    }
+  }
+
+  return PRIMARY_FALLBACK_RGB;
 }
 
 function readThemeColors(): ThemeColors {
   if (typeof window === "undefined") {
     return {
-      primary: "#6755ff",
-      primaryRgb: [103, 85, 255],
-      foreground: "#1a1a2e",
-      muted: "#8b8b9a",
-      background: "#fafafa",
+      primary: PRIMARY_FALLBACK,
+      primaryRgb: PRIMARY_FALLBACK_RGB,
+      foreground: "oklch(0.20 0.02 260)",
+      muted: "oklch(0.48 0.015 260)",
+      background: "oklch(0.985 0.004 100)",
       info: "#3b82f6",
       success: "#22c55e",
       warning: "#f59e0b",
@@ -56,13 +77,20 @@ function readThemeColors(): ThemeColors {
   }
 
   const styles = getComputedStyle(document.documentElement);
-  const primary = styles.getPropertyValue("--primary").trim() || "#6755ff";
+  const primary =
+    styles.getPropertyValue("--primary").trim() || PRIMARY_FALLBACK;
   return {
     primary,
     primaryRgb: parseCssColor(primary),
-    foreground: styles.getPropertyValue("--foreground").trim() || "#1a1a2e",
-    muted: styles.getPropertyValue("--muted-foreground").trim() || "#8b8b9a",
-    background: styles.getPropertyValue("--background").trim() || "#fafafa",
+    foreground:
+      styles.getPropertyValue("--foreground").trim() ||
+      "oklch(0.20 0.02 260)",
+    muted:
+      styles.getPropertyValue("--muted-foreground").trim() ||
+      "oklch(0.48 0.015 260)",
+    background:
+      styles.getPropertyValue("--background").trim() ||
+      "oklch(0.985 0.004 100)",
     info: styles.getPropertyValue("--info").trim() || "#3b82f6",
     success: styles.getPropertyValue("--success").trim() || "#22c55e",
     warning: styles.getPropertyValue("--warning").trim() || "#f59e0b",

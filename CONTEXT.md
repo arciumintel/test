@@ -1,14 +1,14 @@
 # Arcademy — Domain Context
 
-Arcademy is the official learning platform for Arcium ecosystem products. V1 is a curated learner MVP with limited partner self-service: staff publish courses, partners submit and review materials, learners browse publicly, connect a Solana wallet to track progress, pass quizzes, and earn off-chain badges.
+Arcademy is a curated learning platform for Arcium ecosystem products. V1 is a curated learner MVP with partner self-service: approved partners publish their own project pages and courses, learners browse publicly, connect a Solana wallet to track progress, pass quizzes, and earn off-chain badges. Staff owns partner application approval and can intervene on content when needed.
 
 Full product requirements: [docs/PRD.md](docs/PRD.md)
 
 ## Audience
 
 - **Primary (V1):** New users learning Arcium ecosystem concepts — not developers first.
-- **Staff:** Arcademy team curating and publishing courses, approving partner-submitted content, viewing analytics.
-- **Partners:** Ecosystem teams using limited self-service to submit source material, draft course content, review factual accuracy, and view basic reporting.
+- **Staff:** Arcademy team approving partners, intervening on content when needed, and viewing platform analytics.
+- **Partners:** Ecosystem teams who publish their own project pages and courses for assigned projects, plus basic reporting.
 - **Deferred:** Developer sandboxes, social features, advanced LMS functionality.
 
 ## Core Concepts
@@ -17,7 +17,7 @@ Full product requirements: [docs/PRD.md](docs/PRD.md)
 |------|---------|
 | **Learner** | A user with role `learner` who browses courses, completes lessons, takes quizzes, and earns badges. |
 | **Staff admin** | A user with role `staff_admin` who creates, edits, publishes products/courses and views analytics. |
-| **Partner admin** | A limited partner user who can submit source material, draft or review assigned ecosystem project content, and view basic reporting without direct publish authority. |
+| **Partner admin** | A project admin who publishes and manages assigned ecosystem project pages and courses, and views basic reporting. |
 | **Product** | A staff-managed Arcium ecosystem product page with metadata (name, slug, description, logo, links). Status: draft, published, or archived. |
 | **Course** | A structured learning path owned by a product, with metadata (title, slug, level, duration, thumbnail). Status: draft, published, or archived. Public course URLs are product-scoped. |
 | **Lesson** | An ordered unit within a course. Contains content and optional media. |
@@ -86,9 +86,9 @@ The explorer may list projects before they have courses. When a product is publi
 
 - `learner` — default role for wallet-connected users.
 - `staff_admin` — access to admin dashboard.
-- Limited partner role — access to assigned partner self-service workspace.
+- Limited partner role — access to assigned Partner console workspace (settings, courses, analytics, Discord).
 
-Partner self-service is in V1, but publishing remains staff-approved. Products are staff-governed and may be partner-assisted through assigned partner workspaces. Partner teams are trusted to mark lesson, quiz, and badge content as visible; staff still approves course publication.
+Approved partners publish their own project pages and courses within assigned project scope. Staff owns partner application approval and can still review or intervene on content when needed.
 
 ## Infrastructure (Fixed for V1)
 
@@ -103,7 +103,7 @@ Partner self-service is in V1, but publishing remains staff-approved. Products a
 
 ## Explicit Non-Goals (V1)
 
-Soulbound NFTs, on-chain credentials, partner direct publishing without staff approval, paid courses, leaderboards, social profiles, comments, AI-generated lessons, multi-language, mobile app, code execution sandboxes, full LMS grading.
+Soulbound NFTs, on-chain credentials, paid courses, leaderboards, social profiles, comments, AI-generated lessons, multi-language, mobile app, code execution sandboxes, full LMS grading.
 
 ## Success Metrics
 

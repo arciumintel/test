@@ -38,7 +38,11 @@ export function EntityStatusControls(props: EntityStatusControlsProps) {
     setBusy(key);
     setError(null);
     const res =
-      next === "published" && props.status === "approved"
+      next === "published" &&
+      (props.status === "approved" ||
+        PARTNER_WORKFLOW_STATUSES.includes(
+          props.status as (typeof PARTNER_WORKFLOW_STATUSES)[number]
+        ))
         ? await publishApprovedCourse(props.entityId)
         : await setCourseStatus(props.entityId, next);
     setBusy(null);
@@ -68,11 +72,28 @@ export function EntityStatusControls(props: EntityStatusControlsProps) {
       status as (typeof PARTNER_WORKFLOW_STATUSES)[number]
     );
 
-    if (isPartnerWorkflow && status !== "approved" && status !== "published") {
-      return null;
+    // Staff can publish any non-archived partner course; review controls stay separate.
+    if (status === "archived") {
+      return (
+        <ActionGroup error={error}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => updateCourse("draft", "restore")}
+            disabled={busy !== null}
+          >
+            {busy === "restore" ? <Loader2 className="animate-spin" /> : null}
+            Restore to draft
+          </Button>
+        </ActionGroup>
+      );
     }
 
-    if (!LEGACY_COURSE_STATUSES.includes(status) && status !== "approved") {
+    if (
+      !LEGACY_COURSE_STATUSES.includes(status) &&
+      !isPartnerWorkflow &&
+      status !== "approved"
+    ) {
       return null;
     }
 
@@ -110,33 +131,19 @@ export function EntityStatusControls(props: EntityStatusControlsProps) {
             Unpublish
           </Button>
         )}
-        {status !== "archived" &&
-          status !== "partner_draft" &&
-          status !== "submitted_for_review" &&
-          status !== "staff_changes_requested" && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => updateCourse("archived", "archive")}
-              disabled={busy !== null}
-            >
-              {busy === "archive" ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <Archive />
-              )}
-              Archive
-            </Button>
-          )}
-        {status === "archived" && (
+        {status !== "archived" && (
           <Button
             size="sm"
-            variant="outline"
-            onClick={() => updateCourse("draft", "restore")}
+            variant="ghost"
+            onClick={() => updateCourse("archived", "archive")}
             disabled={busy !== null}
           >
-            {busy === "restore" ? <Loader2 className="animate-spin" /> : null}
-            Restore to draft
+            {busy === "archive" ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Archive />
+            )}
+            Archive
           </Button>
         )}
       </ActionGroup>

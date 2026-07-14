@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { AnalyticsPageHeading } from "@/components/partner-console/analytics/analytics-icons";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { AnalyticsBackfillGate } from "@/components/partner-console/analytics/analytics-backfill-gate";
 import { AnalyticsConceptsView } from "@/components/partner-console/analytics/analytics-concepts-view";
@@ -40,12 +41,11 @@ export default async function PartnerAnalyticsConceptsPage({
   if (!backfill.complete) {
     return (
       <>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Concepts</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Mastery and knowledge gaps from tagged assessment items.
-          </p>
-        </div>
+        <AnalyticsPageHeading
+          tab="concepts"
+          title="Concepts"
+          description="Mastery and knowledge gaps from tagged assessment items."
+        />
         <div className="mt-8">
           <AnalyticsBackfillGate productId={productId} status={backfill} />
         </div>
@@ -74,12 +74,11 @@ export default async function PartnerAnalyticsConceptsPage({
   return (
     <>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Concepts</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Mastery and knowledge gaps from tagged assessment items.
-          </p>
-        </div>
+        <AnalyticsPageHeading
+          tab="concepts"
+          title="Concepts"
+          description="Mastery and knowledge gaps from tagged assessment items."
+        />
         <div className="flex flex-col items-stretch gap-3 sm:items-end">
           <Suspense fallback={null}>
             <PartnerAnalyticsDateRange basePath={basePath} current={preset} />

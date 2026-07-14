@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { AnalyticsPageHeading } from "@/components/partner-console/analytics/analytics-icons";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { AnalyticsAssessmentsView } from "@/components/partner-console/analytics/analytics-assessments-view";
 import { AnalyticsBackfillGate } from "@/components/partner-console/analytics/analytics-backfill-gate";
@@ -37,12 +38,11 @@ export default async function PartnerAnalyticsAssessmentsPage({
   if (!backfill.complete) {
     return (
       <>
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Assessments</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Question intelligence and quiz quality from normalized attempts.
-          </p>
-        </div>
+        <AnalyticsPageHeading
+          tab="assessments"
+          title="Assessments"
+          description="Question intelligence and quiz quality from normalized attempts."
+        />
         <div className="mt-8">
           <AnalyticsBackfillGate productId={productId} status={backfill} />
         </div>
@@ -59,14 +59,11 @@ export default async function PartnerAnalyticsAssessmentsPage({
     return (
       <>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Assessments
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Question intelligence and quiz quality from normalized attempts.
-            </p>
-          </div>
+          <AnalyticsPageHeading
+            tab="assessments"
+            title="Assessments"
+            description="Question intelligence and quiz quality from normalized attempts."
+          />
           <div className="flex flex-col items-stretch gap-3 sm:items-end">
             <Suspense fallback={null}>
               <PartnerAnalyticsDateRange basePath={basePath} current={preset} />

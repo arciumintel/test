@@ -1,0 +1,595 @@
+---
+title: Partner analytics engine
+description: A complete guide to the Analytics V2 workspace — every tab, setting, concept, and term partners need to understand.
+---
+
+# Partner analytics engine
+
+Arcademy’s partner analytics helps you answer one question: **Are learners actually getting value from your courses, and where should you improve next?**
+
+When **Analytics V2** is enabled for your project, you get a multi-tab workspace in the Partner console. The tabs match what you see in the analytics navigation bar:
+
+![Analytics dashboard overview](/partner-docs/analytics/analytics-dashboard-overview.png)
+
+<Cards>
+  <Card title="Open Analytics" href="/partner-console">
+    Go to Partner console → select your project → Analytics
+  </Card>
+  <Card title="Analytics settings" href="/partner-console">
+    Partner console → Analytics settings (separate from the tab bar)
+  </Card>
+</Cards>
+
+## Two analytics experiences
+
+| Experience | When you see it | What you get |
+| --- | --- | --- |
+| **Analytics V2** | Enabled in Analytics settings (Owner+) | Seven tabs: Overview, Courses, Concepts, Assessments, Readiness, Certifications, Recommendations |
+| **Partner Analytics Plus** (classic) | V2 flag is off | Single-page report with summary cards, funnel, trends, and course drill-down |
+
+Most partners should use **Analytics V2**. The classic report remains available if your team has not switched yet.
+
+![Analytics navigation map](/partner-docs/analytics/analytics-nav-map.svg)
+
+---
+
+## Before you read each tab
+
+Every analytics page shares the same **controls at the top**:
+
+### Period (date range)
+
+Metrics only include activity inside the window you select:
+
+- **7 days** — recent pulse check
+- **30 days** — default; good for monthly reviews
+- **90 days** — seasonal or campaign-length view
+- **All time** — full history since launch
+
+If cohorts or recommendations look empty, try a wider period.
+
+### Compare to (historical comparison)
+
+When enabled, KPI cards show **% change vs the prior matching window** (for example, this 30 days vs the previous 30 days). “No prior period” means there is not enough earlier data yet.
+
+Pick a comparison length that matches your Period so the delta is meaningful.
+
+### Snapshot status
+
+Analytics numbers are built from **saved snapshots** so pages load quickly. The status chip tells you:
+
+| Status | Meaning |
+| --- | --- |
+| **Up to date** | Numbers match the latest snapshot for this period |
+| **Needs refresh** | Content or activity changed since the last build |
+| **Building / Queued** | Recalculating — older numbers may show briefly |
+| **Build failed** | Refresh to retry, or contact Arcademy staff if it persists |
+
+**Owners** and **staff** can trigger a manual refresh. **Analysts** always see the latest available snapshot.
+
+### Export
+
+Each tab can export its view (Markdown, CSV, or a full analytics pack depending on scope). Use export for stakeholder reports or offline review.
+
+### Privacy
+
+Partner analytics is **aggregate only**. You never see individual learner identities, wallet addresses, or referral attribution.
+
+---
+
+## Tab 1: Overview
+
+**Purpose:** Executive health check — “How are we doing this period?”
+
+Start here every review cycle.
+
+### Executive summary KPIs
+
+These six cards are your headline numbers:
+
+| KPI | What it tells you |
+| --- | --- |
+| **Health score** | 0–100 blend of completion rate, quiz pass rate, and start conversion for this period. Higher usually means more learners finish and pass. Not a platform-wide grade. |
+| **Learners started** | Distinct learners who started at least one published course in this period |
+| **Completion rate** | Share of starters who finished required lessons **and** passed the final quiz. Not the same as earning a badge in every edge case, but closely related |
+| **Badges awarded** | Course badges granted in this period. Progress signals on Arcademy — separate from certifications |
+| **Quiz pass rate** | Among learners who attempted a final quiz, the share who passed at least once |
+| **Start conversion** | Course starts ÷ course page views. Shows how many visitors who open a course actually begin it |
+
+Each KPI may show a green ↑ or red ↓ delta when Compare to is active.
+
+### Top recommendations preview
+
+The Overview shows your **top three** actionable recommendations with links to the full Recommendations tab and the evidence behind each alert.
+
+### Learning funnel
+
+![Learning funnel](/partner-docs/analytics/learning-funnel.svg)
+
+The funnel counts **tracked events in order**. The percentage on each step is **this step’s events ÷ the previous step’s events** — not unique people.
+
+Typical stages:
+
+1. Course page views
+2. Course starts
+3. Lesson completions
+4. Quiz passed / badge earned
+
+A large drop between steps tells you where to investigate. The Recommendations tab may flag funnel drops that fall below your configured threshold.
+
+### Cohorts
+
+Learners grouped by the **week they first started** a course. Completers in cohorts are learners who earned a course badge — useful as a retention signal, but not identical to the Completion rate KPI above.
+
+### Learning behaviour
+
+Total engagement event counts in this period: lesson views, lesson completions, quiz starts, hints used, glossary opens, search queries. These are **counts of actions**, not unique learners.
+
+### Weekly trends
+
+Chart of key metrics over time within the selected period.
+
+### Courses preview
+
+Top five courses by activity with links to the full Courses tab and per-course detail pages.
+
+### Staff notes
+
+Optional notes from Arcademy staff about your analytics context (if present).
+
+---
+
+## Tab 2: Courses
+
+**Purpose:** Per-course performance — which courses attract learners, where they drop off, and how quizzes behave.
+
+### Courses table
+
+Each published course shows:
+
+| Column | Meaning |
+| --- | --- |
+| **Starts** | Distinct learners who started this course in the period |
+| **Completions** | Learners who finished required lessons and passed the final quiz |
+| **Completion %** | Completions ÷ starts |
+| **Badges** | Badges awarded for this course in the period |
+| **Quiz pass %** | Share of quiz attempters who passed at least once |
+
+Click a course row for the **course detail** page.
+
+### Course detail (drill-down)
+
+The detail view goes deeper on one course:
+
+- **Lesson funnel** — completion rate step-by-step through lessons; highlights the lesson with the largest drop vs the previous lesson
+- **Quiz diagnostics** — per-question miss rates, discrimination proxy, average time
+- **Attempts before pass** — histogram of how many tries learners needed
+- **Within-2-attempt pass rate** — share who passed on attempt 1 or 2 (low values often mean the quiz is too hard or unclear)
+- **Average quiz score** and **average attempts to pass**
+- **Badge verification views** — times someone opened a public badge verification page
+
+Use course detail when a specific course underperforms while others look healthy.
+
+---
+
+## Tab 3: Concepts
+
+**Purpose:** Understand **what learners know** at the topic level — not just whether they finished a course.
+
+### What is a concept?
+
+A **concept** is a topic or skill you define for your product (for example, “Private transactions”, “Key management”, “SDK setup”). Concepts are **your taxonomy** — the vocabulary you use to describe what learners should master.
+
+![Concepts workflow](/partner-docs/analytics/analytics-concepts-flow.png)
+
+Concepts power three analytics areas:
+
+1. **Concepts tab** — mastery and knowledge gaps
+2. **Assessments tab** — which questions test which concepts
+3. **Readiness tab** — concept mastery as one readiness component
+
+**Untagged content is invisible to concept analytics.** A lesson or quiz question with no concept tags does not contribute to mastery or gap scores.
+
+### Concept importance levels
+
+When you create a concept in Settings, you assign importance:
+
+| Level | Weight in gap scoring | When to use |
+| --- | --- | --- |
+| **Critical** | 1.5× | Must-know for safe or successful product use |
+| **Core** | 1.0× | Standard curriculum topics |
+| **Supporting** | 0.6× | Nice-to-have or introductory context |
+
+Critical concepts that score poorly surface first in **Knowledge gaps** and can trigger Recommendations.
+
+### Concept coverage banner
+
+At the top of the Concepts tab, coverage shows what share of your **published lessons and quiz questions** have at least one concept tag.
+
+Example: “72% coverage — 18/25 lessons and 45/60 questions tagged.”
+
+Aim for high coverage before trusting mastery numbers. Link from the banner goes to Analytics settings to manage concepts and tagging.
+
+### Knowledge gaps
+
+Ranked list of concepts with the highest **gap score**:
+
+```
+gap score = importance weight × (1 − mastery %)
+```
+
+Higher gap = more urgent. Fix content, add practice, or revise assessments for concepts at the top of this list.
+
+### Concept mastery table
+
+| Column | Meaning |
+| --- | --- |
+| **Importance** | Critical / core / supporting |
+| **Tagged lessons / questions** | How much content maps to this concept |
+| **Attempts** | Quiz answers on tagged questions in this period |
+| **Mastery %** | Weighted correct rate (0–100) on tagged questions |
+| **Gap score** | Urgency ranking |
+
+Click a concept for the **concept drill-down**: linked lessons, linked questions, and per-question miss rates.
+
+### Tagging content
+
+Concept tags are applied when staff or partners edit **lessons** and **quiz questions** in the course editor. Each tag can carry a weight (how strongly that content represents the concept).
+
+**Manager+** roles can manage the concept list in Settings. Tagging happens in content authoring, not on the Concepts tab itself.
+
+### Data requirement
+
+Concept mastery requires normalized quiz attempt data. If your project is still backfilling historical attempts, the Concepts tab may show a setup gate until processing completes.
+
+---
+
+## Tab 4: Assessments
+
+**Purpose:** Quiz question quality — find confusing items, high miss rates, and untagged questions.
+
+### Concept coverage (assessments)
+
+Same coverage idea as Concepts: questions without concept tags limit your ability to connect misses to topics.
+
+### Untagged question warning
+
+Lists questions with no concept tags when coverage is incomplete. Tag them so misses roll up into Concepts and Readiness.
+
+### Question intelligence table
+
+| Column | Meaning |
+| --- | --- |
+| **Prompt** | Question text (truncated) |
+| **Quiz / course** | Where the question lives |
+| **Attempts** | Answered attempts in the period |
+| **Miss rate** | Share of attempts that were incorrect |
+| **Avg time** | Average time spent on this question per attempt |
+| **Discrimination** | How well the question separates strong vs weak quiz performance. Higher is usually better. Near zero or negative may mean a confusing or mis-keyed item |
+| **Concepts** | Linked concept names |
+
+Sorted by miss rate by default — the hardest questions float to the top.
+
+Click a question for **question drill-down** with full prompt, linked concepts, and attempt breakdown.
+
+---
+
+## Tab 5: Readiness
+
+**Purpose:** A single **readiness score** that blends multiple learning signals — useful when “finished the course” is not enough to mean “ready to build.”
+
+![Readiness model](/partner-docs/analytics/readiness-model.svg)
+
+### Default model: Learning Readiness
+
+New projects seed a default model with four components at **25% weight each**:
+
+| Component | What it measures |
+| --- | --- |
+| **Course completion** | Share of starters who complete courses |
+| **Quiz performance** | Aggregate quiz pass / score performance |
+| **Concept mastery** | Mastery on critical and core concepts (requires tagging) |
+| **Required path completion** | Progress through required learning paths |
+
+**Partner conversion events** (for example, “visited docs” or “joined Discord”) appear as a configurable component but are **deferred** — not tracked in V1 analytics.
+
+### What you see on the page
+
+For each readiness model:
+
+- **Average score** — weighted mix, 0–100
+- **Level** — label from configured tiers (default: Exploring → Building → Ready)
+- **Ready threshold** — minimum score to count as “ready” (default **70**)
+- **Component breakdown** — each component’s score, weight, and status
+
+### Component statuses
+
+| Status | Meaning |
+| --- | --- |
+| **OK** | Component is configured and contributing real data |
+| **Neutral** | Not fully set up — scores a neutral 50 so missing setup does not break the model |
+| **Setup needed** | Action required (for example, add concepts, tag questions, define paths). Follow the setup link |
+
+Owners can rename the model, change weights, and adjust the ready threshold in **Analytics settings → Readiness model**. Weights should sum to **100%**.
+
+---
+
+## Tab 6: Certifications
+
+**Purpose:** Track **formal credentials** you define — separate from Arcademy course badges.
+
+![Badges vs certifications](/partner-docs/analytics/badges-vs-certifications.svg)
+
+| | Badge | Certification |
+| --- | --- | --- |
+| **Who defines it** | Arcademy course completion rules | You, in Analytics settings |
+| **When it’s earned** | Automatically on course completion | When certification requirements are met |
+| **Where it appears** | Overview, Courses, learner profile | Certifications tab |
+| **Promoted automatically?** | No — never auto-becomes a certification | — |
+
+### Credential funnel
+
+Steps such as:
+
+1. Published certifications configured
+2. Learners started (baseline)
+3. Certifications awarded
+4. Certificate views
+
+Each step shows a count and conversion % from the previous step.
+
+### Attainment summary
+
+- **Awards in period** — certifications granted in the selected date range
+- **Certificate views** — times verification pages were opened
+
+### Per-certification table
+
+| Column | Meaning |
+| --- | --- |
+| **Status** | Draft or published |
+| **Requirements** | Number of rules (for example, complete Course X) |
+| **Awards (period)** | Granted in this period |
+| **All-time** | Total awards ever |
+| **Attainment %** | Awards ÷ learners who started — how often starters earn this credential |
+
+Create certifications in **Analytics settings → Certifications**. Managers can create; Owners control full lifecycle.
+
+---
+
+## Tab 7: Recommendations
+
+**Purpose:** Actionable, prioritized alerts — the analytics engine telling you what to fix or celebrate next.
+
+![Recommendations flow](/partner-docs/analytics/recommendations-flow.svg)
+
+Each recommendation includes:
+
+| Field | Meaning |
+| --- | --- |
+| **Priority** | High / medium / low urgency |
+| **Category** | **Opportunity** = likely problem · **Success** = positive signal · **Trend** = meaningful change vs comparison period |
+| **Title & rationale** | Plain-language explanation with the numbers that triggered it |
+| **Evidence link** | Deep link to Overview, Courses, Concepts, Assessments, Readiness, or Certifications |
+
+### Example triggers
+
+The engine compares your metrics to **thresholds you set in Analytics settings**:
+
+- Funnel step conversion below minimum
+- Completion rate below minimum (with enough volume)
+- Quiz pass rate critically low
+- Critical concept mastery below minimum
+- Question miss rate above maximum
+- Average readiness below minimum
+- Certification attainment below minimum
+
+A **minimum volume** gate prevents noisy alerts when sample size is too small (default: 10 starters).
+
+Overview shows the top three; this tab shows the full ranked list.
+
+---
+
+## Analytics settings (in depth)
+
+**Location:** Partner console → **Analytics settings** (not a sub-tab under Analytics, but it configures everything).
+
+Settings are stored per ecosystem project in an **Analytics profile**. When you first open analytics, Arcademy seeds a default **Developer Education Pack** with starter concepts, a readiness model, and recommendation thresholds.
+
+### Who can change what
+
+| Role | View analytics | Edit terminology, sections, concepts | Edit readiness, thresholds, V2 flag, packs |
+| --- | --- | --- | --- |
+| **Partner Analyst** | Yes | Read-only | Read-only |
+| **Partner Manager** | Yes | Yes | No |
+| **Partner Owner** | Yes | Yes | Yes |
+| **Arcademy staff** | Yes | Yes | Yes (+ platform templates) |
+
+---
+
+### Analytics experience
+
+**Enable Analytics V2** — Turns on the multi-tab workspace (Overview through Recommendations). When off, your team sees the classic single-page Partner Analytics Plus report.
+
+*Owner or Platform Admin only.*
+
+---
+
+### Terminology & layout
+
+Rename labels shown in analytics **without changing how numbers are calculated**:
+
+| Setting | Default | Example customization |
+| --- | --- | --- |
+| **Learner label** | Learner | Developer, Builder, Member |
+| **Readiness label** | Learning Readiness | Integration Readiness |
+| **Certification label** | Certification | Credential, Certificate |
+| **Badge label** | Badge | Completion badge |
+
+**Dashboard sections** — Toggle which analytics sections appear in the nav and Overview layout. Hidden sections stay configured but disappear from navigation.
+
+Available section IDs include: Overview, Courses, Concepts, Assessments, Readiness, Certifications, Recommendations, Funnel, Behaviour, Cohorts, Opportunity, Trends.
+
+**KPI set** — Advanced: metric IDs shown in custom KPI strips (one per line). Leave default unless Arcademy staff guided you. Example IDs: `completion_rate`, `quiz_pass_rate`, `health_score`.
+
+**Funnel stages** — Advanced: event names that define funnel steps (one per line). Default stages match the standard learning journey.
+
+*Manager+ can save terminology and layout.*
+
+---
+
+### Concepts
+
+Create and manage your concept taxonomy:
+
+- **Name** — Display label (slug auto-generated)
+- **Importance** — Critical, core, or supporting
+- **Description** — Optional internal note
+
+After creating concepts, tag lessons and quiz questions in the course editor. Delete removes the concept definition (existing tags should be cleaned up in content).
+
+*Manager+ can create and delete concepts.*
+
+---
+
+### Readiness model
+
+Configure how the Readiness tab scores learners in aggregate:
+
+| Setting | Guidance |
+| --- | --- |
+| **Model name** | Shown on Readiness tab |
+| **Ready threshold** | Default 70 — learners at or above count as “ready” |
+| **Component weights** | Must sum to 100%. Adjust to match what “ready” means for your product |
+
+Default equal weights (25% each): course completion, quiz performance, concept mastery, required path completion.
+
+*Owner+ only.*
+
+---
+
+### Certifications
+
+- View existing certification definitions
+- **Create certification** — Name + initial requirement (typically complete a specific course)
+- Full publish/archive lifecycle is Owner-controlled
+
+Certifications are intentionally separate from badges. Completing a course and earning a badge does **not** automatically grant a certification unless requirements say so.
+
+*Manager+ can create; Owners manage lifecycle.*
+
+---
+
+### Recommendation thresholds
+
+Tune when the Recommendations engine fires alerts:
+
+| Threshold | Default | What it controls |
+| --- | --- | --- |
+| **Funnel stage conversion min %** | 50 | Alert when a funnel step retains less than this % of the previous step |
+| **Critical concept mastery min %** | 60 | Alert when critical concept mastery falls below |
+| **Question miss rate max %** | 40 | Alert when a question’s miss rate exceeds |
+| **Completion rate min %** | 20 | Alert when overall completion falls below |
+| **Min volume for alerts** | 10 | Minimum starters before alerts activate |
+| **Readiness score min** | 50 | Alert when average readiness falls below |
+| **Certification attainment min %** | 10 | Alert when attainment falls below |
+
+*Owner+ only.*
+
+---
+
+### Custom metric providers
+
+Optional metric packs written for your project. The **core** provider always runs. Enable additional providers only when you understand what they add.
+
+*Owner+ only.*
+
+---
+
+### Analytics packs
+
+Install curated starter setups:
+
+| Pack | Best for |
+| --- | --- |
+| **Developer Education** | Default — concepts, readiness, certifications, funnel, recommendations |
+| **Documentation** | Doc-centric terminology and sections |
+| **Community** | Community journey framing |
+| **Hackathon** | Event/campaign-style analytics |
+
+On install you choose:
+
+- **Keep existing labels** — Merge pack content but preserve your terminology
+- **Overwrite labels** — Replace terminology with the pack’s wording
+
+Preview shows terminology conflicts before install.
+
+*Owner+ only.*
+
+---
+
+## Recommended review workflow
+
+1. **Overview** — Check health score and KPI deltas for the period
+2. **Recommendations** — Work the highest-priority alerts first
+3. **Courses** — Drill into any flagged course
+4. **Concepts / Assessments** — Fix knowledge gaps and problematic questions
+5. **Readiness / Certifications** — Track program-level outcomes
+6. **Settings** — Adjust concepts, thresholds, or terminology as your program matures
+
+---
+
+## Glossary
+
+Terms you may see in analytics, exports, or conversations with Arcademy staff.
+
+| Term | Definition |
+| --- | --- |
+| **KPI** | **Key Performance Indicator** — a headline number you track over time (for example, completion rate). Overview shows six default KPIs. |
+| **Analytics profile** | Per-project configuration storing terminology, concepts, readiness model, thresholds, and feature flags. |
+| **Analytics V2** | Multi-tab analytics workspace (this guide). Enabled per project in Settings. |
+| **Partner Analytics Plus** | Classic single-page analytics report when V2 is disabled. |
+| **Snapshot** | Pre-computed analytics bundle for a date range. Powers fast page loads. |
+| **Period** | Selected date range for metrics (7d, 30d, 90d, all). |
+| **Comparison / delta** | Percent change vs the prior matching period. |
+| **Concept** | A topic or skill you define and tag on lessons/questions. |
+| **Concept tag** | Link between a concept and a lesson or quiz question. |
+| **Mastery** | Weighted correct-answer rate on questions tagged with a concept (0–100%). |
+| **Gap score** | Urgency ranking: importance × (1 − mastery). Higher = bigger knowledge gap. |
+| **Coverage** | % of lessons and questions with at least one concept tag. |
+| **Importance** | Concept priority: critical (1.5×), core (1×), supporting (0.6×) in gap scoring. |
+| **Funnel** | Ordered steps from page view to completion; each step’s % is events ÷ previous step. |
+| **Cohort** | Group of learners by the week they first started a course. |
+| **Discrimination** | How well a quiz question separates high vs low performers. |
+| **Miss rate** | % of quiz attempts answered incorrectly on a question. |
+| **Readiness** | Weighted score blending completion, quiz, concept, and path signals. |
+| **Ready threshold** | Minimum readiness score to count as “ready” (default 70). |
+| **Badge** | Automatic Arcademy credential on course completion. |
+| **Certification** | Partner-defined formal credential with explicit requirements. |
+| **Attainment** | Certifications awarded ÷ course starters — credential yield rate. |
+| **Recommendation** | Rule-based alert with priority, category, rationale, and evidence link. |
+| **Threshold** | Owner-configured limit that triggers recommendations when crossed. |
+| **Min volume** | Minimum sample size before alerts fire (avoids noise on tiny data). |
+| **Analytics pack** | Curated starter bundle of sections, concepts, and thresholds. |
+| **Provider** | Metric calculation module (core always on; optional custom providers). |
+| **Health score** | 0–100 composite of completion, quiz pass, and start conversion. |
+| **Start conversion** | Course starts ÷ course page views. |
+| **Executive summary** | Overview KPI strip — first thing to scan each review. |
+| **Drill-down** | Detail page for one course, concept, or question. |
+| **Backfill** | One-time processing of historical quiz attempts for Concepts/Assessments. |
+| **Aggregate analytics** | All metrics are summarized — no individual learner PII. |
+
+---
+
+## Getting help
+
+- **Setup concepts or certifications** — Partner console → Analytics settings (Manager+)
+- **Enable V2 or tune thresholds** — Owner role required
+- **Content tagging** — Coordinate with Arcademy staff on lesson and quiz edits
+- **Operational questions** — Contact your Arcademy intake owner
+
+## Related guides
+
+- [Partner console overview](/partners/docs/partner-console/overview)
+- [Roles and boundaries](/partners/docs/getting-started/roles-and-boundaries)
+- [Review workflow](/partners/docs/onboarding/review-workflow)

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { AnalyticsPageHeading } from "@/components/partner-console/analytics/analytics-icons";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { AnalyticsCertificationsView } from "@/components/partner-console/analytics/analytics-certifications-view";
 import { AnalyticsExportAction } from "@/components/partner-console/analytics/analytics-export-action";
@@ -35,14 +36,11 @@ export default async function PartnerAnalyticsCertificationsPage({
     return (
       <>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Certifications
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Credential funnel and attainment — distinct from badges.
-            </p>
-          </div>
+          <AnalyticsPageHeading
+            tab="certifications"
+            title="Certifications"
+            description="Credential funnel and attainment — distinct from badges."
+          />
           <div className="flex flex-col items-stretch gap-3 sm:items-end">
             <Suspense fallback={null}>
               <PartnerAnalyticsDateRange basePath={basePath} current={preset} />

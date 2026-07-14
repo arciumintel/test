@@ -11,16 +11,10 @@ type PartnerProductNavProps = {
 const sections = (productId: string) =>
   [
     {
-      label: "Course drafts",
+      label: "Courses",
       href: `/partner-console/${productId}/courses`,
       match: (pathname: string) =>
         pathname.startsWith(`/partner-console/${productId}/courses`),
-    },
-    {
-      label: "Self-service",
-      href: `/partner-console/${productId}/self-service`,
-      match: (pathname: string) =>
-        pathname === `/partner-console/${productId}/self-service`,
     },
     {
       label: "Discord",

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { AnalyticsPageHeading } from "@/components/partner-console/analytics/analytics-icons";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { AnalyticsExportAction } from "@/components/partner-console/analytics/analytics-export-action";
 import { AnalyticsRecommendationsView } from "@/components/partner-console/analytics/analytics-recommendations-view";
@@ -56,14 +57,11 @@ export default async function PartnerAnalyticsRecommendationsPage({
   return (
     <>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Recommendations
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            What should this partner improve next?
-          </p>
-        </div>
+        <AnalyticsPageHeading
+          tab="recommendations"
+          title="Recommendations"
+          description="What should this partner improve next?"
+        />
         <div className="flex flex-col items-stretch gap-3 sm:items-end">
           <div className="flex flex-wrap items-center gap-2">
             <Suspense fallback={null}>

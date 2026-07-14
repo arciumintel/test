@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { AnalyticsPageHeading } from "@/components/partner-console/analytics/analytics-icons";
 import { HomeSectionLoadError } from "@/components/home-section-load-error";
 import { AnalyticsExportAction } from "@/components/partner-console/analytics/analytics-export-action";
 import { AnalyticsOverviewView } from "@/components/partner-console/analytics/analytics-overview-view";
@@ -143,12 +144,11 @@ export default async function PartnerAnalyticsPage({
   return (
     <>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
-          <p className="mt-1 text-pretty text-sm text-muted-foreground">
-            Educational intelligence for {view.data?.productName ?? "this project"}.
-          </p>
-        </div>
+        <AnalyticsPageHeading
+          tab="overview"
+          title="Overview"
+          description={`Executive summary of partner learning performance for ${view.data?.productName ?? "this project"}.`}
+        />
         <div className="flex flex-col items-stretch gap-3 sm:items-end">
           <div className="flex flex-wrap items-center gap-2">
             <Suspense fallback={null}>

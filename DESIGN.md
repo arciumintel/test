@@ -2,18 +2,20 @@
 name: Arcademy
 description: Official, calm learning UI for the Arcium ecosystem
 colors:
-  background: "oklch(0.99 0.003 264)"
-  foreground: "oklch(0.21 0.02 264)"
-  primary: "oklch(0.52 0.21 280)"
-  primary-foreground: "oklch(0.99 0.01 280)"
-  secondary: "oklch(0.96 0.01 264)"
-  secondary-foreground: "oklch(0.28 0.03 280)"
-  muted: "oklch(0.97 0.005 264)"
-  muted-foreground: "oklch(0.52 0.02 264)"
-  accent: "oklch(0.95 0.03 280)"
-  accent-foreground: "oklch(0.32 0.08 280)"
+  background: "oklch(0.985 0.004 100)"
+  foreground: "oklch(0.20 0.02 260)"
+  primary: "oklch(0.48 0.12 230)"
+  primary-foreground: "oklch(0.99 0.01 230)"
+  secondary: "oklch(0.94 0.01 100)"
+  secondary-foreground: "oklch(0.28 0.03 260)"
+  muted: "oklch(0.96 0.008 100)"
+  muted-foreground: "oklch(0.48 0.015 260)"
+  accent: "oklch(0.94 0.04 200)"
+  accent-foreground: "oklch(0.35 0.08 230)"
+  brand-secondary: "oklch(0.55 0.14 320)"
+  brand-secondary-foreground: "oklch(0.99 0.01 320)"
   card: "oklch(1 0 0)"
-  border: "oklch(0.92 0.005 264)"
+  border: "oklch(0.90 0.01 100)"
   destructive: "oklch(0.58 0.22 27)"
   success: "oklch(0.6 0.15 155)"
 typography:
@@ -97,38 +99,42 @@ components:
 
 **Creative North Star: "The Trusted Classroom"**
 
-Arcademy looks and feels like an official institution for ecosystem learning: calm surfaces, violet-indigo brand accents used with restraint, and typography that prioritizes readability over display flair. The UI serves learning workflows (catalog, lessons, quizzes, profile, admin) rather than selling hype. Depth comes from tonal layering and subtle borders, not dramatic shadows or glass effects.
+Arcademy looks and feels like an official institution for ecosystem learning: calm near-neutral surfaces, signal-cyan brand accents used with restraint, orchid for XP and achievement moments, and typography that prioritizes readability over display flair. The UI serves learning workflows (catalog, lessons, quizzes, profile, admin) rather than selling hype. Depth comes from tonal layering and subtle borders, not dramatic shadows or glass effects.
 
-This system explicitly rejects crypto hype aesthetics, developer-wiki density, corporate enterprise polish, and generic SaaS landing-page templates. Visual identity stays aligned with Arcium's own brand while remaining approachable to newcomers.
+This system explicitly rejects crypto hype aesthetics, developer-wiki density, corporate enterprise polish, and generic SaaS landing-page templates. Visual identity stays approachable to newcomers while reading as quiet computation — not generic violet AI chrome.
 
 **Key Characteristics:**
 
-- Soft neutral canvas with cool-violet tint (not warm cream/sand defaults)
+- Near-neutral ink canvas with a slight warm-neutral lift (not warm cream defaults or cool-violet fog)
 - Single sans family (Geist) with weight contrast for hierarchy
-- Primary violet used for CTAs, progress, and brand moments at ≤15% of any screen
+- Signal cyan for CTAs, logo, and brand moments at ≤15% of any screen; orchid rarer for progress/XP
 - Rounded corners capped at 12–16px on cards; pills reserved for badges and tags
 - Visible progress and status at every step of the learner journey
 
 ## Colors
 
-A restrained product palette: tinted cool neutrals carry most surfaces; violet-indigo primary marks official Arcium-aligned actions and brand moments.
+A dual-hue product palette: near-neutral surfaces carry the classroom; signal cyan marks official actions; orchid marks earned/progress moments.
 
 ### Primary
 
-- **Arcium Violet** (oklch(0.52 0.21 280)): Primary buttons, logo mark, links, focus rings, selection highlight, progress indicators. The signature brand accent.
+- **Signal Cyan** (oklch(0.48 0.12 230)): Primary buttons, logo mark, links, focus rings, selection highlight. The signature brand accent.
 
-### Secondary
+### Accent
 
-- **Soft Violet Wash** (oklch(0.95 0.03 280)): Hover backgrounds, accent surfaces, icon containers on marketing sections.
+- **Aqua Wash** (oklch(0.94 0.04 200)): Hover backgrounds, accent surfaces, icon containers on marketing sections.
+
+### Brand secondary
+
+- **Orchid** (oklch(0.55 0.14 320)): XP meters, progress fills (`--xp`), sparse achievement accents. Never floods backgrounds.
 
 ### Neutral
 
-- **Canvas** (oklch(0.99 0.003 264)): Page background. Cool-tinted near-white, not warm paper.
-- **Ink** (oklch(0.21 0.02 264)): Primary body text and headings.
-- **Muted Ink** (oklch(0.52 0.02 264)): Supporting copy, metadata, placeholders. Must maintain readable contrast on canvas.
+- **Canvas** (oklch(0.985 0.004 100)): Page background. Near-neutral with a quiet warm lift.
+- **Ink** (oklch(0.20 0.02 260)): Primary body text and headings.
+- **Muted Ink** (oklch(0.48 0.015 260)): Supporting copy, metadata, placeholders. Must maintain readable contrast on canvas.
 - **Surface** (oklch(1 0 0)): Card and popover backgrounds.
-- **Divider** (oklch(0.92 0.005 264)): Borders and input strokes.
-- **Secondary Fill** (oklch(0.96 0.01 264)): Secondary buttons and subtle section backgrounds.
+- **Divider** (oklch(0.90 0.01 100)): Borders and input strokes.
+- **Secondary Fill** (oklch(0.94 0.01 100)): Secondary buttons and subtle section backgrounds.
 
 ### Semantic
 
@@ -137,7 +143,7 @@ A restrained product palette: tinted cool neutrals carry most surfaces; violet-i
 
 ### Named Rules
 
-**The Restrained Accent Rule.** Primary violet appears on CTAs, the logo mark, active nav, progress bars, and one focal element per section. It never floods backgrounds or body text blocks.
+**The Restrained Accent Rule.** Signal cyan appears on CTAs, the logo mark, active nav, and one focal element per section. Orchid is rarer — progress bars and achievement chips only. Neither floods backgrounds or body text blocks.
 
 ## Typography
 
@@ -177,7 +183,7 @@ Flat-by-default with light structural shadows. Cards use `shadow-sm` (subtle, �
 ### Buttons
 
 - **Shape:** Moderately rounded (0.625rem / rounded-md)
-- **Primary:** Violet fill, white foreground, shadow-sm, h-10 default / h-11 lg
+- **Primary:** Signal-cyan fill, light foreground, shadow-sm, h-10 default / h-11 lg
 - **Hover / Focus:** Primary darkens to 90% opacity; focus-visible ring at 3px ring-ring/40
 - **Ghost:** Transparent with accent hover wash for nav and secondary actions
 - **Outline:** Border + background, accent hover for tertiary actions
@@ -203,8 +209,8 @@ Flat-by-default with light structural shadows. Cards use `shadow-sm` (subtle, �
 
 ### Progress & Badges
 
-- **Progress bar:** Primary fill on muted track
-- **Badges:** Rounded pill for status labels; primary variant for official platform tag
+- **Progress bar:** Orchid XP fill (`bg-xp`) on muted track
+- **Badges:** Rounded pill for status labels; primary variant for platform tag
 - **Level badges:** Small caps avoided; use readable label text
 
 ### Marketing Hero (homepage)
@@ -218,15 +224,17 @@ Flat-by-default with light structural shadows. Cards use `shadow-sm` (subtle, �
 ### Do:
 
 - **Do** use OKLCH tokens from globals.css for all new surfaces and states
-- **Do** keep primary violet on CTAs, progress, and one focal element per view
+- **Do** keep signal cyan on CTAs and one focal brand element per view; orchid on XP/progress only
 - **Do** show learner progress explicitly (lesson checklist, quiz score, badge award)
 - **Do** write button labels as verb + object ("Browse courses", "Save changes")
-- **Do** align visual tone with Arcium's official brand identity
+- **Do** keep temperature contrast: near-neutral canvas vs cool cyan brand
 
 ### Don't:
 
 - **Don't** use crypto hype visuals: neon gradients, moon memes, degen energy, loud Web3 marketing
 - **Don't** default to developer-docs aesthetics: dense monospace body, API-reference layout, insider jargon in UI copy
+- **Don't** flood screens with orchid or cyan washes — dual hue fails if both become ambient background tint
+- **Don't** revert to purple/indigo monoculture for "brand familiarity"
 - **Don't** adopt corporate enterprise polish: navy-and-gold schemes, stock-photo trust badges, "enterprise-grade" filler
 - **Don't** use generic SaaS templates: hero metrics, identical icon-card grids, numbered section eyebrows (01/02/03)
 - **Don't** use gradient text, side-stripe borders, or glassmorphism as decoration

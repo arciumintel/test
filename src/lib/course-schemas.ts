@@ -45,6 +45,9 @@ export const badgeSchema = z.object({
 export const PARTNER_EDITABLE_STATUSES = [
   "partner_draft",
   "staff_changes_requested",
+  "submitted_for_review",
+  "approved",
+  "published",
 ] as const;
 
 export const PARTNER_WORKFLOW_STATUSES = [

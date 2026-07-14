@@ -25,10 +25,10 @@ export function PartnerReferralToolkit({
   courses,
 }: Props) {
   const projectUrl = absoluteUrl(productPath(productSlug));
-  const suggestedCopy = `Learn ${productName} on Arcademy, the official learning destination for the Arcium ecosystem. Start here: ${projectUrl}`;
+  const suggestedCopy = `Learn ${productName} on Arcademy, a curated learning destination for the Arcium ecosystem. Start here: ${projectUrl}`;
   const partnerLine = partnerName
-    ? `Official Arcademy learning for ${productName}, maintained in partnership with ${partnerName}.`
-    : `Official Arcademy learning for ${productName}.`;
+    ? `Arcademy learning for ${productName}, maintained in partnership with ${partnerName}.`
+    : `Arcademy learning for ${productName}.`;
 
   return (
     <Card>

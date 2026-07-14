@@ -8,6 +8,7 @@ import { ExplorerSidebar } from "@/components/ecosystem/explorer-sidebar";
 import { GalaxyCanvas } from "@/components/ecosystem/galaxy-canvas";
 import { ProjectDetailPanel } from "@/components/ecosystem/project-detail-panel";
 import { ViewToggle } from "@/components/ecosystem/view-toggle";
+import { PageHeaderAtmosphere } from "@/components/page-header-atmosphere";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useEcosystemExplorerStore } from "@/stores/ecosystem-explorer";
@@ -73,8 +74,9 @@ export function EcosystemExplorer() {
 
   return (
     <div className="eco-shell flex min-h-[calc(100vh-4rem)] flex-col">
-      <div className="border-b bg-page-header px-4 py-5 sm:px-6 sm:py-6">
-        <div className="mx-auto flex max-w-[1600px] flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div className="page-header relative isolate mt-6 overflow-hidden border-b px-4 py-5 sm:px-6 sm:py-6">
+        <PageHeaderAtmosphere />
+        <div className="relative mx-auto flex max-w-[1600px] flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-sm font-medium text-primary">Arcium ecosystem</p>
             <h1

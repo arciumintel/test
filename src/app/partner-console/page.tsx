@@ -7,6 +7,7 @@ import {
   Handshake,
   BarChart3,
   MessageCircle,
+  Settings,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +45,7 @@ export default async function PartnerConsolePage({
         <PageHeader
           headingId="partner-console-heading"
           title="Partner console"
-          description="Manage project settings, course drafts, partner materials, and Discord role grants for projects you administer."
+          description="Manage project settings, course drafts, analytics, and Discord role grants for projects you administer."
         />
         <section aria-labelledby="partner-console-heading">
           <PartnerConnectPrompt returnPath={returnPath} />
@@ -111,8 +112,8 @@ export default async function PartnerConsolePage({
           Partner console
         </h1>
         <p className="mt-2 text-pretty leading-relaxed text-muted-foreground">
-          Choose a project to manage. Start with course drafts or self-service
-          materials, then configure Discord when you are ready.{" "}
+          Choose a project to manage. Start with project settings and course
+          drafts, then configure Discord when you are ready.{" "}
           <Link
             href="/partners/docs"
             className="font-medium text-primary underline-offset-4 hover:underline"
@@ -159,8 +160,8 @@ export default async function PartnerConsolePage({
                         : "Discord not configured yet"}
                     </p>
                     <p className="mt-2 text-pretty text-xs text-muted-foreground">
-                      New here? Open course drafts to author content, or use
-                      self-service to submit source materials.
+                      New here? Update project settings, then open course drafts
+                      to author and publish content.
                     </p>
                   </div>
                   <div className="flex shrink-0 flex-col gap-2 sm:items-end">
@@ -173,11 +174,9 @@ export default async function PartnerConsolePage({
                     </Button>
                     <div className="flex flex-wrap gap-2 sm:justify-end">
                       <Button asChild variant="outline" size="sm">
-                        <Link
-                          href={`/partner-console/${product.id}/self-service`}
-                        >
-                          <ClipboardList className="size-4" />
-                          Self-service
+                        <Link href={`/partner-console/${product.id}/project`}>
+                          <Settings className="size-4" />
+                          Settings
                         </Link>
                       </Button>
                       <Button asChild variant="outline" size="sm">

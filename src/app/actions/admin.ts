@@ -193,10 +193,20 @@ export async function publishApprovedCourse(courseId: string): Promise<Result> {
     select: { status: true },
   });
   if (!course) return { error: "Course not found." };
-  if (course.status !== "approved" && course.status !== "draft") {
+
+  const publishable = [
+    "draft",
+    "partner_draft",
+    "staff_changes_requested",
+    "submitted_for_review",
+    "approved",
+  ] as const;
+  if (
+    !publishable.includes(course.status as (typeof publishable)[number])
+  ) {
     return {
       error:
-        "Only approved partner courses or staff drafts can be published from this action.",
+        "Only partner courses or staff drafts can be published from this action.",
     };
   }
 

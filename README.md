@@ -1,6 +1,6 @@
 # Arcademy
 
-The official learning platform for the Arcium ecosystem. Learners browse courses publicly, connect a Solana wallet to track progress, pass quizzes, and earn off‑chain badges. Staff create and publish courses through an admin dashboard.
+The curated learning platform for the Arcium ecosystem. Learners browse courses publicly, connect a Solana wallet to track progress, pass quizzes, and earn off‑chain badges. Staff create and publish courses through an admin dashboard.
 
 Built with **Next.js (App Router)**, **Prisma + Neon Postgres**, **Solana wallet auth**, **Cloudinary**, and **Tailwind CSS**.
 

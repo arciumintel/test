@@ -8,7 +8,8 @@ const COLORS = {
   green: 0x57f287,
   orange: 0xfaa61a,
   blurple: 0x5865f2,
-  purple: 0x9b59b6,
+  /** Orchid brand-secondary ≈ oklch(0.55 0.14 320) */
+  purple: 0xc13d9e,
   grey: 0x95a5a6,
 } as const;
 

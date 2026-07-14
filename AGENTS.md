@@ -15,12 +15,12 @@ Arcademy V1: a curated learning platform for Arcium ecosystem products. Prove th
 ## Hard constraints
 
 - **Audience:** New users first, not developers.
-- **Publishing:** Partner self-service is in V1 for partner-submitted drafts, source material, review, and basic reporting. Staff retains final publish approval.
+- **Publishing:** Approved partners (Project Admins) publish their own project pages and courses. Staff retains partner application approval and can still intervene on content when needed.
 - **Auth:** Solana wallet signature. User anchored to `walletAddress`, not email/password.
 - **Credentials:** Off-chain badges in Postgres. No NFT minting in V1.
 - **Browsing:** Public catalog without wallet. Wallet required for progress, quizzes, badges, profile.
 - **Stack:** Next.js App Router · Vercel · Neon Postgres · Prisma · Cloudinary · shadcn/ui · Tailwind.
-- **Roles:** `learner`, `staff_admin`, and limited partner roles for partner self-service.
+- **Roles:** `learner`, `staff_admin`, and limited partner roles for the Partner console.
 
 ## Data model (minimum entities)
 
@@ -61,7 +61,7 @@ Pre-V1 deepening pass. User wants all items done before V1.
 
 ## Do not build (V1)
 
-Soulbound NFTs, on-chain verification, paid courses, leaderboards, social features, comments, AI lessons, multi-language, mobile app, code sandboxes, full LMS grading, partner direct publishing without staff approval.
+Soulbound NFTs, on-chain verification, paid courses, leaderboards, social features, comments, AI lessons, multi-language, mobile app, code sandboxes, full LMS grading.
 
 ## Acceptance checklist
 
@@ -70,7 +70,7 @@ Soulbound NFTs, on-chain verification, paid courses, leaderboards, social featur
 - [ ] Start course, persist lesson progress
 - [ ] Pass quiz, receive badge, see badge in profile
 - [ ] Staff: CRUD courses/lessons/quizzes, publish, preview, analytics
-- [ ] Partners: self-service draft/source submission, review workflow, basic reporting
+- [ ] Partners: drafting and publishing for assigned projects, basic reporting
 - [ ] Cloudinary media uploads
 - [ ] Production on Vercel + Neon
 
