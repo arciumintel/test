@@ -218,7 +218,13 @@ export function renderOverviewFragment(
     csvRow(["block", "metric", "value", "delta_pct"]),
     ...OVERVIEW_KPI_IDS.map(({ id, label }) => {
       const m = metricDisplay(engine, id);
-      return csvRow(["kpi", label, m.value, m.deltaPct]);
+      const isPct =
+        id === "completion_rate" ||
+        id === "quiz_pass_rate" ||
+        id === "start_conversion_rate";
+      const value =
+        m.value === "—" ? "" : isPct ? `${m.value}%` : m.value;
+      return csvRow(["kpi", label, value, m.deltaPct]);
     }),
     ...summaryRows.map(([k, v]) => csvRow(["summary", k, v, ""])),
     "",
