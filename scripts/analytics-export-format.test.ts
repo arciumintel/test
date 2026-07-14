@@ -7,6 +7,10 @@ import {
   csvRow,
   mdTable,
 } from "../src/lib/analytics-export-format";
+import {
+  renderConceptsFragment,
+  renderRecommendationsFragment,
+} from "../src/lib/analytics-export-sections";
 import type {
   AnalyticsExportMeta,
   ExportSectionFragment,
@@ -58,5 +62,41 @@ describe("compose", () => {
     const csv = composeCsv(meta, [frag]);
     assert.match(csv, /# section:kpi/);
     assert.match(csv, /"scope","overview"/);
+  });
+});
+
+describe("section serializers", () => {
+  it("concepts fragment warns when backfill incomplete", () => {
+    const frag = renderConceptsFragment({
+      coverage: {
+        lessonTotal: 0,
+        lessonTagged: 0,
+        questionTotal: 0,
+        questionTagged: 0,
+        coveragePct: 0,
+        complete: false,
+      },
+      rows: [],
+      gaps: [],
+      backfillIncomplete: true,
+    });
+    assert.match(frag.markdown, /incomplete|backfill|provisional/i);
+  });
+
+  it("recommendations fragment includes rationale", () => {
+    const frag = renderRecommendationsFragment([
+      {
+        id: "r1",
+        priority: "high",
+        category: "opportunity",
+        title: "Fix drop-off",
+        rationale: "Funnel stage conversion is low",
+        evidenceMetricIds: [],
+        href: "/x",
+      },
+    ]);
+    assert.match(frag.markdown, /Fix drop-off/);
+    assert.match(frag.markdown, /Funnel stage conversion is low/);
+    assert.match(frag.csv, /r1/);
   });
 });
